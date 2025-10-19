@@ -1,5 +1,6 @@
 ﻿namespace SupertronicsRepairSystem.Models
 {
+    // this is ass, must do the fire base stuff
     public class Product
     {
         public int Id { get; set; }

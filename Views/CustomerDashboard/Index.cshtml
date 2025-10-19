@@ -1,21 +1,21 @@
 ﻿@model List<SupertronicsRepairSystem.Models.Product>
-
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Customer Dashboard";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+ <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+
     <meta charset="UTF-8">
     <title>Supertronics Products</title>
 
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <span class="logo">Supertronics</span>
-        </nav>
-    </header>
-
+  
     <div class="search-bar">
-        <input type="text" class="search-input" placeholder="Search for products..." />
+        <input type="text" class="search-input" placeholder="Search " />
     </div>
 
     <div class="hero-section">
@@ -52,4 +52,4 @@
 <link rel="stylesheet" href="~/css/CustomerDashboard.css">
 </html>
 
-                        git pull origin technician
+                      
