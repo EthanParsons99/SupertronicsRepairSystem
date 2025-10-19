@@ -170,6 +170,31 @@ html {
   font-weight: 800;
 }
 
+.btn-primary {
+  background: var(--primary-blue-gradient);
+  color: var(--inverse-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background: linear-gradient(45deg, #3b5aff, #1e40ff);
+  color: var(--inverse-text);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: var(--subtle-gray);
+  color: var(--body-text);
+  border: 1px solid rgba(139, 155, 183, 0.3);
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+  background: var(--body-text);
+  color: var(--inverse-text);
+  transform: translateY(-2px);
+}
+
 /* ===== NAVIGATION ===== */
 .navbar {
   background: var(--dark-navy) !important;
