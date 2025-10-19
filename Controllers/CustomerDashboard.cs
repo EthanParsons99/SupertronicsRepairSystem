@@ -17,7 +17,7 @@ namespace SupertronicsRepairSystem.Controllers
                     Id = 1,
                     Name = "Acer Aspire 3",
                     Description = "15.6-inch FHD Laptop with Intel Core i7",
-                    ImageUrl = "/images/acer-laptop.png", // Assuming image is in wwwroot/images
+                    ImageUrl = "/images/acer.png", // Assuming image is in wwwroot/images
                     Price = 9999m,
                     WasPrice = 10999m,
                     DiscountPercentage = 9
