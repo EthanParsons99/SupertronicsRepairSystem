@@ -64,7 +64,18 @@ namespace SupertronicsRepairTrackingSystem.Controllers
 
         public IActionResult TrackSerialNumber()
         {
-            return View();
+            // Sample data for demo
+            var model = new TrackSerialNumberViewModel
+            {
+                SerialNumber = "SN-2024-12345",
+                Warranty = DateTime.Now.AddMonths(6),
+                JobId = 1001,
+                Item = "Dell XPS 15 Laptop",
+                Status = "Active",
+                Customer = "John Smith"
+            };
+
+            return View(model);
         }
     }
 }
