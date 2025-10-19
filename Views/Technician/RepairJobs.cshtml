@@ -3,4 +3,154 @@
     ViewData["Title"] = "Repair Jobs";
 }
 
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4 slide-in-left">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold mb-1 text-primary">
+                        Repair Jobs
+                    </h1>
+                    <p class="mb-0">Manage and track all repair jobs</p>
+                </div>
+                <div>
+                    <a class="btn btn-primary" asp-action="CreateRepairJob">
+                        <i class="bi bi-plus-circle me-1"></i>New Repair Job
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="row mb-4 fade-in" style="animation-delay: 0.1s;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Filter Jobs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3 filter-form">
+                        <div class="col-lg-3 col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="">All Statuses</option>
+                                <option>Pending</option>
+                                <option>Diagnosis</option>
+                                <option>In Progress</option>
+                                <option>Completed</option>
+                                <option>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-md-4">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" name="date" />
+                        </div>
+                        <div class="col-lg-3 col-md-4">
+                            <label class="form-label">Customer</label>
+                            <input type="text" class="form-control" name="customer" placeholder="Search customer..." />
+                        </div>
+                        <div class="col-lg-3 col-md-4">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="bi bi-search me-1"></i>Filter
+                                </button>
+                                <button type="reset" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jobs Table -->
+    <div class="row slide-in-right" style="animation-delay: 0.2s;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        Active Repair Jobs 
+                        <span class="badge ms-2" style="background: var(--primary-blue-gradient); color: white;">
+                            @(Model?.Count() ?? 0)
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead class="bg-primary">
+                                    <tr>
+                                        <th class="ps-4">Job ID</th>
+                                        <th>Device/Item</th>
+                                        <th>Customer</th>
+                                        <th>Status</th>
+                                        <th>Last Updated</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var job in Model)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-semibold">#@job.JobId</td>
+                                            <td>
+                                                <div style="color: var(--body-text);">@job.ItemName</div>
+                                                <small style="color: var(--secondary-text);">Serial: SN-@(job.JobId)001</small>
+                                            </td>
+                                            <td>
+                                                <div style="color: var(--body-text);">@job.CustomerName</div>
+                                                <small style="color: var(--secondary-text);">customer@email.com</small>
+                                            </td>
+                                            <td>@await Html.PartialAsync("_StatusBadge", job.Status)</td>
+                                            <td>
+                                                <div style="color: var(--body-text);">@job.LastUpdated.ToString("MMM dd, yyyy")</div>
+                                                <small style="color: var(--secondary-text);">@job.LastUpdated.ToString("HH:mm")</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a class="btn btn-primary" asp-action="UpdateRepairStatus" asp-route-id="@job.JobId" title="Update Status">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a class="btn btn-primary" asp-action="AddRepairNotes" asp-route-id="@job.JobId" title="Add Notes">
+                                                        <i class="bi bi-chat-text"></i>
+                                                    </a>
+                                                    <a class="btn btn-primary" asp-action="GenerateRepairQuote" asp-route-id="@job.JobId" title="Generate Quote">
+                                                        <i class="bi bi-file-text"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 fade-in">
+                            <i class="bi bi-inbox display-1" style="color: var(--secondary-text);"></i>
+                            <h4 class="mt-3" style="color: var(--heading-text);">No repair jobs found</h4>
+                            <p style="color: var(--body-text);">Create a new repair job to get started</p>
+                            <a class="btn btn-primary mt-2" asp-action="CreateRepairJob">
+                                <i class="bi bi-plus-circle me-1"></i>Create First Job
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
