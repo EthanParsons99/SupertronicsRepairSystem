@@ -1,0 +1,54 @@
+﻿@model List<SupertronicsRepairSystem.Models.Product>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Supertronics Products</title>
+
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <span class="logo">Supertronics</span>
+        </nav>
+    </header>
+
+    <div class="search-bar">
+        <input type="text" class="search-input" placeholder="Search for products..." />
+    </div>
+
+    <div class="hero-section">
+        <h1>
+            <span class="highlight">Expert Tech</span>
+            <span class="repair">Repair's</span>
+            & Electronics
+        </h1>
+    </div>
+
+    <div class="sale-banner">
+        <h2>Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!</h2>
+    </div>
+
+    <div class="product-grid">
+        @foreach (var product in Model)
+        {
+            <div class="product-card">
+                <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+                <div class="product-info">
+                    <h3>@product.Name</h3>
+                    <p>@product.Description</p>
+                    <div class="price-details">
+                        <span class="discount">-@product.DiscountPercentage%</span>
+                        <span class="current-price">R @product.Price.ToString("N0")</span>
+                        <span class="was-price">Was R @product.WasPrice.ToString("N0")</span>
+                    </div>
+                    <button class="add-to-cart-btn">Add to cart</button>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+<link rel="stylesheet" href="~/css/CustomerDashboard.css">
+</html>
+
