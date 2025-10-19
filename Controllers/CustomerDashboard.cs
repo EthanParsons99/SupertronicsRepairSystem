@@ -9,7 +9,7 @@ namespace SupertronicsRepairSystem.Controllers
     {
         public IActionResult Index()
         {
-            // Simulate fetching data from a database or service
+            // Simulate fetching data from a owners dashboard, will update it once i get calwyns part
             var productsOnSale = new List<Product>
             {
                 new Product
@@ -17,7 +17,7 @@ namespace SupertronicsRepairSystem.Controllers
                     Id = 1,
                     Name = "Acer Aspire 3",
                     Description = "15.6-inch FHD Laptop with Intel Core i7",
-                    ImageUrl = "/images/acer.png", // Assuming image is in wwwroot/images
+                    ImageUrl = "/images/acer.png", 
                     Price = 9999m,
                     WasPrice = 10999m,
                     DiscountPercentage = 9
@@ -27,14 +27,54 @@ namespace SupertronicsRepairSystem.Controllers
                     Id = 2,
                     Name = "JBL Live 770NC",
                     Description = "Noise Cancelling Wireless Headphones",
-                    ImageUrl = "/images/jbl-headphones.png", // Assuming image is in wwwroot/images
-                    Price = 1498m,
+                    ImageUrl = "/images/jbl-headphones.png",
                     WasPrice = 2498m,
                     DiscountPercentage = 40
-                }
+                },
+                 new Product
+                {
+                    Id = 3,
+                    Name = "Acer Aspire 3",
+                    Description = "15.6-inch FHD Laptop with Intel Core i7",
+                    ImageUrl = "/images/acer.png",
+                    Price = 9999m,
+                    WasPrice = 10999m,
+                    DiscountPercentage = 9
+                },
+                  new Product
+                {
+                    Id = 4,
+                    Name = "Acer Aspire 3",
+                    Description = "15.6-inch FHD Laptop with Intel Core i7",
+                    ImageUrl = "/images/acer.png", 
+                    Price = 9999m,
+                    WasPrice = 10999m,
+                    DiscountPercentage = 9
+                },
+                   new Product
+                {
+                    Id = 5,
+                    Name = "Acer Aspire 3",
+                    Description = "15.6-inch FHD Laptop with Intel Core i7",
+                    ImageUrl = "/images/acer.png", 
+                    Price = 9999m,
+                    WasPrice = 10999m,
+                    DiscountPercentage = 9
+                },
+                    new Product
+                {
+                    Id = 6,
+                    Name = "Acer Aspire 3",
+                    Description = "15.6-inch FHD Laptop with Intel Core i7",
+                    ImageUrl = "/images/acer.png", 
+                    Price = 9999m,
+                    WasPrice = 10999m,
+                    DiscountPercentage = 9
+                },
+
             };
 
-            // Pass the list of products to the view
+          
             return View(productsOnSale);
         }
     }
