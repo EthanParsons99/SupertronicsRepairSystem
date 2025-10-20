@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SupertronicsRepairSystem.styles.css" asp-append-version="true" />
 </head>
-<body>
+
+<body class="d-flex flex-column min-vh-100">
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container-fluid">
@@ -57,13 +58,13 @@
                 </div>
             </div>
         </nav>
-
     </header>
 
-    <main class="min-h-screen">
+    <main class="flex-grow-1">
         @RenderBody()
     </main>
-    <footer class="footer">
+
+    <footer class="footer mt-auto">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Opening Times</h3>
@@ -74,8 +75,8 @@
                         <div><strong>Sunday</strong></div>
                     </div>
                     <div>
-                        <div>8am-5pm</div>
-                        <div>9am-1pm</div>
+                        <div>8am - 5pm</div>
+                        <div>9am - 1pm</div>
                         <div>Closed</div>
                     </div>
                 </div>
@@ -84,13 +85,10 @@
             <div class="footer-section">
                 <h3>Terms and conditions</h3>
                 <p style="font-size: 11px; line-height: 1.4;">
-                    All products & services are subject to availability and the
-                    company's T&Cs. E&OE. SUPERTRONICS IS AUTHORISED
-                    FINANCIAL SERVICES AND REGISTERED CREDIT PROVIDER
-                    (NCRCP7052). THE SHOP TECHNICAL RESOURCES
-                    (PTY) LTD Is a Juristic Representative of the Company.
-                    Please see our Returns & Refund Policy or, alternatively,
-                    you may inquire from the official website.
+                    All products & services are subject to availability and the company's T&Cs.
+                    E&OE. SUPERTRONICS IS AUTHORISED FINANCIAL SERVICES AND REGISTERED CREDIT PROVIDER (NCRCP7052).
+                    THE SHOP TECHNICAL RESOURCES (PTY) LTD is a Juristic Representative of the Company.
+                    Please see our Returns & Refund Policy or inquire via our website.
                 </p>
             </div>
 
@@ -109,8 +107,8 @@
                 <div>✉️ supertronics@org.com</div>
             </div>
         </div>
-
     </footer>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
