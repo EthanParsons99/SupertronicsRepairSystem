@@ -1,0 +1,188 @@
+﻿@{
+    ViewData["Title"] = "Add New Product";
+}
+
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">Add New Product</h2>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Product Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form id="addProductForm">
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="productName" placeholder="Enter the name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="productDescription" class="form-label">Product Description</label>
+                            <textarea class="form-control" id="productDescription" rows="6" placeholder="Describe the product..." required></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="productPrice" class="form-label">Enter Product Price</label>
+                                <input type="number" class="form-control" id="productPrice" placeholder="0" step="0.01" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="stockQuantity" class="form-label">Stock Quantity</label>
+                                <input type="number" class="form-control" id="stockQuantity" placeholder="0" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Upload Image</label>
+                            <div class="upload-area" id="uploadArea">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <p class="mt-2 mb-0">
+                                    <span class="text-primary">Upload an image</span> or drag and drop
+                                </p>
+                                <small class="text-muted">PNG, JPG, GIF up to 10MB</small>
+                                <input type="file" id="imageInput" accept="image/*" hidden>
+                            </div>
+                            <div id="imagePreview" class="mt-3 d-none">
+                                <img id="previewImg" src="" alt="Preview" class="img-fluid rounded">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="@Url.Action("ProductManagement", "Owner")" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i> Add Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .bg-dark {
+        background-color: #2C3E50 !important;
+    }
+
+    .text-primary {
+        color: #5865F2 !important;
+    }
+
+    .upload-area {
+        border: 2px dashed #ddd;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .upload-area:hover {
+            border-color: #5865F2;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area svg {
+            color: #5865F2;
+        }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+    #imagePreview img {
+        max-height: 200px;
+        object-fit: contain;
+    }
+</style>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+
+    uploadArea.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.classList.remove('d-none');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#5865F2';
+        uploadArea.style.backgroundColor = '#f8f9ff';
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ddd';
+        uploadArea.style.backgroundColor = 'transparent';
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ddd';
+        uploadArea.style.backgroundColor = 'transparent';
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.classList.remove('d-none');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('addProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Product added successfully!');
+        window.location.href = '@Url.Action("ProductManagement", "Owner")';
+    });
+</script>

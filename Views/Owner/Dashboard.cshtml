@@ -1,0 +1,162 @@
+﻿@{
+    ViewData["Title"] = "Owner Dashboard";
+}
+
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">Dashboard</h2>
+            <h4 class="text-primary">Welcome Back, Owner</h4>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 fw-bold mb-0">43</h1>
+                    <p class="mb-0">Total Products</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 fw-bold mb-0">15</h1>
+                    <p class="mb-0">Completed Repairs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 fw-bold mb-0">10</h1>
+                    <p class="mb-0">Quotes Accepted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 fw-bold mb-0">5</h1>
+                    <p class="mb-0">Quotes Assigned</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row g-3">
+        <!-- Warranty Check Card -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Warranty Check</h5>
+                </div>
+                <div class="card-body">
+                    <form id="warrantyForm">
+                        <div class="mb-3">
+                            <label for="serialNumber" class="form-label">Enter Serial Number</label>
+                            <input type="text" class="form-control" id="serialNumber" placeholder="e.g., SN-12345">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-2">Check Status</button>
+                        <button type="button" class="btn btn-primary w-100">Add New Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Repairs Card -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Recent Repairs</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Customer</th>
+                                    <th>Technician</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#JI23456789</td>
+                                    <td>John Doe</td>
+                                    <td>Lewis Hamilton</td>
+                                    <td><span class="badge bg-primary">In Progress</span></td>
+                                </tr>
+                                <!-- Add more rows as needed -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    .bg-primary {
+        background-color: #2C3E50 !important;
+    }
+
+    .bg-dark {
+        background-color: #2C3E50 !important;
+    }
+
+    .text-primary {
+        color: #5865F2 !important;
+    }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+
+    .badge.bg-primary {
+        background-color: #5865F2 !important;
+    }
+</style>
+
+<script>
+    document.getElementById('warrantyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const serialNumber = document.getElementById('serialNumber').value;
+        if (serialNumber) {
+            alert('Checking warranty for: ' + serialNumber);
+            // Add your warranty check logic here
+        } else {
+            alert('Please enter a serial number');
+        }
+    });
+</script>
