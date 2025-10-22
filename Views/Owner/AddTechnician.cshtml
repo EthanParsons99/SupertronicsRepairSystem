@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "Add New Technician";
+}
+
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">Add New Technician</h2>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Technician Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form id="addTechnicianForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="techName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="techName" placeholder="Enter technician name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="techSurname" class="form-label">Surname</label>
+                                <input type="text" class="form-control" id="techSurname" placeholder="Enter technician surname" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="techEmail" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="techEmail" placeholder="Enter technician email" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="techPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="techPhone" placeholder="Enter phone number" required>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="@Url.Action("TechnicianManagement", "Owner")" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i> Add Technician
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .bg-dark {
+        background-color: #2C3E50 !important;
+    }
+
+    .text-primary {
+        color: #5865F2 !important;
+    }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+    .form-control:focus {
+        border-color: #5865F2;
+        box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+    }
+</style>
+
+<script>
+    document.getElementById('addTechnicianForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('techName').value;
+        const surname = document.getElementById('techSurname').value;
+        const email = document.getElementById('techEmail').value;
+        const phone = document.getElementById('techPhone').value;
+
+        if (name && surname && email && phone) {
+            alert('Technician added successfully!');
+            window.location.href = '@Url.Action("TechnicianManagement", "Owner")';
+        }
+    });
+</script>

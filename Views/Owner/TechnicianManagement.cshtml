@@ -1,0 +1,129 @@
+﻿@{
+    ViewData["Title"] = "Technician Management";
+}
+
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Technicians Management</h2>
+            <a href="@Url.Action("AddTechnician", "Owner")" class="btn btn-dark">+ New Technician</a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card filter-card mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-white">Technician Name</label>
+                    <input type="text" class="form-control" placeholder="Enter technician Name">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-white">Technician ID</label>
+                    <input type="text" class="form-control" placeholder="Enter technician ID">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-white">Email</label>
+                    <input type="email" class="form-control" placeholder="Enter Email Address">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technicians Table -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">All Products</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Technician ID</th>
+                            <th>Name</th>
+                            <th>Surname</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#T234</td>
+                            <td>Jacob</td>
+                            <td>Johnson</td>
+                            <td>jacobjohnson@gmail.com</td>
+                            <td>0867734129</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .filter-card {
+        background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
+        border-radius: 15px;
+        border: none;
+    }
+
+        .filter-card .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    .table-primary {
+        background-color: #5865F2 !important;
+        color: white;
+    }
+
+        .table-primary th {
+            border: none;
+            padding: 1rem;
+        }
+
+    .bg-dark {
+        background-color: #2C3E50 !important;
+    }
+
+    .btn-dark {
+        background-color: #2C3E50;
+        border-color: #2C3E50;
+    }
+
+        .btn-dark:hover {
+            background-color: #1a252f;
+            border-color: #1a252f;
+        }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+</style>
