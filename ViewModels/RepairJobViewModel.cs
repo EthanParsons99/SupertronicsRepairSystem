@@ -1,6 +1,6 @@
 namespace SupertronicsRepairSystem.ViewModels.Technician {
     public class RepairJobViewModel {
-        public int JobId { get; set; }
+        public string JobId { get; set; }
         public string? ItemName { get; set; }
         public string? Status { get; set; }
         public string? CustomerName { get; set; }
