@@ -11,4 +11,11 @@
     <Folder Include="Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
+    <PackageReference Include="Google.Cloud.Firestore" Version="3.11.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+  </ItemGroup>
+
 </Project>

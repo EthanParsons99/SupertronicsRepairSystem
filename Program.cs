@@ -1,3 +1,6 @@
+using Google.Cloud.Firestore;
+using SupertronicsRepairSystem.Services;
+
 namespace SupertronicsRepairSystem
 {
     public class Program
@@ -8,6 +11,35 @@ namespace SupertronicsRepairSystem
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpContextAccessor();
+
+            // Add HttpClient factory
+            builder.Services.AddHttpClient();
+
+            // Configure Firebase
+            var firebaseProjectId = builder.Configuration["Firebase:ProjectId"];
+            var firebaseApiKey = builder.Configuration["Firebase:ApiKey"];
+
+            // Initialize Firestore
+            var firestoreDb = FirestoreDb.Create(firebaseProjectId);
+            builder.Services.AddSingleton(firestoreDb);
+
+            // Register Authentication Service
+            builder.Services.AddScoped<IAuthService>(provider =>
+            {
+                var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var db = provider.GetRequiredService<FirestoreDb>();
+                var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+                return new FirebaseAuthService(httpContextAccessor, db, firebaseApiKey, httpClientFactory);
+            });
+
+            // Add session support
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(24);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             var app = builder.Build();
 
@@ -21,9 +53,8 @@ namespace SupertronicsRepairSystem
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
+            app.UseSession();
             app.UseAuthorization();
 
             app.MapControllerRoute(
