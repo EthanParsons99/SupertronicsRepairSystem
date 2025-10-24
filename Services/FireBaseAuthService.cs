@@ -35,7 +35,7 @@ namespace SupertronicsRepairSystem.Services
             try
             {
                 var http = _httpContextAccessor.HttpContext;
-                if (http == null)       
+                if (http == null)
                 {
                     return new AuthResult { Success = false, Message = "No HTTP context available" };
                 }
@@ -49,7 +49,6 @@ namespace SupertronicsRepairSystem.Services
 
                 if (!resp.IsSuccessStatusCode)
                 {
-                    // Try to surface Firebase message if available
                     try
                     {
                         using var doc = JsonDocument.Parse(respContent);
@@ -108,7 +107,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
-        public async Task<AuthResult> SignUpAsync(string email, string password, UserRole role)
+        public async Task<AuthResult> SignUpAsync(string email, string password, string firstName, string surname, string phoneNumber, UserRole role)
         {
             try
             {
@@ -146,7 +145,7 @@ namespace SupertronicsRepairSystem.Services
                     return new AuthResult { Success = false, Message = "Failed to create account" };
                 }
 
-                await CreateUserDocumentInFirestore(localId, userEmail ?? email, role);
+                await CreateUserDocumentInFirestore(localId, userEmail ?? email, firstName, surname, phoneNumber, role);
 
                 return new AuthResult
                 {
@@ -193,17 +192,6 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
-        // PSEUDOCODE / PLAN (detailed):
-        // 1. Get the current HttpContext; if missing, return null (use null-forgiving to satisfy nullable warnings).
-        // 2. Read auth token and role cookie; if missing, return null.
-        // 3. Parse role cookie into UserRole; if parsing fails, return null.
-        // 4. Call LookupUserByIdTokenAsync(token) to retrieve nullable tuple (LocalId, Email, DisplayName).
-        // 5. If lookup is null, return null.
-        // 6. Deconstruct the nullable tuple via lookup.Value into local variables: localId, email, displayName.
-        // 7. Build and return a new UserInfo instance setting only the writable members:
-        //    - UserId, Email, Role, DisplayName (compute DisplayName fallback to email).
-        //    - Do NOT assign IsCustomer/IsTechnician/IsOwner here because they are read-only in the real model.
-        // 8. Catch exceptions and return null (use null-forgiving operator to silence nullable warnings).
         public async Task<UserInfo> GetCurrentUserInfoAsync()
         {
             var http = _httpContextAccessor.HttpContext;
@@ -220,16 +208,20 @@ namespace SupertronicsRepairSystem.Services
                 var lookup = await LookupUserByIdTokenAsync(token);
                 if (lookup == null) return null!;
 
-                // Deconstruct the nullable tuple safely (lookup.HasValue is true here).
                 var (localId, email, displayName) = lookup.Value;
+
+                // Get additional user info from Firestore
+                var userDoc = await GetUserDocumentFromFirestore(localId, role);
 
                 return new UserInfo
                 {
                     UserId = localId,
                     Email = email,
                     Role = role,
-                    DisplayName = string.IsNullOrEmpty(displayName) ? email : displayName
-                    // Do not set IsCustomer/IsTechnician/IsOwner here — they are read-only or computed on the model.
+                    DisplayName = string.IsNullOrEmpty(displayName) ? email : displayName,
+                    FirstName = userDoc?.FirstName ?? string.Empty,
+                    Surname = userDoc?.Surname ?? string.Empty,
+                    PhoneNumber = userDoc?.PhoneNumber ?? string.Empty
                 };
             }
             catch
@@ -309,11 +301,42 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
-        private async Task CreateUserDocumentInFirestore(string userId, string email, UserRole role)
+        private async Task<(string FirstName, string Surname, string PhoneNumber)?> GetUserDocumentFromFirestore(string userId, UserRole role)
+        {
+            try
+            {
+                string collection = role switch
+                {
+                    UserRole.Technician => "technicians",
+                    UserRole.Owner => "owners",
+                    UserRole.Customer => "customers",
+                    _ => "customers"
+                };
+
+                var docSnapshot = await _firestoreDb.Collection(collection).Document(userId).GetSnapshotAsync();
+
+                if (!docSnapshot.Exists) return null;
+
+                var firstName = docSnapshot.ContainsField("firstName") ? docSnapshot.GetValue<string>("firstName") : string.Empty;
+                var surname = docSnapshot.ContainsField("surname") ? docSnapshot.GetValue<string>("surname") : string.Empty;
+                var phoneNumber = docSnapshot.ContainsField("phoneNumber") ? docSnapshot.GetValue<string>("phoneNumber") : string.Empty;
+
+                return (firstName, surname, phoneNumber);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task CreateUserDocumentInFirestore(string userId, string email, string firstName, string surname, string phoneNumber, UserRole role)
         {
             var userData = new Dictionary<string, object>
             {
                 { "email", email },
+                { "firstName", firstName },
+                { "surname", surname },
+                { "phoneNumber", phoneNumber },
                 { "createdAt", FieldValue.ServerTimestamp }
             };
 

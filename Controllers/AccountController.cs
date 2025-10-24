@@ -54,7 +54,7 @@ namespace SupertronicsRepairSystem.Controllers
                 {
                     UserRole.Owner => RedirectToAction("Dashboard", "Owner"),
                     UserRole.Technician => RedirectToAction("Dashboard", "Technician"),
-                    UserRole.Customer => RedirectToAction("CustomerViewProduct", "Customer"),
+                    UserRole.Customer => RedirectToAction("Index", "CustomerDashboard"),
                     _ => RedirectToAction("Index", "Home")
                 };
             }
@@ -76,7 +76,7 @@ namespace SupertronicsRepairSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(string email, string password, string confirmPassword)
+        public async Task<IActionResult> Register(string email, string password, string confirmPassword, string firstName, string surname, string phoneNumber)
         {
             if (await _authService.IsAuthenticatedAsync())
             {
@@ -89,6 +89,18 @@ namespace SupertronicsRepairSystem.Controllers
                 return View();
             }
 
+            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(surname))
+            {
+                TempData["Error"] = "First name and surname are required";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                TempData["Error"] = "Phone number is required";
+                return View();
+            }
+
             if (password != confirmPassword)
             {
                 TempData["Error"] = "Passwords do not match";
@@ -96,7 +108,7 @@ namespace SupertronicsRepairSystem.Controllers
             }
 
             // New registrations default to Customer role
-            var result = await _authService.SignUpAsync(email, password, UserRole.Customer);
+            var result = await _authService.SignUpAsync(email, password, firstName, surname, phoneNumber, UserRole.Customer);
 
             if (result.Success)
             {
