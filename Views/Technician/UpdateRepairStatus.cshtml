@@ -1,0 +1,39 @@
+﻿@model SupertronicsRepairSystem.ViewModels.UpdateRepairStatusViewModel
+@{
+    ViewData["Title"] = "Update Repair Status";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="mb-4">
+                <h1 class="display-6 fw-bold mb-2">Update Status</h1>
+                <p class="text-muted">Job for @Model.CustomerName - @Model.ItemModel</p>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header"><h5 class="mb-0">Current Status: @Model.CurrentStatus</h5></div>
+                <div class="card-body">
+                    <form asp-action="UpdateRepairStatus" method="post">
+                        <input type="hidden" asp-for="JobId" />
+
+                        <div class="mb-3">
+                            <label asp-for="NewStatus" class="form-label fw-semibold"></label>
+                            <select asp-for="NewStatus" asp-items="Model.StatusOptions" class="form-select">
+                                <option value="">-- Select a new status --</option>
+                            </select>
+                            <span asp-validation-for="NewStatus" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="RepairJobs" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i>Save Status</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
