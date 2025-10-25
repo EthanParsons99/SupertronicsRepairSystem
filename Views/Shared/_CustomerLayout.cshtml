@@ -20,7 +20,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-controller="CustomerDashboard" asp-action="Index">
+                <a class="navbar-brand fw-bold" asp-controller="Customer" asp-action="Dashboard">
                     Supertronics
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#customerNavbar" aria-controls="customerNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,23 +30,18 @@
                 <div class="collapse navbar-collapse" id="customerNavbar">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerViewProduct">
+                            <a class="nav-link" asp-controller="Customer" asp-action="ViewProducts">
                                 <i class="bi bi-box-seam me-1"></i>Products
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
-                                <i class="bi bi-bookmark me-1"></i>Keeps Asides
+                            <a class="nav-link" asp-controller="Customer" asp-action="RequestRepair">
+                                <i class="bi bi-gear-fill me-1"></i>Request Repair
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
-                                <i class="bi bi-file-earmark-text me-1"></i>Get Quote
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
-                                <i class="bi bi-cart me-1"></i>Cart
+                            <a class="nav-link" asp-controller="Customer" asp-action="TrackRepair">
+                                <i class="bi bi-truck me-1"></i>Track Repair
                             </a>
                         </li>
                     </ul>

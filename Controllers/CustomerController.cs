@@ -26,7 +26,8 @@ namespace SupertronicsRepairSystem.Controllers
             return View();
         }
 
-        public IActionResult ViewProducts()
+        // Changed method name to match the view file
+        public IActionResult CustomerViewProduct()
         {
             return View();
         }

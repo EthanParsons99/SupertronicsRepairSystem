@@ -49,12 +49,12 @@ namespace SupertronicsRepairSystem.Controllers
                     return Redirect(returnUrl);
                 }
 
-                // Redirect based on role
+                // Redirect based on role - CHANGED to CustomerViewProduct
                 return result.Role switch
                 {
                     UserRole.Owner => RedirectToAction("Dashboard", "Owner"),
                     UserRole.Technician => RedirectToAction("Dashboard", "Technician"),
-                    UserRole.Customer => RedirectToAction("Index", "CustomerDashboard"),
+                    UserRole.Customer => RedirectToAction("CustomerViewProduct", "Customer"),
                     _ => RedirectToAction("Index", "Home")
                 };
             }
@@ -107,7 +107,7 @@ namespace SupertronicsRepairSystem.Controllers
                 return View();
             }
 
-            // New registrations default to CustomerModel role
+            // New registrations default to Customer role
             var result = await _authService.SignUpAsync(email, password, firstName, surname, phoneNumber, UserRole.Customer);
 
             if (result.Success)
