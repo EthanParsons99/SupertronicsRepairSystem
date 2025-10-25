@@ -1,6 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 
-namespace SupertronicsRepairSystem.Data.Models
+namespace SupertronicsRepairSystem.Models
 {
     [FirestoreData]
     public class Product
