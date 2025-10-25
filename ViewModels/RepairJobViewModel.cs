@@ -5,6 +5,5 @@ namespace SupertronicsRepairSystem.ViewModels.Technician {
         public string? Status { get; set; }
         public string? CustomerName { get; set; }
         public DateTime LastUpdated { get; set; }
-        public List<SupertronicsRepairSystem.ViewModels.Technician.QuoteViewModel>? Quotes { get; set; }
     }
 }
