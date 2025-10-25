@@ -168,6 +168,12 @@ namespace SupertronicsRepairSystem.Services
             var http = _httpContextAccessor.HttpContext;
             if (http == null) return;
 
+            var cookieOptions = new CookieOptions
+            {
+                Path = "/",
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+            };
             http.Response.Cookies.Delete(AuthCookieName);
             http.Response.Cookies.Delete(UserRoleCookieName);
             await Task.CompletedTask;

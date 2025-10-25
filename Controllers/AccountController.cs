@@ -122,10 +122,10 @@ namespace SupertronicsRepairSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout([FromServices] IAuthService authService)
         {
             await _authService.SignOutAsync();
-            return RedirectToAction("Login");
+            return RedirectToAction("CustomerViewProduct", "Customer");
         }
 
         [HttpGet]

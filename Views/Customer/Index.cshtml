@@ -1,55 +1,43 @@
 ﻿@model List<SupertronicsRepairSystem.Models.Product>
+
 @{
-    Layout = "_CustomerLayout";
-    ViewData["Title"] = "CustomerModel Dashboard";
+    ViewData["Title"] = "Customer Dashboard";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
- <link href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 
-    <meta charset="UTF-8">
-    <title>Supertronics Products</title>
-
-</head>
-<body>
-  
-    <div class="search-bar">
-        <input type="text" class="search-input" placeholder="Search " />
-    </div>
-
-    <div class="hero-section">
-        <h1>
-            <span class="highlight">Expert Tech</span>
-            <span class="repair">Repair's</span>
-            & Electronics
-        </h1>
-    </div>
-
-    <div class="sale-banner">
-        <h2>Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!</h2>
-    </div>
-
-    <div class="product-grid">
-        @foreach (var product in Model)
-        {
-            <div class="product-card">
-                <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
-                <div class="product-info">
-                    <h3>@product.Name</h3>
-                    <p>@product.Description</p>
-                    <div class="price-details">
-                        <span class="discount">-@product.DiscountPercentage%</span>
-                        <span class="current-price">R @product.Price.ToString("N0")</span>
-                        <span class="was-price">Was R @product.WasPrice.ToString("N0")</span>
-                    </div>
-                    <button class="add-to-cart-btn">Add to cart</button>
-                </div>
-            </div>
-        }
-    </div>
-</body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="~/css/CustomerDashboard.css">
-</html>
 
-                      
+<div class="search-bar">
+    <input type="text" class="search-input" placeholder="Search " />
+</div>
+
+<div class="hero-section">
+    <h1>
+        <span class="highlight">Expert Tech</span>
+        <span class="repair">Repair's</span>
+        & Electronics
+    </h1>
+</div>
+
+<div class="sale-banner">
+    <h2>Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!&nbsp;&nbsp;Sale !!</h2>
+</div>
+
+<div class="product-grid">
+    @foreach (var product in Model)
+    {
+        <div class="product-card">
+            <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+            <div class="product-info">
+                <h3>@product.Name</h3>
+                <p>@product.Description</p>
+                <div class="price-details">
+                    <span class="discount">-@product.DiscountPercentage%</span>
+                    <span class="current-price">R @product.Price.ToString("N0")</span>
+                    <span class="was-price">Was R @product.WasPrice.ToString("N0")</span>
+                </div>
+                <button class="add-to-cart-btn">Add to cart</button>
+            </div>
+        </div>
+    }
+</div>
