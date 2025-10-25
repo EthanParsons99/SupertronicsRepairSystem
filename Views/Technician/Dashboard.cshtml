@@ -3,6 +3,15 @@
     ViewData["Title"] = "Technician Dashboard";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="container-fluid">
     <!-- Welcome Header -->
     <div class="row mb-4 slide-in-left">
@@ -27,21 +36,21 @@
         <div class="col-lg-4 col-md-6 slide-in-left" style="animation-delay: 0.1s;">
             <div class="dashboard-card">
                 <i class="bi bi-clock-history"></i>
-                <h3>@(Model?.PendingJobs ?? 12)</h3>
+                <h3>@Model.PendingJobs</h3>
                 <p>Pending Jobs</p>
             </div>
         </div>
         <div class="col-lg-4 col-md-6 fade-in" style="animation-delay: 0.2s;">
             <div class="dashboard-card">
                 <i class="bi bi-check-circle"></i>
-                <h3>@(Model?.CompletedJobs ?? 8)</h3>
+                <h3>@Model.CompletedJobs</h3>
                 <p>Completed Jobs</p>
             </div>
         </div>
         <div class="col-lg-4 col-md-6 slide-in-right" style="animation-delay: 0.3s;">
             <div class="dashboard-card">
                 <i class="bi bi-file-text"></i>
-                <h3>@(Model?.QuotesCreated ?? 5)</h3>
+                <h3>@Model.QuotesCreated</h3>
                 <p>Quotes Created</p>
             </div>
         </div>
@@ -73,7 +82,7 @@
                             </a>
                         </div>
                         <div class="col-lg-3 col-md-6">
-                            <a class="btn btn-dashboard w-100 py-3 d-flex flex-column align-items-center" asp-action="GenerateRepairQuote">
+                            <a class="btn btn-dashboard w-100 py-3 d-flex flex-column align-items-center" asp-action="SelectJobForQuote">
                                 <i class="bi bi-calculator mb-2 fs-4"></i>
                                 <div class="fw-semibold">Create Quote</div>
                                 <small class="opacity-75 mt-1">Generate repair quote</small>
@@ -92,4 +101,3 @@
         </div>
     </div>
 </div>
-

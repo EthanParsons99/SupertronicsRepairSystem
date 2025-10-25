@@ -1,14 +1,23 @@
-﻿namespace SupertronicsRepairSystem.Models
+﻿using Google.Cloud.Firestore;
+
+namespace SupertronicsRepairSystem.Data.Models
 {
-    // this is ass, must do the fire base stuff
+    [FirestoreData]
     public class Product
     {
-        public int Id { get; set; }
+        [FirestoreDocumentId]
+        public string Id { get; set; }
+
+        [FirestoreProperty]
         public string Name { get; set; }
+
+        [FirestoreProperty]
         public string Description { get; set; }
-        public string ImageUrl { get; set; }
-        public decimal Price { get; set; } 
-        public decimal WasPrice { get; set; } 
-        public int DiscountPercentage { get; set; }
+
+        [FirestoreProperty]
+        public double Price { get; set; }
+
+        [FirestoreProperty]
+        public int StockLevel { get; set; }
     }
 }
