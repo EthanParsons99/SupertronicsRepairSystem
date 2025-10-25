@@ -4,7 +4,7 @@ using SupertronicsRepairSystem.Services;
 
 namespace SupertronicsRepairSystem.Controllers
 {
-    [AuthorizeCustomer] // Only customers can access this controller
+
     public class CustomerController : Controller
     {
         private readonly IAuthService _authService;
