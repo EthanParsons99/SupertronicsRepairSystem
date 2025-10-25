@@ -57,7 +57,26 @@
                                     <a class="nav-link" asp-controller="Technician" asp-action="Dashboard">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs">Jobs</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs">Repair Jobs</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Technician" asp-action="CreateRepairJob">New Jobs</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="quotesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Quotes
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="quotesDropdown">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Technician" asp-action="SelectJobForQuote">Select Quote</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Technician" asp-action="GenerateRepairQuote">Generate Quote</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Technician" asp-action="TrackSerialNumber">Serial Lookup</a>
                                 </li>
                             }
                             else if (role == UserRole.Owner)
