@@ -76,7 +76,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0 d-flex align-items-center">
-                        Active Repair Jobs 
+                        Active Repair Jobs
                         <span class="badge ms-2" style="background: var(--primary-blue-gradient); color: white;">
                             @(Model?.Count() ?? 0)
                         </span>
@@ -86,7 +86,7 @@
                     @if (Model?.Any() == true)
                     {
                         <div class="table-responsive">
-                            <table class="table mb-0">
+                            <table class="table table-hover mb-0">
                                 <thead class="bg-primary">
                                     <tr>
                                         <th class="ps-4">Job ID</th>
@@ -101,14 +101,13 @@
                                     @foreach (var job in Model)
                                     {
                                         <tr>
-                                            <td class="ps-4 fw-semibold">#@job.JobId</td>
+                                            <td class="ps-4 fw-semibold">#@job.Id.Substring(0, 6).ToUpper()</td>
                                             <td>
                                                 <div style="color: var(--body-text);">@job.ItemName</div>
-                                                <small style="color: var(--secondary-text);">Serial: SN-@(job.JobId)001</small>
+                                                <small style="color: var(--secondary-text);">Serial: SN-@(job.Id.Substring(0, 8))</small>
                                             </td>
                                             <td>
                                                 <div style="color: var(--body-text);">@job.CustomerName</div>
-                                                <small style="color: var(--secondary-text);">customer@email.com</small>
                                             </td>
                                             <td>@await Html.PartialAsync("_StatusBadge", job.Status)</td>
                                             <td>
@@ -117,13 +116,13 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
-                                                    <a class="btn btn-primary" asp-action="UpdateRepairStatus" asp-route-id="@job.JobId" title="Update Status">
+                                                    <a class="btn btn-primary" asp-action="UpdateRepairStatus" asp-route-id="@job.Id" title="Update Status">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
-                                                    <a class="btn btn-primary" asp-action="AddRepairNotes" asp-route-id="@job.JobId" title="Add Notes">
+                                                    <a class="btn btn-primary" asp-action="AddRepairNotes" asp-route-id="@job.Id" title="Add Notes">
                                                         <i class="bi bi-chat-text"></i>
                                                     </a>
-                                                    <a class="btn btn-primary" asp-action="GenerateRepairQuote" asp-route-id="@job.JobId" title="Generate Quote">
+                                                    <a class="btn btn-primary" asp-action="GenerateRepairQuote" asp-route-id="@job.Id" title="Generate Quote">
                                                         <i class="bi bi-file-text"></i>
                                                     </a>
                                                 </div>
@@ -149,8 +148,5 @@
             </div>
         </div>
     </div>
-</div>
-
-
-
+</div>```
 
