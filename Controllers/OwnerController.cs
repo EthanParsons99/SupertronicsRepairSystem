@@ -11,9 +11,11 @@ namespace SupertronicsRepairSystem.Controllers
     public class OwnerController : Controller
     {
         private readonly IAuthService _authService;
-        public OwnerController(IAuthService authService)
+        private readonly IProductService _productService;
+        public OwnerController(IAuthService authService, IProductService productService)
         {
             _authService = authService;
+            _productService = productService;
         }
         // GET: Owner/Dashboard
         public IActionResult Dashboard()
@@ -36,7 +38,29 @@ namespace SupertronicsRepairSystem.Controllers
         // GET: Owner/AddProduct
         public IActionResult AddProduct()
         {
-            return View();
+            return View(new AddProductViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddProduct(AddProductViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var success = await _productService.AddProductAsync(model);
+
+            if (success)
+            {
+                TempData["Success"] = "Product added successfully.";
+                return RedirectToAction("ProductManagement");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred while adding the product. Please try again.");
+                return View(model);
+            }
         }
 
         // GET: Owner/QuotesManagement

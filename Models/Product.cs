@@ -25,5 +25,8 @@ namespace SupertronicsRepairSystem.Models
 
         [FirestoreProperty]
         public int DiscountPercentage { get; set; }
+
+        [FirestoreProperty]
+        public int StockQuantity { get; set; }
     }
 }

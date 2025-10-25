@@ -38,7 +38,6 @@ namespace SupertronicsRepairSystem
             }.Build();
             builder.Services.AddSingleton(firestoreDb);
 
-            // Register Auth Service - THIS WAS MISSING!
             builder.Services.AddScoped<IAuthService>(provider =>
                 new FirebaseAuthService(
                     provider.GetRequiredService<IHttpContextAccessor>(),
@@ -47,6 +46,8 @@ namespace SupertronicsRepairSystem
                     provider.GetRequiredService<IHttpClientFactory>()
                 )
             );
+
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             var app = builder.Build();
 
