@@ -1,4 +1,5 @@
-using Google.Cloud.Firestore; 
+using Google.Cloud.Firestore;
+using SupertronicsRepairSystem.Services;
 
 namespace SupertronicsRepairSystem
 {
@@ -8,11 +9,12 @@ namespace SupertronicsRepairSystem
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add MVC services
             builder.Services.AddControllersWithViews();
-
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
 
+            // Firebase Configuration
             string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "google-credentials.json");
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialsPath);
 
@@ -21,10 +23,30 @@ namespace SupertronicsRepairSystem
             {
                 throw new ArgumentNullException(nameof(projectId), "Firebase ProjectId is not set in appsettings.json");
             }
-            builder.Services.AddSingleton(new FirestoreDbBuilder
+
+            // Get Firebase API Key
+            string firebaseApiKey = builder.Configuration["Firebase:ApiKey"];
+            if (string.IsNullOrEmpty(firebaseApiKey))
+            {
+                throw new ArgumentNullException(nameof(firebaseApiKey), "Firebase ApiKey is not set in appsettings.json");
+            }
+
+            // Register Firestore
+            var firestoreDb = new FirestoreDbBuilder
             {
                 ProjectId = projectId
-            }.Build());
+            }.Build();
+            builder.Services.AddSingleton(firestoreDb);
+
+            // Register Auth Service - THIS WAS MISSING!
+            builder.Services.AddScoped<IAuthService>(provider =>
+                new FirebaseAuthService(
+                    provider.GetRequiredService<IHttpContextAccessor>(),
+                    provider.GetRequiredService<FirestoreDb>(),
+                    firebaseApiKey,
+                    provider.GetRequiredService<IHttpClientFactory>()
+                )
+            );
 
             var app = builder.Build();
 
@@ -37,9 +59,7 @@ namespace SupertronicsRepairSystem
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.MapControllerRoute(
