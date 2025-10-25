@@ -1,7 +1,7 @@
 using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using SupertronicsRepairSystem.Models;
+using SupertronicsRepairSystem.Data.Models;
 using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.ViewModels.Technician;
@@ -14,12 +14,14 @@ namespace SupertronicsRepairSystem.Controllers
         private readonly FirestoreDb _firestoreDb;
         private readonly CollectionReference _repairJobsCollection;
         private readonly CollectionReference _customersCollection;
+        private readonly CollectionReference _productQuotesCollection;
 
         public TechnicianController(FirestoreDb firestoreDb)
         {
             _firestoreDb = firestoreDb;
             _repairJobsCollection = _firestoreDb.Collection("repairJobs");
             _customersCollection = _firestoreDb.Collection("customers");
+            _productQuotesCollection = _firestoreDb.Collection("productQuotes");
         }
 
         // Dashboard with real-time data
@@ -49,14 +51,11 @@ namespace SupertronicsRepairSystem.Controllers
 
             if (!string.IsNullOrEmpty(customer))
             {
-                // Note: Firestore's 'WhereEqualTo' requires an exact match for full-text search.
-                // This simulates a 'starts with' search, which is the best we can do without a third-party service.
                 query = query.OrderBy(nameof(RepairJob.CustomerName))
                              .WhereGreaterThanOrEqualTo(nameof(RepairJob.CustomerName), customer)
                              .WhereLessThanOrEqualTo(nameof(RepairJob.CustomerName), customer + '\uf8ff');
             }
 
-            // Order by date regardless of other filters
             query = query.OrderByDescending(nameof(RepairJob.DateReceived));
 
             var snapshot = await query.GetSnapshotAsync();
@@ -271,8 +270,10 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Track Serial Number page (GET)
         public IActionResult TrackSerialNumber() => View(new TrackSerialNumberViewModel());
 
+        // Track Serial Number logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TrackSerialNumber(TrackSerialNumberViewModel model)
@@ -284,6 +285,43 @@ namespace SupertronicsRepairSystem.Controllers
                 model.FoundJobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
             }
             model.SearchPerformed = true;
+            return View(model);
+        }
+
+        // Generate Product Quote page (GET)
+        public IActionResult GenerateProductQuote()
+        {
+            return View(new GenerateProductQuoteViewModel());
+        }
+
+        // Generate Product Quote logic (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateProductQuote(GenerateProductQuoteViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var simulatedProductName = $"Product ({model.ProductId})";
+                var simulatedUnitPrice = 150.00;
+
+                var totalPrice = simulatedUnitPrice * model.Quantity;
+
+                var productQuote = new ProductQuote
+                {
+                    ProductId = model.ProductId,
+                    ProductName = simulatedProductName,
+                    Quantity = model.Quantity,
+                    UnitPrice = simulatedUnitPrice,
+                    TotalPrice = totalPrice,
+                    DateCreated = Timestamp.FromDateTime(DateTime.UtcNow)
+                };
+
+                await _productQuotesCollection.AddAsync(productQuote);
+
+                TempData["SuccessMessage"] = $"Product quote for '{productQuote.ProductName}' created successfully!";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
             return View(model);
         }
     }

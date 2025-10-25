@@ -28,11 +28,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Index">
-                                <i class="bi bi-search me-1"></i>Customer
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs">
                                 <i class="bi bi-wrench me-1"></i>Repair Jobs
                             </a>
@@ -68,21 +63,25 @@
                                 <li><a class="dropdown-item" asp-controller="Account" asp-action="Login">Switch User</a></li>
                             </ul>
                         </li>
-
-                        
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
 
-    <main class="min-h-screen">
-        @RenderBody()
-    </main>
-
-    <footer class="bg-gray-900 text-center text-white py-6 mt-12">
-        &copy; @DateTime.Now.Year. All rights reserved.
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - SupertronicsRepairSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
     </footer>
-
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
