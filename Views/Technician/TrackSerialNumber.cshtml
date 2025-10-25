@@ -3,4 +3,75 @@
     ViewData["Title"] = "Track Serial Number";
 }
 
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="mb-4 fade-in">
+                <h1 class="display-6 fw-bold mb-2">@ViewData["Title"]</h1>
+                <p class="text-muted">Enter a serial number to check repair history.</p>
+            </div>
 
+            <div class="card slide-in-left">
+                <div class="card-header"><h5 class="mb-0">Serial Number Lookup</h5></div>
+                <div class="card-body">
+                    <form asp-action="TrackSerialNumber" method="post">
+                        <div class="mb-3">
+                            <label asp-for="SerialNumberToSearch" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="SerialNumberToSearch" class="form-control form-control-lg" placeholder="Enter serial number..." />
+                                <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-search me-2"></i>Search Device</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model.SearchPerformed)
+            {
+                <div class="mt-4 slide-in-right">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Search Results for "@Model.SerialNumberToSearch"</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (Model.FoundJobs.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Job ID</th>
+                                                <th>Device</th>
+                                                <th>Customer</th>
+                                                <th>Date Received</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var job in Model.FoundJobs)
+                                            {
+                                                <tr>
+                                                    <td>#@job.Id.Substring(0, 6).ToUpper()</td>
+                                                    <td>@job.ItemModel</td>
+                                                    <td>@job.CustomerName</td>
+                                                    <td>@job.DateReceived.ToDateTime().ToString("yyyy-MM-dd")</td>
+                                                    <td>@await Html.PartialAsync("_StatusBadge", job.Status)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <p class="text-muted mb-0">No repair history found for this serial number.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
