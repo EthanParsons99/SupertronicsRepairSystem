@@ -21,5 +21,11 @@ namespace SupertronicsRepairSystem.ViewModels
         public double WasPrice { get; set; }
         [Range(0, 100, ErrorMessage = "Discount Percentage must be between 0 and 100.")]
         public int DiscountPercentage { get; set; }
+
+        [Required]
+        [Range(0, int.MaxValue, ErrorMessage = "Stock Quantity cannot be negative.")]
+        public int StockQuantity { get; set; }
+
+
     }
 }

@@ -23,7 +23,8 @@ namespace SupertronicsRepairSystem.Services
                     ImageUrl = model.ImageUrl,
                     Price = model.Price,
                     WasPrice = model.WasPrice,
-                    DiscountPercentage = model.DiscountPercentage
+                    DiscountPercentage = model.DiscountPercentage,
+                    StockQuantity = model.StockQuantity
                 };
                 
                 await _firestoreDb.Collection("products").AddAsync(product);
