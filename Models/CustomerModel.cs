@@ -3,7 +3,7 @@
 namespace SupertronicsRepairSystem.Models
 {
     [FirestoreData]
-    public class Customer
+    public class CustomerModel
     {
         [FirestoreDocumentId]
         public string Id { get; set; }

@@ -83,7 +83,7 @@ namespace SupertronicsRepairSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                var customer = new Customer { Name = model.CustomerName };
+                var customer = new CustomerModel { Name = model.CustomerName };
                 var customerDocRef = await _customersCollection.AddAsync(customer);
 
                 var repairJob = new RepairJob
