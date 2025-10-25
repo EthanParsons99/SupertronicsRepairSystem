@@ -1,9 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SupertronicsRepairSystem.Attributes;
+using SupertronicsRepairSystem.Services;
+using SupertronicsRepairSystem.ViewModels;
+using System.Threading.Tasks;
 
 namespace SupertronicsRepairSystem.Controllers
 {
+    [AuthorizeRole(UserRole.Owner)]
     public class OwnerController : Controller
     {
+        private readonly IAuthService _authService;
+        public OwnerController(IAuthService authService)
+        {
+            _authService = authService;
+        }
         // GET: Owner/Dashboard
         public IActionResult Dashboard()
         {
@@ -49,7 +60,38 @@ namespace SupertronicsRepairSystem.Controllers
         // GET: Owner/AddTechnician
         public IActionResult AddTechnician()
         {
-            return View();
+            return View(new AddTechnicianViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTechnician(AddTechnicianViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var result = await _authService.SignUpAsync(
+                model.Email,
+                model.Password,
+                model.FirstName,
+                model.Surname,
+                model.PhoneNumber,
+                UserRole.Technician
+            );
+
+            if (result.Success)
+            {
+                TempData["Success"] = "Technician added successfully.";
+                return RedirectToAction("Dashboard");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(model);
+
+            }
         }
     }
 }

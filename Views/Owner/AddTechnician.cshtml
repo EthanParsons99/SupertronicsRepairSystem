@@ -1,4 +1,5 @@
-﻿@{
+﻿@model SupertronicsRepairSystem.ViewModels.AddTechnicianViewModel
+@{
     ViewData["Title"] = "Add New Technician";
 }
 
@@ -16,27 +17,39 @@
                     <h5 class="mb-0">Technician Information</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form id="addTechnicianForm">
+                    <form asp-action="AddTechnician" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="techName" class="form-label">Name</label>
-                                <input type="text" class="form-control" id="techName" placeholder="Enter technician name" required>
+                                <label asp-for="FirstName" class="form-label">Name</label>
+                                <input asp-for="FirstName" type="text" class="form-control" id="techName" placeholder="Enter technician name" required>
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <label for="techSurname" class="form-label">Surname</label>
-                                <input type="text" class="form-control" id="techSurname" placeholder="Enter technician surname" required>
+                                <label asp-for="Surname" class="form-label">Surname</label>
+                                <input asp-for="Surname" type="text" class="form-control" id="techSurname" placeholder="Enter technician surname" required>
+                                <span asp-validation-for="Surname" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="techEmail" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="techEmail" placeholder="Enter technician email" required>
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <input asp-for="Email" type="email" class="form-control" id="techEmail" placeholder="Enter technician email" required>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label for="techPhone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="techPhone" placeholder="Enter phone number" required>
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="PhoneNumber" type="tel" class="form-control" id="techPhone" placeholder="Enter phone number" required>
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                         </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label fw-semibold"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
 
                         <div class="d-flex justify-content-end gap-2">
                             <a href="@Url.Action("TechnicianManagement", "Owner")" class="btn btn-outline-secondary">Cancel</a>
