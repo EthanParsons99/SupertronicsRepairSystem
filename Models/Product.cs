@@ -28,5 +28,8 @@ namespace SupertronicsRepairSystem.Models
 
         [FirestoreProperty]
         public int StockQuantity { get; set; }
+
+        [FirestoreProperty]
+        public string SerialNumber { get; set; }
     }
 }

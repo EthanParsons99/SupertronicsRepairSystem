@@ -32,6 +32,12 @@
                         </div>
 
                         <div class="mb-3">
+                            <label asp-for="SerialNumber" class="form-label"></label>
+                            <input asp-for="SerialNumber" type="text" class="form-control" placeholder="Enter the product serial number">
+                            <span asp-validation-for="SerialNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
                             <label asp-for="ImageUrl" class="form-label"></label>
                             <input asp-for="ImageUrl" type="url" class="form-control" placeholder="Enter a URL for the product image">
                             <span asp-validation-for="ImageUrl" class="text-danger small"></span>
