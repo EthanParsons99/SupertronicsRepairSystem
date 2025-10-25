@@ -107,7 +107,7 @@ namespace SupertronicsRepairSystem.Controllers
                 return View();
             }
 
-            // New registrations default to Customer role
+            // New registrations default to CustomerModel role
             var result = await _authService.SignUpAsync(email, password, firstName, surname, phoneNumber, UserRole.Customer);
 
             if (result.Success)
