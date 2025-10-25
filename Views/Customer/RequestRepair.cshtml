@@ -1,0 +1,142 @@
+﻿@model SupertronicsRepairSystem.ViewModels.Technician.CreateRepairJobViewModel
+@{
+    ViewData["Title"] = "Request Repair";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-tools me-2"></i>Request Repair Service
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="RequestRepair" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="ItemModel" class="form-label fw-bold">
+                                Item Model <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ItemModel"
+                                   class="form-control form-control-lg"
+                                   placeholder="e.g., Samsung Galaxy S21, iPhone 13, Dell Laptop, etc." />
+                            <span asp-validation-for="ItemModel" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SerialNumber" class="form-label fw-bold">
+                                Serial Number <small class="text-muted">(Optional)</small>
+                            </label>
+                            <input asp-for="SerialNumber"
+                                   class="form-control form-control-lg"
+                                   placeholder="Enter serial number if available" />
+                            <span asp-validation-for="SerialNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ProblemDescription" class="form-label fw-bold">
+                                Problem Description <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="ProblemDescription"
+                                      class="form-control"
+                                      rows="6"
+                                      placeholder="Please describe the issue in detail (minimum 10 characters)"></textarea>
+                            <span asp-validation-for="ProblemDescription" class="text-danger small"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Provide as much detail as possible to help our technicians diagnose the issue quickly.
+                            </div>
+                            <small class="text-muted">
+                                Examples:<br />
+                                - Screen is cracked and not responding to touch<br />
+                                - Battery drains quickly and device overheats<br />
+                                - Water damage, device won't turn on<br />
+                                - Laptop won't boot, shows error message
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            <strong>What happens next?</strong>
+                            <ol class="mb-0 mt-2">
+                                <li>Our technicians will review your request</li>
+                                <li>You'll receive a quote for the repair</li>
+                                <li>Once approved, we'll begin the repair process</li>
+                                <li>Track your repair status anytime from your dashboard</li>
+                            </ol>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                            <a asp-action="Dashboard" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-send me-2"></i>Submit Repair Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
+    }
+
+    .form-control:focus, .form-control-lg:focus {
+        border-color: #5865F2;
+        box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+    }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+
+    .bg-primary {
+        background-color: #5865F2 !important;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 150px;
+    }
+</style>
