@@ -13,6 +13,9 @@ namespace SupertronicsRepairSystem
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IQuoteService, QuoteService>();
+            builder.Services.AddScoped<IRepairJobService, RepairJobService>();
 
             // Firebase Configuration
             string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "google-credentials.json");
@@ -38,6 +41,7 @@ namespace SupertronicsRepairSystem
             }.Build();
             builder.Services.AddSingleton(firestoreDb);
 
+            // Register Services
             builder.Services.AddScoped<IAuthService>(provider =>
                 new FirebaseAuthService(
                     provider.GetRequiredService<IHttpContextAccessor>(),
@@ -48,6 +52,9 @@ namespace SupertronicsRepairSystem
             );
 
             builder.Services.AddScoped<IProductService, ProductService>();
+
+            // ADD THIS LINE - Register Quote Service
+            builder.Services.AddScoped<IQuoteService, QuoteService>();
 
             var app = builder.Build();
 

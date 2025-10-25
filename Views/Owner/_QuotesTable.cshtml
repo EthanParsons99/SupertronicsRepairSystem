@@ -1,0 +1,97 @@
+﻿@model List<SupertronicsRepairSystem.Models.RepairJob>
+
+<div class="table-responsive">
+    <table class="table table-hover mb-0">
+        <thead class="table-primary">
+            <tr>
+                <th>Repair Job ID</th>
+                <th>Customer</th>
+                <th>Item Model</th>
+                <th>Quote Details</th>
+                <th>Status</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var job in Model)
+                {
+                    foreach (var quote in job.Quotes)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@job.Id.Substring(0, Math.Min(8, job.Id.Length))</strong>
+                            </td>
+                            <td>
+                                <div>@job.CustomerName</div>
+                                <small class="text-muted">ID: @job.CustomerId.Substring(0, Math.Min(8, job.CustomerId.Length))</small>
+                            </td>
+                            <td>
+                                <div>@job.ItemModel</div>
+                                @if (!string.IsNullOrEmpty(job.SerialNumber))
+                                {
+                                    <small class="text-muted">SN: @job.SerialNumber</small>
+                                }
+                            </td>
+                            <td>
+                                <div><strong>Quote #@quote.Id</strong></div>
+                                <small class="text-muted">
+                                    Parts: R@quote.PartsTotal.ToString("N2") |
+                                    Labor: R@quote.LaborTotal.ToString("N2")
+                                </small>
+                                <div class="mt-1">
+                                    <strong class="text-primary">Total: R@quote.TotalAmount.ToString("N2")</strong>
+                                </div>
+                                @if (quote.QuoteParts != null && quote.QuoteParts.Any())
+                                {
+                                    <small class="text-muted">(@quote.QuoteParts.Count parts)</small>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var badgeClass = job.Status.ToLower() switch
+                                    {
+                                        "pending" => "bg-warning",
+                                        "in progress" => "bg-info",
+                                        "completed" => "bg-success",
+                                        "cancelled" => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@job.Status</span>
+                            </td>
+                            <td>
+                                <div>@job.LastUpdated.ToDateTime().ToLocalTime().ToString("MMM dd, yyyy")</div>
+                                <small class="text-muted">@job.LastUpdated.ToDateTime().ToLocalTime().ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="viewQuoteDetails('@job.Id', '@quote.Id')">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                        <p class="mt-2">No quotes found</p>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function viewQuoteDetails(repairJobId, quoteId) {
+        // Navigate to quote details page or open modal
+        window.location.href = '@Url.Action("RepairJobs", "Owner")' + '?jobId=' + repairJobId;
+    }
+</script>

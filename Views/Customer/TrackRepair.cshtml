@@ -1,0 +1,225 @@
+﻿@model List<SupertronicsRepairSystem.Models.RepairJob>
+@{
+    ViewData["Title"] = "Track My Repairs";
+}
+
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="bi bi-search me-2"></i>Track My Repairs
+                </h2>
+                <a asp-action="RequestRepair" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>New Repair Request
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var job in Model)
+            {
+                var jobIdShort = job.Id.Length > 10 ? job.Id.Substring(0, 10) + "..." : job.Id;
+                var statusBadge = job.Status.ToLower() switch
+                {
+                    "pending" => "bg-warning text-dark",
+                    "in progress" => "bg-info",
+                    "awaiting approval" => "bg-primary",
+                    "completed" => "bg-success",
+                    "cancelled" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+
+                <div class="col-lg-6">
+                    <div class="card repair-card shadow-sm h-100">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">@job.ItemModel</h5>
+                                    <small class="text-muted">Job ID: @jobIdShort</small>
+                                </div>
+                                <span class="badge @statusBadge">@job.Status</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if (!string.IsNullOrEmpty(job.SerialNumber))
+                            {
+                                <p class="mb-2">
+                                    <strong>Serial Number:</strong> @job.SerialNumber
+                                </p>
+                            }
+
+                            <p class="mb-3">
+                                <strong>Problem:</strong><br />
+                                <span class="text-muted">@job.ProblemDescription</span>
+                            </p>
+
+                            <div class="row text-center border-top pt-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Received</small>
+                                    <strong>@job.DateReceived.ToDateTime().ToLocalTime().ToString("MMM dd, yyyy")</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Last Updated</small>
+                                    <strong>@job.LastUpdated.ToDateTime().ToLocalTime().ToString("MMM dd, yyyy")</strong>
+                                </div>
+                            </div>
+
+                            @if (job.Quotes != null && job.Quotes.Any())
+                            {
+                                <div class="mt-3 p-3 bg-light rounded">
+                                    <h6 class="mb-2">
+                                        <i class="bi bi-receipt me-2"></i>Quotes (@job.Quotes.Count)
+                                    </h6>
+                                    @foreach (var quote in job.Quotes)
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Quote #@quote.Id</span>
+                                            <strong class="text-primary">R@quote.TotalAmount.ToString("N2")</strong>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            @if (job.TechnicianNotes != null && job.TechnicianNotes.Any())
+                            {
+                                <div class="mt-3">
+                                    <h6 class="mb-2">
+                                        <i class="bi bi-chat-left-text me-2"></i>Technician Notes
+                                    </h6>
+                                    <div class="notes-container">
+                                        @foreach (var note in job.TechnicianNotes.OrderByDescending(n => n.Timestamp).Take(2))
+                                        {
+                                            <div class="note-item">
+                                                <small class="text-muted">@note.Timestamp.ToDateTime().ToLocalTime().ToString("MMM dd, HH:mm")</small>
+                                                <p class="mb-0">@note.Content</p>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a asp-action="RepairDetails" asp-route-id="@job.Id" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-eye me-2"></i>View Full Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                <h4 class="mt-3 text-muted">No Repair Jobs Yet</h4>
+                <p class="text-muted">You haven't requested any repairs. Start by submitting a repair request.</p>
+                <a asp-action="RequestRepair" class="btn btn-primary btn-lg mt-3">
+                    <i class="bi bi-plus-circle me-2"></i>Request Your First Repair
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .repair-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .repair-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+        }
+
+        .repair-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.25rem;
+        }
+
+        .repair-card .card-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 1.25rem;
+        }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+
+    .btn-outline-primary {
+        color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #5865F2;
+            border-color: #5865F2;
+            color: white;
+        }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .notes-container {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .note-item {
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        border-left: 3px solid #5865F2;
+    }
+
+    .text-primary {
+        color: #5865F2 !important;
+    }
+
+    .bg-primary {
+        background-color: #5865F2 !important;
+    }
+
+    .bg-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+</style>

@@ -12,11 +12,21 @@ namespace SupertronicsRepairSystem.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IProductService _productService;
-        public OwnerController(IAuthService authService, IProductService productService)
+        private readonly IQuoteService _quoteService;
+        private readonly IRepairJobService _repairJobService;
+
+        public OwnerController(
+            IAuthService authService,
+            IProductService productService,
+            IQuoteService quoteService,
+            IRepairJobService repairJobService)
         {
             _authService = authService;
             _productService = productService;
+            _quoteService = quoteService;
+            _repairJobService = repairJobService;
         }
+
         // GET: Owner/Dashboard
         public IActionResult Dashboard()
         {
@@ -64,15 +74,25 @@ namespace SupertronicsRepairSystem.Controllers
         }
 
         // GET: Owner/QuotesManagement
-        public IActionResult QuotesManagement()
+        public async Task<IActionResult> QuotesManagement()
         {
-            return View();
+            var repairJobsWithQuotes = await _quoteService.GetAllRepairJobsWithQuotesAsync();
+            return View(repairJobsWithQuotes);
+        }
+
+        // POST: Owner/FilterQuotes
+        [HttpPost]
+        public async Task<IActionResult> FilterQuotes(string status, string customerId, DateTime? startDate, DateTime? endDate)
+        {
+            var filteredJobs = await _quoteService.GetFilteredRepairJobsAsync(status, customerId, startDate, endDate);
+            return PartialView("_QuotesTable", filteredJobs);
         }
 
         // GET: Owner/RepairJobs
-        public IActionResult RepairJobs()
+        public async Task<IActionResult> RepairJobs()
         {
-            return View();
+            var repairJobs = await _repairJobService.GetAllRepairJobsAsync();
+            return View(repairJobs);
         }
 
         // GET: Owner/TechnicianManagement
@@ -114,7 +134,6 @@ namespace SupertronicsRepairSystem.Controllers
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);
-
             }
         }
     }
