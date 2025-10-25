@@ -24,7 +24,8 @@ namespace SupertronicsRepairSystem.Services
                     Price = model.Price,
                     WasPrice = model.WasPrice,
                     DiscountPercentage = model.DiscountPercentage,
-                    StockQuantity = model.StockQuantity
+                    StockQuantity = model.StockQuantity,
+                    SerialNumber = model.SerialNumber
                 };
                 
                 await _firestoreDb.Collection("products").AddAsync(product);
