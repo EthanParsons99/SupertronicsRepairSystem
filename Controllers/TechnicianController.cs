@@ -1,7 +1,8 @@
 using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SupertronicsRepairSystem.Models;
-using SupertronicsRepairSystem.Models;
+using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.ViewModels.Technician;
 using System.Diagnostics;
 
@@ -34,14 +35,27 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> RepairJobs()
+        public async Task<IActionResult> RepairJobs(string status, string customer)
         {
-            var snapshot = await _repairJobsCollection.OrderByDescending("DateReceived").GetSnapshotAsync();
+            Query query = _repairJobsCollection;
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.WhereEqualTo(nameof(RepairJob.Status), status);
+            }
+
+            if (!string.IsNullOrEmpty(customer))
+            {
+                query = query.WhereGreaterThanOrEqualTo(nameof(RepairJob.CustomerName), customer)
+                             .WhereLessThanOrEqualTo(nameof(RepairJob.CustomerName), customer + '\uf8ff');
+            }
+
+            var snapshot = await query.OrderByDescending(nameof(RepairJob.DateReceived)).GetSnapshotAsync();
             var repairJobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
 
             var viewModels = repairJobs.Select(job => new RepairJobViewModel
             {
-                Id = job.Id, // CHANGED: Was JobId (int), now Id (string)
+                Id = job.Id,
                 ItemName = job.ItemModel,
                 Status = job.Status,
                 CustomerName = job.CustomerName,
@@ -51,10 +65,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(viewModels);
         }
 
-        public IActionResult CreateRepairJob()
-        {
-            return View();
-        }
+        public IActionResult CreateRepairJob() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -83,24 +94,19 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        // CHANGED: Parameter 'id' is now a string
         public async Task<IActionResult> GenerateRepairQuote(string id)
         {
-            if (string.IsNullOrEmpty(id)) return BadRequest();
-
             var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
             if (!docSnapshot.Exists) return NotFound();
-
             var repairJob = docSnapshot.ConvertTo<RepairJob>();
             var model = new GenerateRepairQuoteViewModel
             {
-                JobId = repairJob.Id, // CHANGED: Assign string ID
+                JobId = repairJob.Id,
                 CustomerName = repairJob.CustomerName,
                 DeviceName = repairJob.ItemModel,
                 SerialNumber = repairJob.SerialNumber,
                 ProblemDescription = repairJob.ProblemDescription,
             };
-
             return View(model);
         }
 
@@ -108,57 +114,111 @@ namespace SupertronicsRepairSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRepairQuote(GenerateRepairQuoteViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return View(model);
+                var repairJobRef = _repairJobsCollection.Document(model.JobId);
+                var quote = new Quote {  };
+                await repairJobRef.UpdateAsync("Quotes", FieldValue.ArrayUnion(quote));
+                return RedirectToAction(nameof(RepairJobs));
             }
-
-            var repairJobRef = _repairJobsCollection.Document(model.JobId);
-            var snapshot = await repairJobRef.GetSnapshotAsync();
-            if (!snapshot.Exists) return NotFound();
-
-            var quote = new Quote
-            {
-                Id = Guid.NewGuid().ToString(),
-                LaborHours = (double)model.LaborHours,
-                LaborRate = (double)model.LaborRate,
-                PartsTotal = (double)model.PartsTotal,
-                LaborTotal = (double)model.LaborTotal,
-                SubTotal = (double)model.SubTotal,
-                TaxAmount = (double)model.TaxAmount,
-                TotalAmount = (double)model.Total,
-                ValidUntil = Timestamp.FromDateTime(model.ValidUntil.ToUniversalTime()),
-                DateCreated = Timestamp.FromDateTime(DateTime.UtcNow),
-                QuoteParts = model.Parts.Select(p => new QuotePart
-                {
-                    PartName = p.PartName,
-                    PartNumber = p.PartNumber,
-                    Description = p.Description,
-                    Quantity = p.Quantity,
-                    UnitPrice = (double)p.UnitPrice
-                }).ToList()
-            };
-
-            await repairJobRef.UpdateAsync("Quotes", FieldValue.ArrayUnion(quote));
-            await repairJobRef.UpdateAsync("LastUpdated", Timestamp.FromDateTime(DateTime.UtcNow));
-
-            return RedirectToAction(nameof(RepairJobs));
+            return View(model);
         }
 
-        public IActionResult GenerateProductQuote() => View();
+        public async Task<IActionResult> UpdateRepairStatus(string id)
+        {
+            var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
+            if (!docSnapshot.Exists) return NotFound();
+            var job = docSnapshot.ConvertTo<RepairJob>();
+
+            var model = new UpdateRepairStatusViewModel
+            {
+                JobId = job.Id,
+                ItemModel = job.ItemModel,
+                CustomerName = job.CustomerName,
+                CurrentStatus = job.Status
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateRepairStatus(UpdateRepairStatusViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var jobRef = _repairJobsCollection.Document(model.JobId);
+                var updates = new Dictionary<string, object>
+                {
+                    { nameof(RepairJob.Status), model.NewStatus },
+                    { nameof(RepairJob.LastUpdated), Timestamp.FromDateTime(DateTime.UtcNow) }
+                };
+                await jobRef.UpdateAsync(updates);
+                return RedirectToAction(nameof(RepairJobs));
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> AddRepairNotes(string id)
+        {
+            var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
+            if (!docSnapshot.Exists) return NotFound();
+            var job = docSnapshot.ConvertTo<RepairJob>();
+
+            var model = new AddRepairNotesViewModel
+            {
+                JobId = job.Id,
+                ItemModel = job.ItemModel,
+                CustomerName = job.CustomerName,
+                ExistingNotes = job.TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddRepairNotes(AddRepairNotesViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var jobRef = _repairJobsCollection.Document(model.JobId);
+                var newNote = new Note
+                {
+                    Content = model.NewNote,
+                    Timestamp = Timestamp.FromDateTime(DateTime.UtcNow)
+                };
+
+                await jobRef.UpdateAsync(nameof(RepairJob.TechnicianNotes), FieldValue.ArrayUnion(newNote));
+                await jobRef.UpdateAsync(nameof(RepairJob.LastUpdated), Timestamp.FromDateTime(DateTime.UtcNow));
+
+                return RedirectToAction(nameof(RepairJobs));
+            }
+
+            // If validation fails, reload existing notes before returning the view
+            var docSnapshot = await _repairJobsCollection.Document(model.JobId).GetSnapshotAsync();
+            if (docSnapshot.Exists)
+            {
+                model.ExistingNotes = docSnapshot.ConvertTo<RepairJob>().TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList();
+            }
+            return View(model);
+        }
+
+        public IActionResult GenerateProductQuote() => View(); // Placeholder
 
         public IActionResult TrackSerialNumber() => View(new TrackSerialNumberViewModel());
 
-        public IActionResult UpdateRepairStatus(string id)
+        [HttpPost]
+        public async Task<IActionResult> TrackSerialNumber(TrackSerialNumberViewModel model)
         {
-            ViewData["JobId"] = id; 
-            return View();
-        }
-
-        public IActionResult AddRepairNotes(string id)
-        {
-            ViewData["JobId"] = id; 
-            return View();
+            if (!string.IsNullOrEmpty(model.SerialNumberToSearch))
+            {
+                var query = _repairJobsCollection.WhereEqualTo(nameof(RepairJob.SerialNumber), model.SerialNumberToSearch);
+                var snapshot = await query.GetSnapshotAsync();
+                model.FoundJobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
+            }
+            model.SearchPerformed = true;
+            return View(model);
         }
     }
 }
