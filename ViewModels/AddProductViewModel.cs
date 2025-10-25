@@ -26,6 +26,10 @@ namespace SupertronicsRepairSystem.ViewModels
         [Range(0, int.MaxValue, ErrorMessage = "Stock Quantity cannot be negative.")]
         public int StockQuantity { get; set; }
 
+        [Required]
+        [StringLength(50, ErrorMessage = "The Serial Number field cannot exceed 50 characters.")]
+        public string SerialNumber { get; set; }
+
 
     }
 }
