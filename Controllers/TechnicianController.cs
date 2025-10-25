@@ -2,6 +2,7 @@ using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SupertronicsRepairSystem.Models;
+using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.ViewModels.Technician;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ namespace SupertronicsRepairSystem.Controllers
             _customersCollection = _firestoreDb.Collection("customers");
         }
 
+        // Dashboard with real-time data
         public async Task<IActionResult> Dashboard()
         {
             var snapshot = await _repairJobsCollection.GetSnapshotAsync();
@@ -28,13 +30,14 @@ namespace SupertronicsRepairSystem.Controllers
 
             var model = new TechnicianDashboardViewModel
             {
-                PendingJobs = jobs.Count(j => j.Status == "Pending" || j.Status == "In Progress"),
+                PendingJobs = jobs.Count(j => j.Status == "Pending" || j.Status == "In Progress" || j.Status == "Diagnosis"),
                 CompletedJobs = jobs.Count(j => j.Status == "Completed"),
                 QuotesCreated = jobs.Sum(j => j.Quotes?.Count ?? 0)
             };
             return View(model);
         }
 
+        // Repair Jobs page with full filtering logic
         public async Task<IActionResult> RepairJobs(string status, string customer)
         {
             Query query = _repairJobsCollection;
@@ -46,11 +49,17 @@ namespace SupertronicsRepairSystem.Controllers
 
             if (!string.IsNullOrEmpty(customer))
             {
-                query = query.WhereGreaterThanOrEqualTo(nameof(RepairJob.CustomerName), customer)
+                // Note: Firestore's 'WhereEqualTo' requires an exact match for full-text search.
+                // This simulates a 'starts with' search, which is the best we can do without a third-party service.
+                query = query.OrderBy(nameof(RepairJob.CustomerName))
+                             .WhereGreaterThanOrEqualTo(nameof(RepairJob.CustomerName), customer)
                              .WhereLessThanOrEqualTo(nameof(RepairJob.CustomerName), customer + '\uf8ff');
             }
 
-            var snapshot = await query.OrderByDescending(nameof(RepairJob.DateReceived)).GetSnapshotAsync();
+            // Order by date regardless of other filters
+            query = query.OrderByDescending(nameof(RepairJob.DateReceived));
+
+            var snapshot = await query.GetSnapshotAsync();
             var repairJobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
 
             var viewModels = repairJobs.Select(job => new RepairJobViewModel
@@ -65,8 +74,10 @@ namespace SupertronicsRepairSystem.Controllers
             return View(viewModels);
         }
 
+        // Create Repair Job page (GET)
         public IActionResult CreateRepairJob() => View();
 
+        // Create Repair Job logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRepairJob(CreateRepairJobViewModel model)
@@ -94,10 +105,38 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Step 1 for Quote Generation: Select a Job (GET)
+        public async Task<IActionResult> SelectJobForQuote()
+        {
+            var query = _repairJobsCollection
+                .WhereIn(nameof(RepairJob.Status), new List<string> { "Pending", "Diagnosis", "In Progress" });
+
+            var snapshot = await query.GetSnapshotAsync();
+            var jobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
+
+            var model = new SelectJobForQuoteViewModel
+            {
+                OpenJobs = jobs.Select(job => new SelectListItem
+                {
+                    Value = job.Id,
+                    Text = $"#{job.Id.Substring(0, 6).ToUpper()} - {job.ItemModel} ({job.CustomerName})"
+                }).ToList()
+            };
+
+            return View(model);
+        }
+
+        // Step 2 for Quote Generation: The actual quote page (GET)
         public async Task<IActionResult> GenerateRepairQuote(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction(nameof(SelectJobForQuote));
+            }
+
             var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
             if (!docSnapshot.Exists) return NotFound();
+
             var repairJob = docSnapshot.ConvertTo<RepairJob>();
             var model = new GenerateRepairQuoteViewModel
             {
@@ -107,9 +146,11 @@ namespace SupertronicsRepairSystem.Controllers
                 SerialNumber = repairJob.SerialNumber,
                 ProblemDescription = repairJob.ProblemDescription,
             };
+
             return View(model);
         }
 
+        // Quote Generation logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRepairQuote(GenerateRepairQuoteViewModel model)
@@ -117,13 +158,37 @@ namespace SupertronicsRepairSystem.Controllers
             if (ModelState.IsValid)
             {
                 var repairJobRef = _repairJobsCollection.Document(model.JobId);
-                var quote = new Quote {  };
-                await repairJobRef.UpdateAsync("Quotes", FieldValue.ArrayUnion(quote));
+                var quote = new Quote
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    LaborHours = (double)model.LaborHours,
+                    LaborRate = (double)model.LaborRate,
+                    PartsTotal = (double)model.PartsTotal,
+                    LaborTotal = (double)model.LaborTotal,
+                    SubTotal = (double)model.SubTotal,
+                    TaxAmount = (double)model.TaxAmount,
+                    TotalAmount = (double)model.Total,
+                    ValidUntil = Timestamp.FromDateTime(model.ValidUntil.ToUniversalTime()),
+                    DateCreated = Timestamp.FromDateTime(DateTime.UtcNow),
+                    QuoteParts = model.Parts.Select(p => new QuotePart
+                    {
+                        PartName = p.PartName,
+                        PartNumber = p.PartNumber,
+                        Description = p.Description,
+                        Quantity = p.Quantity,
+                        UnitPrice = (double)p.UnitPrice
+                    }).ToList()
+                };
+
+                await repairJobRef.UpdateAsync(nameof(RepairJob.Quotes), FieldValue.ArrayUnion(quote));
+                await repairJobRef.UpdateAsync(nameof(RepairJob.LastUpdated), Timestamp.FromDateTime(DateTime.UtcNow));
+
                 return RedirectToAction(nameof(RepairJobs));
             }
             return View(model);
         }
 
+        // Update Repair Status page (GET)
         public async Task<IActionResult> UpdateRepairStatus(string id)
         {
             var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
@@ -141,6 +206,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Update Repair Status logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRepairStatus(UpdateRepairStatusViewModel model)
@@ -159,6 +225,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Add Repair Notes page (GET)
         public async Task<IActionResult> AddRepairNotes(string id)
         {
             var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
@@ -176,6 +243,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Add Repair Notes logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRepairNotes(AddRepairNotesViewModel model)
@@ -195,7 +263,6 @@ namespace SupertronicsRepairSystem.Controllers
                 return RedirectToAction(nameof(RepairJobs));
             }
 
-            // If validation fails, reload existing notes before returning the view
             var docSnapshot = await _repairJobsCollection.Document(model.JobId).GetSnapshotAsync();
             if (docSnapshot.Exists)
             {
@@ -204,11 +271,10 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        public IActionResult GenerateProductQuote() => View(); // Placeholder
-
         public IActionResult TrackSerialNumber() => View(new TrackSerialNumberViewModel());
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TrackSerialNumber(TrackSerialNumberViewModel model)
         {
             if (!string.IsNullOrEmpty(model.SerialNumberToSearch))

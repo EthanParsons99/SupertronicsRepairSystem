@@ -1,0 +1,37 @@
+﻿@model SupertronicsRepairSystem.ViewModels.Technician.SelectJobForQuoteViewModel
+@{
+    ViewData["Title"] = "Select Job for Quote";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="mb-4">
+                <h1 class="display-6 fw-bold mb-2">Generate a Repair Quote</h1>
+                <p class="text-muted">First, select an open repair job to generate a quote for.</p>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header"><h5 class="mb-0">Select Job</h5></div>
+                <div class="card-body">
+                    <form asp-action="GenerateRepairQuote" method="get">
+                        <div class="mb-3">
+                            <label asp-for="SelectedJobId" class="form-label fw-semibold"></label>
+                            <select asp-for="SelectedJobId" asp-items="Model.OpenJobs" class="form-select form-select-lg">
+                                <option value="">-- Choose a repair job --</option>
+                            </select>
+                            <span asp-validation-for="SelectedJobId" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Dashboard" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-arrow-right-circle me-1"></i>Continue to Quote</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
