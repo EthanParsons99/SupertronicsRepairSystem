@@ -1,4 +1,5 @@
-﻿@{
+﻿@model SupertronicsRepairSystem.ViewModels.ProductListViewModel
+@{
     ViewData["Title"] = "Product Management";
 }
 
@@ -41,21 +42,61 @@
         <div class="card-header bg-dark text-white">
             <h5 class="mb-0">All Products</h5>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
+        @if (Model.Products.Any())
+        {
+            <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-primary">
                         <tr>
-                            <th>Product Image</th>
-                            <th>Product ID</th>
                             <th>Product Name</th>
+                            <th>Serial Number</th>
                             <th>Price</th>
-                            <th>Stock Level</th>
+                            <th>Stock Qauntity</th>
+                            <th>Discount</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        @foreach (var product in Model.Products)
+                            {
+                                <tr>
+                                    <td class="align-middle fw-semibold">
+                                        <div class="d-flex align-items-center">
+                                            <img src="@product.ImageUrl" alt="@product.Name" class="rounded me-3" style="width: 50px; height:50px; object-fit: cover;">
+                                        </div>
+                                            <div>
+                                                <div>@product.Name</div>
+                                            </div>
+                                    </td>
+                                    <td class="align-middle text-muted small">
+                                        @(string.IsNullOrEmpty(product.SerialNumber) ? "N/A" : $"Serial: {product.SerialNumber}")
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="fw-bold">@product.Price.ToString("R")</span>
+                                        @if (product.DiscountPercentage > 0)
+                                        {
+                                            <br />
+                                
+                                            <span class="text-danger small">(@product.DiscountPercentage}% off)</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle" text-center>
+                                        <span class="fw-bold">@product.StockQuantity</span>
+                                    </td>
+                                    <td class="align-middle text-black-center">@product.DiscountPercentage</td>
+                                    <td class="align-middle">
+                                        <a href="#" class="btn btn-sm btn-info text-white" title="Edit">
+                                            <i class="bi bi-pencil"></i>Edit
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+
+                        @* <tr>
                             <td>
                                 <img src="https://via.placeholder.com/50" alt="Product" class="product-image">
                             </td>
@@ -74,11 +115,12 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
-                        </tr>
+                        </tr> *@
                     </tbody>
                 </table>
             </div>
         </div>
+        }
     </div>
 </div>
 

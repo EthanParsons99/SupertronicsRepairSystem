@@ -40,9 +40,14 @@ namespace SupertronicsRepairSystem.Controllers
         }
 
         // GET: Owner/ProductManagement
-        public IActionResult ProductManagement()
+        public async Task<IActionResult> ProductManagement()
         {
-            return View();
+            var products = await _productService.GetAllProductsAsync();
+            var viewModel = new ProductListViewModel
+            {
+                Products = products
+            };
+            return View(viewModel);
         }
 
         // GET: Owner/AddProduct
