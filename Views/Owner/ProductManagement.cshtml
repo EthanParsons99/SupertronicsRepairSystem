@@ -13,28 +13,39 @@
 
     <!-- Filter Section -->
     <div class="card filter-card mb-3">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label text-white">Product Name</label>
-                    <input type="text" class="form-control" placeholder="Enter product name">
+        <form asp-action="ProductManagement" method="get">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="SearchTerm" class="form-label text-white"></label>
+                        <input asp-for="SearchTerm" type="text" class="form-control" placeholder="Enter product name or Sercial Number" value="@Model.SearchTerm">
+                    </div>
+                
+                    <div class="col-md-3">
+                        <label asp-for="MinPrice" class="form-label text-white"></label>
+                        <input asp-for="MinPrice" type="number" step="0.01" min="0" class="form-control" placeholder="Min Price" value="@(Model.MinPrice > 0 ? Model.MinPrice : "")">
+                        <span asp-validation-for="MinPrice" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="MaxPrice" class="form-label text-white"></label>
+                        <input asp-for="MaxPrice" type="number" step="0.01" min="0.01" class="form-control" placeholder="Max Price" value="@(Model.MaxPrice > 0 ? Model.MaxPrice : "")">
+                        <span asp-validation-for="MaxPrice" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-dark w-100">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label text-white">Product ID</label>
-                    <input type="text" class="form-control" placeholder="Enter Product ID">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label text-white">Price Range</label>
-                    <select class="form-select">
-                        <option selected>Select Price Range</option>
-                        <option value="1">R0 - R1000</option>
-                        <option value="2">R1000 - R5000</option>
-                        <option value="3">R5000 - R10000</option>
-                        <option value="4">R10000+</option>
-                    </select>
-                </div>
+
+                @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.MinPrice > 0 || Model.MaxPrice.HasValue)
+                {
+                    <a asp-action="ProductManagement" class="btn btn-outline-light btn-sm mt-3"><i class="bi bi-x-circle me-1"></i> Clear Filters</a>
+                }
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Products Table -->

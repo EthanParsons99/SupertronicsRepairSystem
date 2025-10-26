@@ -73,14 +73,35 @@ namespace SupertronicsRepairSystem.Controllers
         }
 
         // GET: Owner/ProductManagement
-        public async Task<IActionResult> ProductManagement()
+        public async Task<IActionResult> ProductManagement(ProductListViewModel filterModel)
         {
             var products = await _productService.GetAllProductsAsync();
-            var viewModel = new ProductListViewModel
+            var filteredProducts = products.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(filterModel.SearchTerm))
             {
-                Products = products
-            };
-            return View(viewModel);
+                var term = filterModel.SearchTerm.ToLower();
+                filteredProducts = filteredProducts.Where(p =>
+                p.Name.ToLower().Contains(term) ||
+                (p.SerialNumber != null && p.SerialNumber.ToLower().Contains(term))
+                );
+            }
+
+            if (filterModel.MinPrice.HasValue)
+            {
+                filteredProducts = filteredProducts.Where(p => p.Price >= filterModel.MinPrice.Value);
+            }
+            if (filterModel.MaxPrice.HasValue)
+            {
+                filteredProducts = filteredProducts.Where(p => p.Price <= filterModel.MaxPrice.Value);
+            }
+            filterModel.Products = filteredProducts.ToList();
+
+            if(!filterModel.MaxPrice.HasValue || filterModel.MaxPrice.Value <= 0)
+            {
+                filterModel.MaxPrice = products.Any() ? products.Max(p => p.Price) : 0;
+            }
+            return View(filterModel);
         }
 
         public async Task<IActionResult> EditProduct(string id)
