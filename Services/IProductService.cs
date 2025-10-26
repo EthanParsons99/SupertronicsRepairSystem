@@ -9,5 +9,10 @@ namespace SupertronicsRepairSystem.Services
     {
        Task<bool> AddProductAsync(AddProductViewModel model);
        Task<List<Product>> GetAllProductsAsync();
+
+        Task<Product?> GetProductByIdAsync(string id);
+
+        Task<bool> UpdateProductAsync(UpdateProductViewModel model);
+        Task<bool> DeleteProductAsync(string id);
     }
 }

@@ -50,6 +50,80 @@ namespace SupertronicsRepairSystem.Controllers
             return View(viewModel);
         }
 
+        public async Task<IActionResult> EditProduct(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var product = await _productService.GetProductByIdAsync(id);
+            if (product == null)
+            {
+                TempData["Error"] = "Product not found.";
+                return RedirectToAction("ProductManagement");
+            }
+
+            var model = new UpdateProductViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Price = product.Price,
+                WasPrice = product.WasPrice,
+                DiscountPercentage = product.DiscountPercentage,
+                StockQuantity = product.StockQuantity,
+                SerialNumber = product.SerialNumber
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProduct(UpdateProductViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            if(await _productService.UpdateProductAsync(model))
+            {
+                TempData["Success"] = "Product updated successfully.";
+                return RedirectToAction("ProductManagement");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred while updating the product. Please try again.");
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteProduct(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["Error"] = "Invalid product ID.";
+                return RedirectToAction("ProductManagement");
+            }
+
+            var product = await _productService.GetProductByIdAsync(id);
+            var productName = product?.Name ?? "Product";
+
+            if (await _productService.DeleteProductAsync(id))
+            {
+                TempData["Success"] = $"{productName} deleted successfully.";
+                return RedirectToAction("ProductManagement");
+            }
+            else
+            {
+                TempData["Error"] = $"An error occurred while deleting {productName}. Please try again.";
+                return RedirectToAction("ProductManagement");
+            }
+        }
+
         // GET: Owner/AddProduct
         public IActionResult AddProduct()
         {

@@ -59,5 +59,66 @@ namespace SupertronicsRepairSystem.Services
             }
             return products;
         }
+
+        public async Task<Product?> GetProductByIdAsync(string id)
+        {
+            try
+            {
+                var documentRef = _firestoreDb.Collection("products").Document(id);
+                var snapshot = await documentRef.GetSnapshotAsync();
+
+                if (!snapshot.Exists)
+                {
+                    return null;
+                }
+
+                var product = snapshot.ConvertTo<Product>();
+                product.Id = snapshot.Id;
+                return product;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdateProductAsync(UpdateProductViewModel model)
+        {
+            try
+            {
+                var documentRef = _firestoreDb.Collection("products").Document(model.Id);
+                var updates = new Dictionary<FieldPath, object>
+                {
+                    {  new FieldPath("Name"), model.Name },
+                    { new FieldPath("Description"), model.Description },
+                    { new FieldPath("ImageUrl"), model.ImageUrl },
+                    { new FieldPath("Price"), model.Price },
+                    { new FieldPath("WasPrice"), model.WasPrice },
+                    { new FieldPath("DiscountPercentage"), model.DiscountPercentage },
+                    { new FieldPath("StockQuantity"), model.StockQuantity },
+                    { new FieldPath("SerialNumber"), model.SerialNumber }
+                };
+                await documentRef.UpdateAsync(updates);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteProductAsync(string id)
+        {
+            try
+            {
+                var documentRef = _firestoreDb.Collection("products").Document(id);
+                await documentRef.DeleteAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
