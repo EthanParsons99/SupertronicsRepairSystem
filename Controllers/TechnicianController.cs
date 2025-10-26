@@ -1,66 +1,29 @@
-using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using SupertronicsRepairSystem.Data.Models;
-using SupertronicsRepairSystem.Models;
-using SupertronicsRepairSystem.ViewModels;
+using SupertronicsRepairSystem.Services;
 using SupertronicsRepairSystem.ViewModels.Technician;
-using System.Diagnostics;
+using SupertronicsRepairSystem.Data.Models;
 
 namespace SupertronicsRepairSystem.Controllers
 {
     public class TechnicianController : Controller
     {
-        private readonly FirestoreDb _firestoreDb;
-        private readonly CollectionReference _repairJobsCollection;
-        private readonly CollectionReference _customersCollection;
-        private readonly CollectionReference _productQuotesCollection;
+        private readonly ITechnicianService _technicianService;
 
-        public TechnicianController(FirestoreDb firestoreDb)
+        public TechnicianController(ITechnicianService technicianService)
         {
-            _firestoreDb = firestoreDb;
-            _repairJobsCollection = _firestoreDb.Collection("repairJobs");
-            _customersCollection = _firestoreDb.Collection("customers");
-            _productQuotesCollection = _firestoreDb.Collection("productQuotes");
+            _technicianService = technicianService;
         }
 
-        // Dashboard with real-time data
         public async Task<IActionResult> Dashboard()
         {
-            var snapshot = await _repairJobsCollection.GetSnapshotAsync();
-            var jobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
-
-            var model = new TechnicianDashboardViewModel
-            {
-                PendingJobs = jobs.Count(j => j.Status == "Pending" || j.Status == "In Progress" || j.Status == "Diagnosis"),
-                CompletedJobs = jobs.Count(j => j.Status == "Completed"),
-                QuotesCreated = jobs.Sum(j => j.Quotes?.Count ?? 0)
-            };
+            var model = await _technicianService.GetDashboardDataAsync();
             return View(model);
         }
 
-        // Repair Jobs page with full filtering logic
-        public async Task<IActionResult> RepairJobs(string status, string customer)
+        public async Task<IActionResult> RepairJobs(string status, string customer, DateTime? date)
         {
-            Query query = _repairJobsCollection;
-
-            if (!string.IsNullOrEmpty(status))
-            {
-                query = query.WhereEqualTo(nameof(RepairJob.Status), status);
-            }
-
-            if (!string.IsNullOrEmpty(customer))
-            {
-                query = query.OrderBy(nameof(RepairJob.CustomerName))
-                             .WhereGreaterThanOrEqualTo(nameof(RepairJob.CustomerName), customer)
-                             .WhereLessThanOrEqualTo(nameof(RepairJob.CustomerName), customer + '\uf8ff');
-            }
-
-            query = query.OrderByDescending(nameof(RepairJob.DateReceived));
-
-            var snapshot = await query.GetSnapshotAsync();
-            var repairJobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
-
+            var repairJobs = await _technicianService.GetFilteredRepairJobsAsync(status, customer, date);
             var viewModels = repairJobs.Select(job => new RepairJobViewModel
             {
                 Id = job.Id,
@@ -70,129 +33,81 @@ namespace SupertronicsRepairSystem.Controllers
                 LastUpdated = job.LastUpdated.ToDateTime()
             }).ToList();
 
+            ViewData["SelectedStatus"] = status;
+            ViewData["SelectedCustomer"] = customer;
+            ViewData["SelectedDate"] = date?.ToString("yyyy-MM-dd");
+
             return View(viewModels);
         }
 
-        // Create Repair Job page (GET)
         public IActionResult CreateRepairJob() => View();
 
-        // Create Repair Job logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRepairJob(CreateRepairJobViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var customer = new CustomerModel { Name = model.CustomerName };
-                var customerDocRef = await _customersCollection.AddAsync(customer);
-
-                var repairJob = new RepairJob
-                {
-                    ItemModel = model.ItemModel,
-                    SerialNumber = model.SerialNumber,
-                    ProblemDescription = model.ProblemDescription,
-                    CustomerId = customerDocRef.Id,
-                    CustomerName = customer.Name,
-                    Status = "Pending",
-                    DateReceived = Timestamp.FromDateTime(DateTime.UtcNow),
-                    LastUpdated = Timestamp.FromDateTime(DateTime.UtcNow)
-                };
-
-                await _repairJobsCollection.AddAsync(repairJob);
+                await _technicianService.CreateRepairJobAsync(model);
+                TempData["SuccessMessage"] = $"New repair job for '{model.CustomerName}' created successfully.";
                 return RedirectToAction(nameof(RepairJobs));
             }
             return View(model);
         }
 
-        // Step 1 for Quote Generation: Select a Job (GET)
         public async Task<IActionResult> SelectJobForQuote()
         {
-            var query = _repairJobsCollection
-                .WhereIn(nameof(RepairJob.Status), new List<string> { "Pending", "Diagnosis", "In Progress" });
-
-            var snapshot = await query.GetSnapshotAsync();
-            var jobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
-
+            var openJobs = await _technicianService.GetFilteredRepairJobsAsync(null, null, null);
             var model = new SelectJobForQuoteViewModel
             {
-                OpenJobs = jobs.Select(job => new SelectListItem
-                {
-                    Value = job.Id,
-                    Text = $"#{job.Id.Substring(0, 6).ToUpper()} - {job.ItemModel} ({job.CustomerName})"
-                }).ToList()
+                OpenJobs = openJobs
+                    .Where(j => j.Status != "Completed" && j.Status != "Cancelled")
+                    .Select(job => new SelectListItem
+                    {
+                        Value = job.Id,
+                        Text = $"#{job.Id.Substring(0, 6).ToUpper()} - {job.ItemModel} ({job.CustomerName})"
+                    }).ToList()
             };
-
             return View(model);
         }
 
-        // Step 2 for Quote Generation: The actual quote page (GET)
         public async Task<IActionResult> GenerateRepairQuote(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
                 return RedirectToAction(nameof(SelectJobForQuote));
             }
+            var repairJob = await _technicianService.GetRepairJobByIdAsync(id);
+            if (repairJob == null) return NotFound();
 
-            var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
-            if (!docSnapshot.Exists) return NotFound();
-
-            var repairJob = docSnapshot.ConvertTo<RepairJob>();
             var model = new GenerateRepairQuoteViewModel
             {
                 JobId = repairJob.Id,
                 CustomerName = repairJob.CustomerName,
                 DeviceName = repairJob.ItemModel,
                 SerialNumber = repairJob.SerialNumber,
-                ProblemDescription = repairJob.ProblemDescription,
+                ProblemDescription = repairJob.ProblemDescription
             };
-
             return View(model);
         }
 
-        // Quote Generation logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRepairQuote(GenerateRepairQuoteViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var repairJobRef = _repairJobsCollection.Document(model.JobId);
-                var quote = new Quote
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    LaborHours = (double)model.LaborHours,
-                    LaborRate = (double)model.LaborRate,
-                    PartsTotal = (double)model.PartsTotal,
-                    LaborTotal = (double)model.LaborTotal,
-                    SubTotal = (double)model.SubTotal,
-                    TaxAmount = (double)model.TaxAmount,
-                    TotalAmount = (double)model.Total,
-                    ValidUntil = Timestamp.FromDateTime(model.ValidUntil.ToUniversalTime()),
-                    DateCreated = Timestamp.FromDateTime(DateTime.UtcNow),
-                    QuoteParts = model.Parts.Select(p => new QuotePart
-                    {
-                        PartName = p.PartName,
-                        PartNumber = p.PartNumber,
-                        Description = p.Description,
-                        Quantity = p.Quantity,
-                        UnitPrice = (double)p.UnitPrice
-                    }).ToList()
-                };
-
-                await repairJobRef.UpdateAsync(nameof(RepairJob.Quotes), FieldValue.ArrayUnion(quote));
-                await repairJobRef.UpdateAsync(nameof(RepairJob.LastUpdated), Timestamp.FromDateTime(DateTime.UtcNow));
-
+                await _technicianService.AddQuoteToRepairJobAsync(model.JobId, model);
+                TempData["SuccessMessage"] = $"Quote added to job #{model.JobId.Substring(0, 6).ToUpper()}.";
                 return RedirectToAction(nameof(RepairJobs));
             }
             return View(model);
         }
 
-        // Update Repair Status page (GET)
         public async Task<IActionResult> UpdateRepairStatus(string id)
         {
-            var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
-            if (!docSnapshot.Exists) return NotFound();
-            var job = docSnapshot.ConvertTo<RepairJob>();
+            var job = await _technicianService.GetRepairJobByIdAsync(id);
+            if (job == null) return NotFound();
 
             var model = new UpdateRepairStatusViewModel
             {
@@ -201,35 +116,44 @@ namespace SupertronicsRepairSystem.Controllers
                 CustomerName = job.CustomerName,
                 CurrentStatus = job.Status
             };
-
             return View(model);
         }
 
-        // Update Repair Status logic (POST)
+        // THIS IS THE CORRECTED [HttpPost] ACTION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRepairStatus(UpdateRepairStatusViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var jobRef = _repairJobsCollection.Document(model.JobId);
-                var updates = new Dictionary<string, object>
+                var success = await _technicianService.UpdateRepairJobStatusAsync(model.JobId, model.NewStatus);
+                if (success)
                 {
-                    { nameof(RepairJob.Status), model.NewStatus },
-                    { nameof(RepairJob.LastUpdated), Timestamp.FromDateTime(DateTime.UtcNow) }
-                };
-                await jobRef.UpdateAsync(updates);
+                    TempData["SuccessMessage"] = $"Status for job #{model.JobId.Substring(0, 6).ToUpper()} updated to '{model.NewStatus}'.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Error: Could not find the job to update.";
+                }
                 return RedirectToAction(nameof(RepairJobs));
             }
+
+            // THE FIX: If validation fails, re-populate the dropdown options before returning the view.
+            model.StatusOptions = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "Pending", Text = "Pending" },
+                new SelectListItem { Value = "Diagnosis", Text = "Diagnosis" },
+                new SelectListItem { Value = "In Progress", Text = "In Progress" },
+                new SelectListItem { Value = "Completed", Text = "Completed" },
+                new SelectListItem { Value = "Cancelled", Text = "Cancelled" }
+            };
             return View(model);
         }
 
-        // Add Repair Notes page (GET)
         public async Task<IActionResult> AddRepairNotes(string id)
         {
-            var docSnapshot = await _repairJobsCollection.Document(id).GetSnapshotAsync();
-            if (!docSnapshot.Exists) return NotFound();
-            var job = docSnapshot.ConvertTo<RepairJob>();
+            var job = await _technicianService.GetRepairJobByIdAsync(id);
+            if (job == null) return NotFound();
 
             var model = new AddRepairNotesViewModel
             {
@@ -238,90 +162,63 @@ namespace SupertronicsRepairSystem.Controllers
                 CustomerName = job.CustomerName,
                 ExistingNotes = job.TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList()
             };
-
             return View(model);
         }
 
-        // Add Repair Notes logic (POST)
+        // THIS IS THE CORRECTED [HttpPost] ACTION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRepairNotes(AddRepairNotesViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var jobRef = _repairJobsCollection.Document(model.JobId);
-                var newNote = new Note
+                var success = await _technicianService.AddNoteToRepairJobAsync(model.JobId, model.NewNote);
+                if (success)
                 {
-                    Content = model.NewNote,
-                    Timestamp = Timestamp.FromDateTime(DateTime.UtcNow)
-                };
-
-                await jobRef.UpdateAsync(nameof(RepairJob.TechnicianNotes), FieldValue.ArrayUnion(newNote));
-                await jobRef.UpdateAsync(nameof(RepairJob.LastUpdated), Timestamp.FromDateTime(DateTime.UtcNow));
-
+                    TempData["SuccessMessage"] = $"Note added to job #{model.JobId.Substring(0, 6).ToUpper()}.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Error: Could not find the job to add a note to.";
+                }
                 return RedirectToAction(nameof(RepairJobs));
             }
 
-            var docSnapshot = await _repairJobsCollection.Document(model.JobId).GetSnapshotAsync();
-            if (docSnapshot.Exists)
+            // THE FIX: If validation fails, reload the existing notes before showing the form again.
+            var job = await _technicianService.GetRepairJobByIdAsync(model.JobId);
+            if (job != null)
             {
-                model.ExistingNotes = docSnapshot.ConvertTo<RepairJob>().TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList();
+                model.ExistingNotes = job.TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList();
             }
             return View(model);
         }
 
-        // Track Serial Number page (GET)
         public IActionResult TrackSerialNumber() => View(new TrackSerialNumberViewModel());
 
-        // Track Serial Number logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TrackSerialNumber(TrackSerialNumberViewModel model)
         {
             if (!string.IsNullOrEmpty(model.SerialNumberToSearch))
             {
-                var query = _repairJobsCollection.WhereEqualTo(nameof(RepairJob.SerialNumber), model.SerialNumberToSearch);
-                var snapshot = await query.GetSnapshotAsync();
-                model.FoundJobs = snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
+                model.FoundJobs = await _technicianService.FindRepairJobsBySerialNumberAsync(model.SerialNumberToSearch);
             }
             model.SearchPerformed = true;
             return View(model);
         }
 
-        // Generate Product Quote page (GET)
-        public IActionResult GenerateProductQuote()
-        {
-            return View(new GenerateProductQuoteViewModel());
-        }
+        public IActionResult GenerateProductQuote() => View(new GenerateProductQuoteViewModel());
 
-        // Generate Product Quote logic (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateProductQuote(GenerateProductQuoteViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var simulatedProductName = $"Product ({model.ProductId})";
-                var simulatedUnitPrice = 150.00;
-
-                var totalPrice = simulatedUnitPrice * model.Quantity;
-
-                var productQuote = new ProductQuote
-                {
-                    ProductId = model.ProductId,
-                    ProductName = simulatedProductName,
-                    Quantity = model.Quantity,
-                    UnitPrice = simulatedUnitPrice,
-                    TotalPrice = totalPrice,
-                    DateCreated = Timestamp.FromDateTime(DateTime.UtcNow)
-                };
-
-                await _productQuotesCollection.AddAsync(productQuote);
-
-                TempData["SuccessMessage"] = $"Product quote for '{productQuote.ProductName}' created successfully!";
+                var productName = await _technicianService.CreateProductQuoteAsync(model);
+                TempData["SuccessMessage"] = $"Product quote for '{productName}' created successfully!";
                 return RedirectToAction(nameof(Dashboard));
             }
-
             return View(model);
         }
     }
