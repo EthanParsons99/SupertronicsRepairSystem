@@ -27,6 +27,39 @@ namespace SupertronicsRepairSystem.Controllers
             _repairJobService = repairJobService;
         }
 
+        // GET: Owner/TestRepairJobs
+        public async Task<IActionResult> TestRepairJobs()
+        {
+            try
+            {
+                var repairJobs = await _repairJobService.GetAllRepairJobsAsync();
+
+                var debugInfo = new
+                {
+                    JobCount = repairJobs?.Count ?? 0,
+                    Jobs = repairJobs?.Select(j => new
+                    {
+                        j.Id,
+                        j.ItemModel,
+                        j.CustomerName,
+                        j.Status,
+                        j.SerialNumber,
+                        j.ProblemDescription,
+                        DateReceived = j.DateReceived != null ? j.DateReceived.ToDateTime().ToString() : "NULL",
+                        LastUpdated = j.LastUpdated != null ? j.LastUpdated.ToDateTime().ToString() : "NULL",
+                        HasQuotes = j.Quotes?.Count ?? 0,
+                        HasNotes = j.TechnicianNotes?.Count ?? 0
+                    }).ToList()
+                };
+
+                return Json(debugInfo);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message, stackTrace = ex.StackTrace });
+            }
+        }
+
         // GET: Owner/Dashboard
         public IActionResult Dashboard()
         {
@@ -158,6 +191,8 @@ namespace SupertronicsRepairSystem.Controllers
             var repairJobsWithQuotes = await _quoteService.GetAllRepairJobsWithQuotesAsync();
             return View(repairJobsWithQuotes);
         }
+
+
 
         // POST: Owner/FilterQuotes
         [HttpPost]
