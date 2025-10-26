@@ -1,4 +1,5 @@
-﻿@{
+﻿@model List<SupertronicsRepairSystem.Models.RepairJob>
+@{
     ViewData["Title"] = "Repair Jobs";
 }
 
@@ -16,28 +17,28 @@
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label text-white">Status</label>
-                    <select class="form-select">
-                        <option selected>All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label text-white">Date</label>
-                    <input type="date" class="form-control" placeholder="mm/dd/yyyy">
+                    <input type="date" class="form-control" id="dateFilter">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label text-white">Customer</label>
-                    <input type="text" class="form-control" placeholder="Search customer...">
+                    <input type="text" class="form-control" id="customerFilter" placeholder="Search customer...">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-primary w-100">
+                    <button class="btn btn-primary w-100" onclick="applyFilters()">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
-                    <button class="btn btn-outline-light w-100 mt-2">
-                        <i class="bi bi-x"></i>
+                    <button class="btn btn-outline-light w-100 mt-2" onclick="clearFilters()">
+                        <i class="bi bi-x"></i> Clear
                     </button>
                 </div>
             </div>
@@ -47,37 +48,153 @@
     <!-- Repair Jobs Table -->
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">Active Repair Jobs</h5>
+            <h5 class="mb-0" id="jobsHeader">Active Repair Jobs (@(Model != null ? Model.Count : 0) Total)</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0" id="repairJobsTable">
                     <thead class="table-primary">
                         <tr>
                             <th>Job ID</th>
                             <th>Device/Item</th>
                             <th>Customer</th>
+                            <th>Problem</th>
                             <th>Status</th>
+                            <th>Date Received</th>
                             <th>Last Updated</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>#J001</td>
-                            <td>
-                                <div>Samsung Galaxy S23</div>
-                                <small class="text-muted">Serial: SN-12345789</small>
-                            </td>
-                            <td>
-                                <div>John Doe</div>
-                                <small class="text-muted">john@email.com</small>
-                            </td>
-                            <td><span class="badge bg-success">Complete</span></td>
-                            <td>
-                                <div>Sep 25, 2025</div>
-                                <small class="text-muted">10:30</small>
-                            </td>
-                        </tr>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var job in Model)
+                            {
+                                string dateReceivedStr = "";
+                                string dateReceivedDisplay = "N/A";
+                                string dateReceivedTime = "";
+
+                                try
+                                {
+                                    if (job.DateReceived != null)
+                                    {
+                                        var dt = job.DateReceived.ToDateTime();
+                                        dateReceivedStr = dt.ToString("yyyy-MM-dd");
+                                        dateReceivedDisplay = dt.ToString("MMM dd, yyyy");
+                                        dateReceivedTime = dt.ToString("HH:mm");
+                                    }
+                                }
+                                catch { }
+
+                                string lastUpdatedDisplay = "N/A";
+                                string lastUpdatedTime = "";
+
+                                try
+                                {
+                                    if (job.LastUpdated != null)
+                                    {
+                                        var dt = job.LastUpdated.ToDateTime();
+                                        lastUpdatedDisplay = dt.ToString("MMM dd, yyyy");
+                                        lastUpdatedTime = dt.ToString("HH:mm");
+                                    }
+                                }
+                                catch { }
+
+                                string jobId = !string.IsNullOrEmpty(job.Id) && job.Id.Length >= 8 ? job.Id.Substring(0, 8) : (job.Id ?? "N/A");
+                                string customerId = !string.IsNullOrEmpty(job.CustomerId) && job.CustomerId.Length >= 12 ? job.CustomerId.Substring(0, 12) : (job.CustomerId ?? "");
+
+                                <tr class="job-row"
+                                    data-status="@(job.Status ?? "")"
+                                    data-customer="@(job.CustomerName ?? "")"
+                                    data-date="@dateReceivedStr">
+                                    <td>
+                                        <strong class="text-primary">#@jobId</strong>
+                                    </td>
+                                    <td>
+                                        <div><strong>@(job.ItemModel ?? "N/A")</strong></div>
+                                        <small class="text-muted">Serial: @(job.SerialNumber ?? "N/A")</small>
+                                    </td>
+                                    <td>
+                                        <div>@(job.CustomerName ?? "Unknown")</div>
+                                        @if (!string.IsNullOrEmpty(customerId))
+                                        {
+                                            <small class="text-muted">@customerId</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="problem-description">
+                                            @if (!string.IsNullOrEmpty(job.ProblemDescription))
+                                            {
+                                                if (job.ProblemDescription.Length > 50)
+                                                {
+                                                    @(job.ProblemDescription.Substring(0, 50) + "...")
+                                                }
+                                                else
+                                                {
+                                                    @job.ProblemDescription
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No description</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @{
+                                            string status = job.Status ?? "Unknown";
+                                            string badgeClass = "bg-secondary";
+
+                                            if (status == "Completed")
+                                            {
+                                                badgeClass = "bg-success";
+                                            }
+                                            else if (status == "In Progress")
+                                            {
+                                                badgeClass = "bg-warning text-dark";
+                                            }
+                                            else if (status == "Pending")
+                                            {
+                                                badgeClass = "bg-info";
+                                            }
+                                            else if (status == "Cancelled")
+                                            {
+                                                badgeClass = "bg-danger";
+                                            }
+                                        }
+                                        <span class="badge @badgeClass">@status</span>
+                                    </td>
+                                    <td>
+                                        <div>@dateReceivedDisplay</div>
+                                        @if (!string.IsNullOrEmpty(dateReceivedTime))
+                                        {
+                                            <small class="text-muted">@dateReceivedTime</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@lastUpdatedDisplay</div>
+                                        @if (!string.IsNullOrEmpty(lastUpdatedTime))
+                                        {
+                                            <small class="text-muted">@lastUpdatedTime</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="/Owner/RepairJobDetails/@job.Id" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                                    <p class="mb-0 mt-3 text-muted">No repair jobs found</p>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -112,7 +229,13 @@
         .table-primary th {
             border: none;
             padding: 1rem;
+            font-weight: 600;
         }
+
+    .table tbody td {
+        vertical-align: middle;
+        padding: 1rem;
+    }
 
     .bg-dark {
         background-color: #2C3E50 !important;
@@ -143,7 +266,118 @@
             color: white;
         }
 
-    .badge.bg-success {
-        background-color: #3DCEA2 !important;
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
     }
+
+        .badge.bg-success {
+            background-color: #3DCEA2 !important;
+        }
+
+        .badge.bg-warning {
+            background-color: #F39C12 !important;
+        }
+
+        .badge.bg-info {
+            background-color: #3498DB !important;
+        }
+
+        .badge.bg-danger {
+            background-color: #E74C3C !important;
+        }
+
+    .problem-description {
+        max-width: 200px;
+        word-wrap: break-word;
+    }
+
+    .table-responsive {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .job-row {
+        transition: background-color 0.2s ease;
+    }
+
+        .job-row:hover {
+            background-color: #f8f9fa;
+        }
 </style>
+
+@*------------------------------------------------------------------------------------------------ Filter Script ------------------------------------------------------------------------------------------------*@
+
+<script>
+    function applyFilters() {
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+        const dateFilter = document.getElementById('dateFilter').value;
+        const customerFilter = document.getElementById('customerFilter').value.toLowerCase().trim();
+
+        const rows = document.querySelectorAll('.job-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const status = (row.getAttribute('data-status') || '').toLowerCase();
+            const customer = (row.getAttribute('data-customer') || '').toLowerCase();
+            const date = row.getAttribute('data-date') || '';
+
+            let showRow = true;
+
+            // Status filter
+            if (statusFilter && status !== statusFilter) {
+                showRow = false;
+            }
+
+            // Date filter
+            if (dateFilter && date !== dateFilter) {
+                showRow = false;
+            }
+
+            // Customer filter (search)
+            if (customerFilter && !customer.includes(customerFilter)) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        // Update count in header
+        updateJobCount(visibleCount);
+    }
+
+    function clearFilters() {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('customerFilter').value = '';
+
+        const rows = document.querySelectorAll('.job-row');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+
+        // Reset count
+        updateJobCount(rows.length);
+    }
+
+    function updateJobCount(count) {
+        const header = document.getElementById('jobsHeader');
+        const totalJobs = document.querySelectorAll('.job-row').length;
+        if (count === totalJobs) {
+            header.textContent = 'Active Repair Jobs (' + totalJobs + ' Total)';
+        } else {
+            header.textContent = 'Active Repair Jobs (' + count + ' of ' + totalJobs + ')';
+        }
+    }
+
+    // Add event listeners for real-time filtering
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('customerFilter').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+    });
+</script>

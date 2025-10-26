@@ -32,7 +32,7 @@ namespace SupertronicsRepairSystem.Services
                     TechnicianNotes = new List<Note>()
                 };
 
-                var docRef = await _firestoreDb.Collection("RepairJobs").AddAsync(repairJob);
+                var docRef = await _firestoreDb.Collection("repairJobs").AddAsync(repairJob);
 
                 // Update the document with its own ID
                 await docRef.UpdateAsync("Id", docRef.Id);
@@ -49,7 +49,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var docRef = _firestoreDb.Collection("RepairJobs").Document(repairJobId);
+                var docRef = _firestoreDb.Collection("repairJobs").Document(repairJobId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
                 if (snapshot.Exists)
@@ -69,7 +69,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var query = _firestoreDb.Collection("RepairJobs")
+                var query = _firestoreDb.Collection("repairJobs")
                     .WhereEqualTo("CustomerId", customerId);
 
                 var snapshot = await query.GetSnapshotAsync();
@@ -95,7 +95,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var snapshot = await _firestoreDb.Collection("RepairJobs").GetSnapshotAsync();
+                var snapshot = await _firestoreDb.Collection("repairJobs").GetSnapshotAsync();
                 var repairJobs = new List<RepairJob>();
 
                 foreach (var doc in snapshot.Documents)
@@ -118,7 +118,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var docRef = _firestoreDb.Collection("RepairJobs").Document(repairJobId);
+                var docRef = _firestoreDb.Collection("repairJobs").Document(repairJobId);
 
                 await docRef.UpdateAsync(new Dictionary<string, object>
                 {
@@ -138,7 +138,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var docRef = _firestoreDb.Collection("RepairJobs").Document(repairJobId);
+                var docRef = _firestoreDb.Collection("repairJobs").Document(repairJobId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
                 if (!snapshot.Exists)
@@ -170,7 +170,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var docRef = _firestoreDb.Collection("RepairJobs").Document(repairJobId);
+                var docRef = _firestoreDb.Collection("repairJobs").Document(repairJobId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
                 if (!snapshot.Exists)
