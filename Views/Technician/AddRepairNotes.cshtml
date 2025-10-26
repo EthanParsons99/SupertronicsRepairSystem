@@ -38,7 +38,7 @@
                             @foreach (var note in Model.ExistingNotes)
                             {
                                 <li class="list-group-item">
-                                    <p class="mb-1">@note.Content</p>
+                                    <p class="mb-1" style="white-space: pre-wrap;">@note.Content</p>
                                     <small class="text-muted">@note.Timestamp.ToDateTime().ToString("MMM dd, yyyy @ HH:mm")</small>
                                 </li>
                             }

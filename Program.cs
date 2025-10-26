@@ -9,15 +9,12 @@ namespace SupertronicsRepairSystem
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add MVC services
+            //  Standard Service Registrations 
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IQuoteService, QuoteService>();
-            builder.Services.AddScoped<IRepairJobService, RepairJobService>();
 
-            // Firebase Configuration
+            //  Firebase Configuration 
             string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "google-credentials.json");
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialsPath);
 
@@ -27,21 +24,20 @@ namespace SupertronicsRepairSystem
                 throw new ArgumentNullException(nameof(projectId), "Firebase ProjectId is not set in appsettings.json");
             }
 
-            // Get Firebase API Key
             string firebaseApiKey = builder.Configuration["Firebase:ApiKey"];
             if (string.IsNullOrEmpty(firebaseApiKey))
             {
                 throw new ArgumentNullException(nameof(firebaseApiKey), "Firebase ApiKey is not set in appsettings.json");
             }
 
-            // Register Firestore
-            var firestoreDb = new FirestoreDbBuilder
+            // Register Firestore Database as a Singleton
+            builder.Services.AddSingleton(new FirestoreDbBuilder
             {
                 ProjectId = projectId
-            }.Build();
-            builder.Services.AddSingleton(firestoreDb);
+            }.Build());
 
-            // Register Services
+            //  Application Service Registrations 
+
             builder.Services.AddScoped<IAuthService>(provider =>
                 new FirebaseAuthService(
                     provider.GetRequiredService<IHttpContextAccessor>(),
@@ -52,9 +48,11 @@ namespace SupertronicsRepairSystem
             );
 
             builder.Services.AddScoped<IProductService, ProductService>();
-
-            // ADD THIS LINE - Register Quote Service
             builder.Services.AddScoped<IQuoteService, QuoteService>();
+            builder.Services.AddScoped<IRepairJobService, RepairJobService>();
+
+            builder.Services.AddScoped<ITechnicianService, TechnicianService>();
+
 
             var app = builder.Build();
 

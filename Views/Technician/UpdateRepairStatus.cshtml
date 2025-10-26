@@ -1,4 +1,4 @@
-﻿@model SupertronicsRepairSystem.ViewModels.UpdateRepairStatusViewModel
+﻿@model SupertronicsRepairSystem.ViewModels.Technician.UpdateRepairStatusViewModel
 @{
     ViewData["Title"] = "Update Repair Status";
 }
@@ -12,7 +12,7 @@
             </div>
 
             <div class="card shadow-sm">
-                <div class="card-header"><h5 class="mb-0">Current Status: @Model.CurrentStatus</h5></div>
+                <div class="card-header"><h5 class="mb-0">Current Status: <strong>@Model.CurrentStatus</strong></h5></div>
                 <div class="card-body">
                     <form asp-action="UpdateRepairStatus" method="post">
                         <input type="hidden" asp-for="JobId" />

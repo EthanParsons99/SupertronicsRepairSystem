@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
-namespace SupertronicsRepairSystem.ViewModels
+namespace SupertronicsRepairSystem.ViewModels.Technician
 {
     public class UpdateRepairStatusViewModel
     {
