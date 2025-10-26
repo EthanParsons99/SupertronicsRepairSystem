@@ -37,5 +37,27 @@ namespace SupertronicsRepairSystem.Services
             }
 
         }
+
+        public async Task<List<Product>> GetAllProductsAsync()
+        {
+            var products = new List<Product>();
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("products");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+                foreach (var document in snapshot.Documents)
+                {
+                    var product = document.ConvertTo<Product>();
+                    product.Id = document.Id;
+                    products.Add(product);
+                }
+            }
+            catch(Exception ex) 
+            {
+                Console.WriteLine($"Error retrieving products: {ex.Message}");
+            }
+            return products;
+        }
     }
 }
