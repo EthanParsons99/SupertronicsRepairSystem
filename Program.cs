@@ -13,6 +13,9 @@ namespace SupertronicsRepairSystem
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IQuoteService, QuoteService>();
+            builder.Services.AddScoped<IRepairJobService, RepairJobService>();
 
             //  Firebase Configuration 
             string credentialsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "google-credentials.json");
