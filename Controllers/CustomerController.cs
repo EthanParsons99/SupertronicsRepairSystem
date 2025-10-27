@@ -70,33 +70,71 @@ namespace SupertronicsRepairSystem.Controllers
             return View(new List<SupertronicsRepairSystem.Models.RepairJob>());
         }
 
-        public async Task<IActionResult> CustomerViewProduct()
+        // Controller Method - Fixed to show single product
+        public async Task<IActionResult> CustomerViewProduct(string id)
         {
-            var products = new List<Product>();
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("Index"); // Redirect if no ID provided
+            }
 
             try
             {
-                CollectionReference productsRef = _firestoreDb.Collection("products"); 
-                QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
+                // Get single product by ID
+                DocumentReference docRef = _firestoreDb.Collection("products").Document(id);
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
-                Console.WriteLine($"Found {snapshot.Count} documents in Firestore."); 
-                foreach (DocumentSnapshot doc in snapshot.Documents)
+                if (snapshot.Exists)
                 {
-                    if (doc.Exists)
-                    {
-                        Product product = doc.ConvertTo<Product>();
-                        products.Add(product);
-                        Console.WriteLine($"Loaded product: {product.Name}");
-                    }
+                    Product product = snapshot.ConvertTo<Product>();
+                    Console.WriteLine($"Loaded product: {product.Name}");
+
+                    // Get recommended products (3 random products, excluding current one)
+                    var recommendedProducts = await GetRecommendedProducts(id, 3);
+                    ViewBag.RecommendedProducts = recommendedProducts;
+
+                    return View(product); 
+                }
+                else
+                {
+                    TempData["Error"] = "Product not found.";
+                    return RedirectToAction("Index");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Firestore error: {ex.Message}");
+                TempData["Error"] = "Error loading product.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        private async Task<List<Product>> GetRecommendedProducts(string excludeId, int count)
+        {
+            var recommendedProducts = new List<Product>();
+            try
+            {
+                CollectionReference productsRef = _firestoreDb.Collection("products");
+                QuerySnapshot snapshot = await productsRef.Limit(count + 5).GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists && doc.Id != excludeId)
+                    {
+                        Product product = doc.ConvertTo<Product>();
+                        recommendedProducts.Add(product);
+
+                        if (recommendedProducts.Count >= count)
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading recommendations: {ex.Message}");
             }
 
-          
-            return View(products);
+            return recommendedProducts;
         }
 
 

@@ -3,8 +3,9 @@
     Layout = "_ViewProductLayout";
     ViewData["Title"] = "All Products";
 }
-<script src="~/js/.js"></script>
+
 <link rel="stylesheet" href="~/css/AllProducts.css">
+
 <div class="page-wrapper">
     <div class="content-wrap">
         <!-- Hero Section -->
@@ -25,21 +26,29 @@
             @foreach (var product in Model)
             {
                 <div class="product-card">
-                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="product-card-link">
-                        <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+                    <a asp-controller="Customer" asp-action="CustomerViewProduct" asp-route-id="@product.Id" class="product-card-link">
+                        <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : Url.Content("~/images/"))"
+                             alt="@product.Name" class="product-image" />
                         <div class="product-info">
                             <h3>@product.Name</h3>
-                            <p>@(string.IsNullOrEmpty(product.Description) ? "Quality product available now" : (product.Description.Length > 80 ? product.Description.Substring(0, 77) + "..." : product.Description))</p>
+                            <p>
+                                @(string.IsNullOrEmpty(product.Description) ? "Quality product available now"
+                                    : (product.Description.Length > 80 ? product.Description.Substring(0, 77) + "..." : product.Description))
+                            </p>
                             <div class="price-details">
-                                <span class="discount">-@product.DiscountPercentage%</span>
+                                @if (product.DiscountPercentage > 0)
+                                {
+                                    <span class="discount">-@product.DiscountPercentage%</span>
+                                }
                                 <span class="current-price">R @String.Format("{0:N0}", product.Price)</span>
-                                <span class="was-price">
-                              
-                                </span>
+                                @if (product.WasPrice > 0 && product.WasPrice > product.Price)
+                                {
+                                    <span class="was-price">R @String.Format("{0:N0}", product.WasPrice)</span>
+                                }
                             </div>
                         </div>
                     </a>
-                    <button class="add-to-cart-btn" onclick="addToCart(@product.Id, event)">
+                    <button class="add-to-cart-btn" onclick="addToCart('@product.Id', event)">
                         <i class="bi bi-cart-plus"></i> Add to Cart
                     </button>
                 </div>
@@ -47,4 +56,3 @@
         </div>
     </div>
 </div>
-
