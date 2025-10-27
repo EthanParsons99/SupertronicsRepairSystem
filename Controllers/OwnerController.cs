@@ -27,43 +27,162 @@ namespace SupertronicsRepairSystem.Controllers
             _repairJobService = repairJobService;
         }
 
-        // GET: Owner/TestRepairJobs
-        public async Task<IActionResult> TestRepairJobs()
+        // GET: Owner/Dashboard
+        public async Task<IActionResult> Dashboard()
         {
+            var model = new OwnerDashboardViewModel();
+
             try
             {
-                var repairJobs = await _repairJobService.GetAllRepairJobsAsync();
-
-                var debugInfo = new
+                // Get current user info
+                var userInfo = await _authService.GetCurrentUserInfoAsync();
+                if (userInfo != null)
                 {
-                    JobCount = repairJobs?.Count ?? 0,
-                    Jobs = repairJobs?.Select(j => new
-                    {
-                        j.Id,
-                        j.ItemModel,
-                        j.CustomerName,
-                        j.Status,
-                        j.SerialNumber,
-                        j.ProblemDescription,
-                        DateReceived = j.DateReceived != null ? j.DateReceived.ToDateTime().ToString() : "NULL",
-                        LastUpdated = j.LastUpdated != null ? j.LastUpdated.ToDateTime().ToString() : "NULL",
-                        HasQuotes = j.Quotes?.Count ?? 0,
-                        HasNotes = j.TechnicianNotes?.Count ?? 0
-                    }).ToList()
-                };
+                    model.OwnerName = !string.IsNullOrEmpty(userInfo.FirstName)
+                        ? userInfo.FirstName
+                        : userInfo.Email.Split('@')[0];
+                }
 
-                return Json(debugInfo);
+                // Get all products count
+                var products = await _productService.GetAllProductsAsync();
+                model.TotalProducts = products?.Count ?? 0;
+
+                // Get all repair jobs
+                var allRepairJobs = await _repairJobService.GetAllRepairJobsAsync();
+
+                if (allRepairJobs != null && allRepairJobs.Any())
+                {
+                    // Count completed repairs
+                    model.CompletedRepairs = allRepairJobs.Count(r =>
+                        r.Status?.Equals("Completed", StringComparison.OrdinalIgnoreCase) ?? false);
+
+                    // Count quotes accepted (jobs with at least one quote)
+                    model.QuotesAccepted = allRepairJobs.Count(r =>
+                        r.Quotes != null && r.Quotes.Any());
+
+                    // Count quotes assigned (jobs in progress with quotes)
+                    model.QuotesAssigned = allRepairJobs.Count(r =>
+                        r.Quotes != null &&
+                        r.Quotes.Any() &&
+                        (r.Status?.Equals("In Progress", StringComparison.OrdinalIgnoreCase) ?? false));
+
+                    // Get recent repairs (last 10, ordered by LastUpdated)
+                    model.RecentRepairs = allRepairJobs
+                        .OrderByDescending(r => r.LastUpdated.ToDateTime())
+                        .Take(10)
+                        .Select(r => new RecentRepairViewModel
+                        {
+                            Id = r.Id,
+                            CustomerName = r.CustomerName ?? "Unknown",
+                            TechnicianName = GetTechnicianNameFromJob(r),
+                            Status = r.Status ?? "Unknown",
+                            LastUpdated = r.LastUpdated.ToDateTime()
+                        })
+                        .ToList();
+                }
             }
             catch (Exception ex)
             {
-                return Json(new { error = ex.Message, stackTrace = ex.StackTrace });
+                Console.WriteLine($"Error loading dashboard: {ex.Message}");
+                // Return empty model on error
             }
+
+            return View(model);
         }
 
-        // GET: Owner/Dashboard
-        public IActionResult Dashboard()
+        // POST: Owner/CheckWarranty
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckWarranty(string serialNumber)
         {
-            return View();
+            var model = new OwnerDashboardViewModel();
+
+            try
+            {
+                // Populate all dashboard data
+                var userInfo = await _authService.GetCurrentUserInfoAsync();
+                if (userInfo != null)
+                {
+                    model.OwnerName = !string.IsNullOrEmpty(userInfo.FirstName)
+                        ? userInfo.FirstName
+                        : userInfo.Email.Split('@')[0];
+                }
+
+                var products = await _productService.GetAllProductsAsync();
+                model.TotalProducts = products?.Count ?? 0;
+
+                var allRepairJobs = await _repairJobService.GetAllRepairJobsAsync();
+
+                if (allRepairJobs != null && allRepairJobs.Any())
+                {
+                    model.CompletedRepairs = allRepairJobs.Count(r =>
+                        r.Status?.Equals("Completed", StringComparison.OrdinalIgnoreCase) ?? false);
+                    model.QuotesAccepted = allRepairJobs.Count(r =>
+                        r.Quotes != null && r.Quotes.Any());
+                    model.QuotesAssigned = allRepairJobs.Count(r =>
+                        r.Quotes != null &&
+                        r.Quotes.Any() &&
+                        (r.Status?.Equals("In Progress", StringComparison.OrdinalIgnoreCase) ?? false));
+
+                    model.RecentRepairs = allRepairJobs
+                        .OrderByDescending(r => r.LastUpdated.ToDateTime())
+                        .Take(10)
+                        .Select(r => new RecentRepairViewModel
+                        {
+                            Id = r.Id,
+                            CustomerName = r.CustomerName ?? "Unknown",
+                            TechnicianName = GetTechnicianNameFromJob(r),
+                            Status = r.Status ?? "Unknown",
+                            LastUpdated = r.LastUpdated.ToDateTime()
+                        })
+                        .ToList();
+                }
+
+                // Check warranty by serial number
+                if (!string.IsNullOrWhiteSpace(serialNumber))
+                {
+                    var product = products?.FirstOrDefault(p =>
+                        p.SerialNumber?.Equals(serialNumber.Trim(), StringComparison.OrdinalIgnoreCase) ?? false);
+
+                    if (product != null)
+                    {
+                        model.WarrantyCheckResult = new WarrantyCheckResultViewModel
+                        {
+                            SerialNumber = serialNumber,
+                            ProductName = product.Name,
+                            IsValid = true
+                        };
+                    }
+                    else
+                    {
+                        model.WarrantyCheckResult = new WarrantyCheckResultViewModel
+                        {
+                            SerialNumber = serialNumber,
+                            ProductName = "Not Found",
+                            IsValid = false
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking warranty: {ex.Message}");
+                TempData["Error"] = "An error occurred while checking the warranty.";
+            }
+
+            return View("Dashboard", model);
+        }
+
+        // Helper method to get technician name from repair job
+        private string GetTechnicianNameFromJob(Models.RepairJob repairJob)
+        {
+            // Since Quote doesn't have TechnicianName, we'll check if quotes exist
+            // You can enhance this later when you add technician assignment
+            if (repairJob.Quotes != null && repairJob.Quotes.Any())
+            {
+                return "Assigned";
+            }
+            return "Unassigned";
         }
 
         // GET: Owner/Index (alternative route)
@@ -231,8 +350,6 @@ namespace SupertronicsRepairSystem.Controllers
             var repairJobsWithQuotes = await _quoteService.GetAllRepairJobsWithQuotesAsync();
             return View(repairJobsWithQuotes);
         }
-
-
 
         // POST: Owner/FilterQuotes
         [HttpPost]
