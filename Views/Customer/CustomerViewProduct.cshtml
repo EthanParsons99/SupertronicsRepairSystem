@@ -6,7 +6,6 @@
 
 <link rel="stylesheet" href="~/css/CustomerViewProduct.css">
 
-
 <div class="sub-nav">
     <div class="sub-nav-item">All Products ▼</div>
     <div class="sub-nav-item">Laptops ▼</div>
@@ -15,83 +14,71 @@
 </div>
 
 <div class="container mt-4">
-    <div class="product-section">
-        <div class="image-gallery">
-            <div class="main-image-container">
-                <span class="stock-badge">In Stock</span>
-                <div class="nav-arrow left">‹</div>
-                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500" alt="Acer Aspire 3" class="main-image">
-                <div class="nav-arrow right">›</div>
-            </div>
-            <div class="thumbnail-gallery">
-                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100" class="thumbnail active">
-                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=100" class="thumbnail">
-                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=100" class="thumbnail">
-                <div class="view-360">👁️</div>
-            </div>
-        </div>
-
-        <div class="product-info">
-            <button class="favorite-btn">♡</button>
-            <h1 class="product-title">Acer Aspire 3</h1>
-            <ul class="product-specs">
-                <li>Processor: Intel Core i7</li>
-                <li>RAM: 8 GB</li>
-                <li>Storage: 512 GB SSD</li>
-                <li>Screen: 15.6 Inch</li>
-                <li>OS: Windows 11 Pro</li>
-            </ul>
-
-            <div class="price-section">
-                <div>
-                    <span class="old-price">R14 900</span>
-                    <span class="was-label">Was</span>
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var product in Model)
+        {
+            <div class="product-section">
+                <div class="image-gallery">
+                    <div class="main-image-container">
+                        <span class="stock-badge">@((product.StockQuantity > 0) ? "In Stock" : "Out of Stock")</span>
+                        <div class="nav-arrow left">‹</div>
+                        <img src="@product.ImageUrl" alt="@product.Name" class="main-image" />
+                        <div class="nav-arrow right">›</div>
+                    </div>
+                    <div class="thumbnail-gallery">
+                        <img src="@product.ImageUrl" class="thumbnail active" />
+                        <div class="view-360">👁️</div>
+                    </div>
                 </div>
-                <div>
-                    <span class="current-price">R14 900</span>
-                    <span class="now-label">Now</span>
+
+                <div class="product-info">
+                    <button class="favorite-btn">♡</button>
+                    <h1 class="product-title">@product.Name</h1>
+                    <p>@product.Description</p>
+
+                    <div class="price-section">
+                        <div>
+                            <span class="old-price">R@product.WasPrice.ToString("N0")</span>
+                            <span class="was-label">Was</span>
+                        </div>
+                        <div>
+                            <span class="current-price">R@product.Price.ToString("N0")</span>
+                            <span class="now-label">Now</span>
+                        </div>
+                        <div>
+                            <span class="discount">-@product.DiscountPercentage%</span>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="quantity-section">
+                        <span class="quantity-label">Qty:</span>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn">-</button>
+                            <span class="quantity-value">1</span>
+                            <button class="quantity-btn">+</button>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-add-cart">Keep Aside</button>
+                        <button class="btn btn-buy-now">Add to cart</button>
+                    </div>
                 </div>
             </div>
-
-            <div class="divider"></div>
-
-            <div class="quantity-section">
-                <span class="quantity-label">Qty:</span>
-                <div class="quantity-controls">
-                    <button class="quantity-btn">-</button>
-                    <span class="quantity-value">1</span>
-                    <button class="quantity-btn">+</button>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button class="btn btn-add-cart">Keep Aside</button>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
-        </div>
-    </div>
+        }
+    }
+    else
+    {
+        <p>No products found.</p>
+    }
 
     <div class="recommendations">
         <h2>You may also like</h2>
         <div class="recommendation-grid">
-            <div class="recommendation-card">
-                <img src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300" alt="HP Speakers">
-                <h3>HP Speakers M200 TV Conv 3.0-HDMI-V-M.2</h3>
-                <div class="price">R 1 499</div>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
-            <div class="recommendation-card">
-                <img src="https://images.unsplash.com/photo-1545127398-14699f92334b?w=300" alt="Headphones">
-                <h3>Noise Cancelling Wireless Headphones JBL R 1 488</h3>
-                <div class="price">R 1 488</div>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
-            <div class="recommendation-card">
-                <img src="https://images.unsplash.com/photo-1589003077984-894e133dabab?w=300" alt="HDMI Cable">
-                <h3>18 2+1 2mm Female Y Split Audio Cable</h3>
-                <div class="price">R 69</div>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
+            <p>Check back later for recommended products.</p>
         </div>
     </div>
 </div>
