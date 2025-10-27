@@ -1,11 +1,15 @@
-﻿using System;
+﻿using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Http;
+using SupertronicsRepairSystem.Models;
+using SupertronicsRepairSystem.ViewModels;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Google.Cloud.Firestore;
-using System.Collections.Generic;
 
 namespace SupertronicsRepairSystem.Services
 {
@@ -15,6 +19,7 @@ namespace SupertronicsRepairSystem.Services
         private readonly FirestoreDb _firestoreDb;
         private readonly string _apiKey;
         private readonly HttpClient _httpClient;
+        private readonly FirebaseAuth _firebaseAuth;
         private const string AuthCookieName = "FirebaseAuth";
         private const string UserRoleCookieName = "UserRole";
 
@@ -22,12 +27,14 @@ namespace SupertronicsRepairSystem.Services
             IHttpContextAccessor httpContextAccessor,
             FirestoreDb firestoreDb,
             string firebaseApiKey,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            FirebaseAuth firebaseAuth)
         {
             _httpContextAccessor = httpContextAccessor;
             _firestoreDb = firestoreDb;
             _apiKey = firebaseApiKey ?? throw new ArgumentNullException(nameof(firebaseApiKey));
             _httpClient = httpClientFactory?.CreateClient() ?? new HttpClient();
+            _firebaseAuth = firebaseAuth;
         }
 
         public async Task<AuthResult> SignInAsync(string email, string password, bool rememberMe)
@@ -387,6 +394,137 @@ namespace SupertronicsRepairSystem.Services
             {
                 return null;
             }
+        }
+
+        public async Task<List<UserInfo>> GetAllTechniciansAsync()
+        {
+            var users = new List<UserInfo>();
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("technicians");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+                foreach (var document in snapshot.Documents)
+                {
+                    var userInfo = new UserInfo
+                    {
+                        UserId = document.Id,
+                        Role = UserRole.Technician,
+                        FirstName = document.ContainsField("firstName") ? document.GetValue<string>("firstName") : string.Empty,
+                        Surname = document.ContainsField("surname") ? document.GetValue<string>("surname") : string.Empty,
+                        Email = document.ContainsField("email") ? document.GetValue<string>("email") : string.Empty,
+                        PhoneNumber = document.ContainsField("phoneNumber") ? document.GetValue<string>("phoneNumber") : string.Empty,
+                    };
+
+                    users.Add(userInfo);
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Error retrieving technicians.");
+            }
+            return users;
+        }
+
+        public async Task<UserInfo> GetTechnicianByIdAsync(string userId)
+        {
+            try
+            {
+                var docRefrence = _firestoreDb.Collection("technicians").Document(userId);
+                var snapshot = await docRefrence.GetSnapshotAsync();
+
+                if (snapshot.Exists)
+                {
+                    var userInfo = new UserInfo
+                    {
+                        UserId = snapshot.Id,
+                        Role = UserRole.Technician,
+                        FirstName = snapshot.ContainsField("firstName") ? snapshot.GetValue<string>("firstName") : string.Empty,
+                        Surname = snapshot.ContainsField("surname") ? snapshot.GetValue<string>("surname") : string.Empty,
+                        Email = snapshot.ContainsField("email") ? snapshot.GetValue<string>("email") : string.Empty,
+                        PhoneNumber = snapshot.ContainsField("phoneNumber") ? snapshot.GetValue<string>("phoneNumber") : string.Empty,
+                    };
+                    return userInfo;
+                }
+                return null!;
+            }
+            catch
+            {
+                Console.WriteLine($"Error getting technician by id");
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdateTechnicianAsync(string userId, EditTechnicianViewModel model)
+        {
+            bool firestoreSuccess = false;
+            try
+            {
+                var updates = new Dictionary<string, object>
+                {
+                    { "firstName", model.FirstName },
+                    { "surname", model.Surname },
+                    { "email", model.Email },
+                    { "phoneNumber", model.PhoneNumber }
+                };
+
+                var techRef = _firestoreDb.Collection("technicians").Document(userId);
+                await techRef.UpdateAsync(updates);
+                firestoreSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"*** ERROR (Firestore) ***: Failed to update Firestore for {userId}. Message: {ex.Message}");
+                return false; // Stop if Firestore fails
+            }
+
+            try
+            {
+                var updateParameters = new UserRecordArgs()
+                {
+                    Uid = userId,
+                    Email = model.Email,
+                    DisplayName = $"{model.FirstName} {model.Surname}"
+                };
+
+                await _firebaseAuth.UpdateUserAsync(updateParameters);
+                Console.WriteLine($"SUCCESS: Updated user {userId} in Firebase Authentication.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"WARNING: Failed to update technician in Firebase Authentication {userId}. Error: {ex.Message}");
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> DeleteTechnicianAsync(string userId)
+        {
+            bool firestoreDeleted = false;
+
+            try
+            {
+                var techRef = _firestoreDb.Collection("technicians").Document(userId);
+                await techRef.DeleteAsync();
+                firestoreDeleted = true;
+            }
+            catch
+            {
+                Console.WriteLine($"Error deleting technician with id {userId}");
+                return false;
+            }
+
+            try
+            {
+                await _firebaseAuth.DeleteUserAsync(userId); 
+                Console.WriteLine($"SUCCESS: Deleted user {userId} from Firebase Authentication.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"WARNING: Failed to delete technician from Firebase Authentication {userId}. Error: {ex.Message}");
+            }
+
+            return firestoreDeleted;
         }
     }
 }

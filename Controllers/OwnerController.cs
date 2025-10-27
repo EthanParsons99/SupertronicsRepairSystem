@@ -97,7 +97,7 @@ namespace SupertronicsRepairSystem.Controllers
             }
             filterModel.Products = filteredProducts.ToList();
 
-            if(!filterModel.MaxPrice.HasValue || filterModel.MaxPrice.Value <= 0)
+            if (!filterModel.MaxPrice.HasValue || filterModel.MaxPrice.Value <= 0)
             {
                 filterModel.MaxPrice = products.Any() ? products.Max(p => p.Price) : 0;
             }
@@ -141,7 +141,7 @@ namespace SupertronicsRepairSystem.Controllers
             {
                 return View(model);
             }
-            if(await _productService.UpdateProductAsync(model))
+            if (await _productService.UpdateProductAsync(model))
             {
                 TempData["Success"] = "Product updated successfully.";
                 return RedirectToAction("ProductManagement");
@@ -231,9 +231,25 @@ namespace SupertronicsRepairSystem.Controllers
         }
 
         // GET: Owner/TechnicianManagement
-        public IActionResult TechnicianManagement()
+        public async Task<IActionResult> TechnicianManagement(TechnicianManagementViewModel filterModel)
         {
-            return View();
+            var allTechnicians = await _authService.GetAllTechniciansAsync();
+            var filteredTechnicians = allTechnicians.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(filterModel.SearchTerm))
+            {
+                var term = filterModel.SearchTerm.Trim().ToLower();
+                filteredTechnicians = filteredTechnicians.Where(t =>
+                    t.FirstName?.ToLower().Contains(term) == true ||
+                    t.Email.ToLower().Contains(term)
+                );
+            }
+
+            filteredTechnicians = filteredTechnicians.OrderBy(t => t.FirstName);
+
+            filterModel.Technicians = filteredTechnicians.ToList();
+
+            return View(filterModel);
         }
 
         // GET: Owner/AddTechnician
@@ -269,6 +285,82 @@ namespace SupertronicsRepairSystem.Controllers
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);
+            }
+        }
+
+        public async Task<IActionResult> EditTechnician(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var userInfo = await _authService.GetTechnicianByIdAsync(id);
+            if (userInfo == null)
+            {
+                TempData["Error"] = "Technician not found.";
+                return RedirectToAction("TechnicianManagement");
+            }
+
+            var model = new EditTechnicianViewModel
+            {
+                UserId = userInfo.UserId,
+                FirstName = userInfo.FirstName,
+                Surname = userInfo.Surname,
+                Email = userInfo.Email,
+                PhoneNumber = userInfo.PhoneNumber,
+                Role = userInfo.Role
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTechnician(EditTechnicianViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var success = await _authService.UpdateTechnicianAsync(
+                model.UserId,
+                model
+            );
+            if (success)
+            {
+                TempData["Success"] = "Technician updated successfully.";
+                return RedirectToAction("TechnicianManagement");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred while updating the technician. Please try again.");
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTechnician(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["Error"] = "Invalid technician ID.";
+                return RedirectToAction("TechnicianManagement");
+            }
+            var userInfo = await _authService.GetTechnicianByIdAsync(id);
+            var technicianName = userInfo != null ? $"{userInfo.FirstName} {userInfo.Surname}".Trim() : "Technician";
+            var success = await _authService.DeleteTechnicianAsync(id);
+
+            if (success)
+            {
+                TempData["Success"] = $"{technicianName} deleted successfully.";
+                return RedirectToAction("TechnicianManagement");
+            }
+            else
+            {
+                TempData["Error"] = $"An error occurred while deleting {technicianName}. Please try again.";
+                return RedirectToAction("TechnicianManagement");
             }
         }
     }
