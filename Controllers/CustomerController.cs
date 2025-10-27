@@ -70,11 +70,68 @@ namespace SupertronicsRepairSystem.Controllers
             return View(new List<SupertronicsRepairSystem.Models.RepairJob>());
         }
 
-        // Changed method name to match the view file
-        public IActionResult CustomerViewProduct()
+        public async Task<IActionResult> CustomerViewProduct()
         {
-            return View();
+            var products = new List<Product>();
+
+            try
+            {
+                CollectionReference productsRef = _firestoreDb.Collection("products"); 
+                QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
+
+                Console.WriteLine($"Found {snapshot.Count} documents in Firestore."); 
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        Product product = doc.ConvertTo<Product>();
+                        products.Add(product);
+                        Console.WriteLine($"Loaded product: {product.Name}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Firestore error: {ex.Message}");
+            }
+
+          
+            return View(products);
         }
+
+
+        // GET: Products/All
+        // GET: Customer/AllProducts
+        public async Task<IActionResult> AllProducts()
+        {
+            var products = new List<Product>();
+
+            try
+            {
+                CollectionReference productsRef = _firestoreDb.Collection("products");
+                QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        var product = doc.ConvertTo<Product>();
+                        products.Add(product);
+                    }
+                }
+
+                Console.WriteLine($"Loaded {products.Count} products from Firestore.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading products from Firestore: {ex.Message}");
+                TempData["Error"] = "Unable to load products at this time. Please try again later.";
+            }
+
+            return View("AllProducts", products); // Ensure it points to AllProducts.cshtml
+        }
+
+
 
         // GET: Customer/RequestRepair
         public IActionResult RequestRepair()
