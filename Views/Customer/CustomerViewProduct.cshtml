@@ -1,77 +1,374 @@
-﻿@model IEnumerable<SupertronicsRepairSystem.Models.Product>
+﻿@model SupertronicsRepairSystem.Models.Product
 
 @{
-    ViewData["Title"] = "Customer View Product";
+    ViewData["Title"] = Model?.Name ?? "Product Details";
+    var recommendedProducts = ViewBag.RecommendedProducts as List<SupertronicsRepairSystem.Models.Product>
+                              ?? new List<SupertronicsRepairSystem.Models.Product>();
 }
 
 <link rel="stylesheet" href="~/css/CustomerViewProduct.css">
 
-<div class="container mt-4">
-    @if (Model != null && Model.Any())
-    {
-        @foreach (var product in Model)
-        {
-            <div class="product-section">
-                <div class="image-gallery">
-                    <div class="main-image-container">
-                        <span class="stock-badge">@((product.StockQuantity > 0) ? "In Stock" : "Out of Stock")</span>
-                        <div class="nav-arrow left">‹</div>
-                        <img src="@product.ImageUrl" alt="@product.Name" class="main-image" />
-                        <div class="nav-arrow right">›</div>
+<div class="page-wrapper">
+    <div class="content-wrap">
+        <div class="container">
+            @if (Model != null)
+            {
+                <!-- Product Detail Section -->
+                <div class="product-section">
+                    <!-- Image Gallery -->
+                    <div class="image-gallery">
+                        <div class="main-image-container">
+                            <span class="stock-badge @(Model.StockQuantity > 0 ? "in-stock" : "out-of-stock")">
+                                @(Model.StockQuantity > 0 ? "In Stock" : "Out of Stock")
+                            </span>
+                            <div class="nav-arrow left" onclick="changeImage(-1)">‹</div>
+                            <img src="@Model.ImageUrl" alt="@Model.Name" class="main-image" id="mainImage"
+                                 onerror="this.src='/images/products/default-product.jpg'" />
+                            <div class="nav-arrow right" onclick="changeImage(1)">›</div>
+                        </div>
+                        <div class="thumbnail-gallery">
+                            <img src="@Model.ImageUrl" class="thumbnail active" onclick="setMainImage(this)"
+                                 onerror="this.src='/images/products/default-product.jpg'" />
+                            <div class="view-360" title="360° View">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="thumbnail-gallery">
-                        <img src="@product.ImageUrl" class="thumbnail active" />
-                        <div class="view-360">👁️</div>
+
+                    <!-- Product Information -->
+                    <div class="product-info">
+                        <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites">
+                            <i class="bi bi-heart"></i>
+                        </button>
+
+                        <h1 class="product-title">@Model.Name</h1>
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <ul class="product-specs">
+                                @foreach (var line in Model.Description.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <li>@line</li>
+                                }
+                            </ul>
+                        }
+
+                        <div class="divider"></div>
+
+                        <!-- Price Section -->
+                        <div class="price-section">
+                            @if (Model.WasPrice > Model.Price)
+                            {
+                                <div class="price-row">
+                                    <span class="was-label">WAS</span>
+                                    <span class="old-price">R @Model.WasPrice.ToString("N0")</span>
+                                </div>
+                            }
+                            <div class="price-row">
+                                <span class="now-label">NOW</span>
+                                <span class="current-price">R @Model.Price.ToString("N0")</span>
+                            </div>
+                            @if (Model.DiscountPercentage > 0)
+                            {
+                                <div class="discount-badge">-@Model.DiscountPercentage%</div>
+                            }
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- Quantity Section -->
+                        <div class="quantity-section">
+                            <span class="quantity-label">Quantity:</span>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="changeQuantity(-1)" type="button">-</button>
+                                <input type="number" class="quantity-value" id="quantity" value="1" min="1" max="@Model.StockQuantity" readonly />
+                                <button class="quantity-btn" onclick="changeQuantity(1)" type="button">+</button>
+                            </div>
+                            <span class="stock-info">@Model.StockQuantity available</span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="btn btn-keep-aside" onclick="keepAside('@Model.Id')">
+                                <i class="bi bi-bookmark"></i> Keep Aside
+                            </button>
+                            <button class="btn btn-add-cart" onclick="addToCart('@Model.Id')">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="product-info">
-                    <button class="favorite-btn">♡</button>
-                    <h1 class="product-title">@product.Name</h1>
-                    <p>@product.Description</p>
-
-                    <div class="price-section">
-                        <div>
-                            <span class="old-price">R@product.WasPrice.ToString("N0")</span>
-                            <span class="was-label">Was</span>
-                        </div>
-                        <div>
-                            <span class="current-price">R@product.Price.ToString("N0")</span>
-                            <span class="now-label">Now</span>
-                        </div>
-                        <div>
-                            <span class="discount">-@product.DiscountPercentage%</span>
+                <!-- Recommendations Section -->
+                @if (recommendedProducts.Any())
+                {
+                    <div class="recommendations">
+                        <h2>You may also like</h2>
+                        <div class="recommendation-grid">
+                            @foreach (var recProduct in recommendedProducts)
+                            {
+                                <div class="recommendation-card">
+                                    <a asp-action="CustomerViewProduct" asp-route-id="@recProduct.Id" class="product-link">
+                                        <img src="@recProduct.ImageUrl" alt="@recProduct.Name"
+                                             onerror="this.src='/images/products/default-product.jpg'" />
+                                        <h3>@recProduct.Name</h3>
+                                        <div class="price">
+                                            @if (recProduct.DiscountPercentage > 0)
+                                            {
+                                                <span class="discount-badge-small">-@recProduct.DiscountPercentage%</span>
+                                            }
+                                            <span class="price-value">R @recProduct.Price.ToString("N0")</span>
+                                        </div>
+                                    </a>
+                                    <button class="btn btn-buy-now btn-small" onclick="quickAddToCart('@recProduct.Id')">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
-
-                    <div class="divider"></div>
-
-                    <div class="quantity-section">
-                        <span class="quantity-label">Qty:</span>
-                        <div class="quantity-controls">
-                            <button class="quantity-btn">-</button>
-                            <span class="quantity-value">1</span>
-                            <button class="quantity-btn">+</button>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button class="btn btn-add-cart">Keep Aside</button>
-                        <button class="btn btn-buy-now">Add to cart</button>
-                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning text-center" style="margin: 50px 0;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
+                    <h3>Product not found</h3>
+                    <p>The product you're looking for doesn't exist or has been removed.</p>
+                    <a asp-action="Index" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Products
+                    </a>
                 </div>
-            </div>
-        }
-    }
-    else
-    {
-        <p>No products found.</p>
-    }
-
-    <div class="recommendations">
-        <h2>You may also like</h2>
-        <div class="recommendation-grid">
-            <p>Check back later for recommended products.</p>
+            }
         </div>
     </div>
 </div>
+<script>
+    // Quantity controls
+    function changeQuantity(change) {
+        const quantityInput = document.getElementById('quantity');
+        let currentValue = parseInt(quantityInput.value);
+        let maxValue = parseInt(quantityInput.max);
+        let newValue = currentValue + change;
+        
+        if (newValue >= 1 && newValue <= maxValue) {
+            quantityInput.value = newValue;
+        }
+    }
+
+    // Image gallery
+    function setMainImage(thumbnail) {
+        const mainImage = document.getElementById('mainImage');
+        mainImage.src = thumbnail.src;
+        
+        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+        thumbnail.classList.add('active');
+    }
+
+    function changeImage(direction) {
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        const activeThumbnail = document.querySelector('.thumbnail.active');
+        let currentIndex = Array.from(thumbnails).indexOf(activeThumbnail);
+        let newIndex = currentIndex + direction;
+        
+        if (newIndex >= 0 && newIndex < thumbnails.length) {
+            setMainImage(thumbnails[newIndex]);
+        }
+    }
+
+    // Favorite toggle
+    function toggleFavorite(btn) {
+        const icon = btn.querySelector('i');
+        if (icon.classList.contains('bi-heart')) {
+            icon.classList.remove('bi-heart');
+            icon.classList.add('bi-heart-fill');
+            btn.style.color = '#ff0000';
+            showNotification('Added to favorites!', 'success');
+        } else {
+            icon.classList.remove('bi-heart-fill');
+            icon.classList.add('bi-heart');
+            btn.style.color = '';
+            showNotification('Removed from favorites', 'info');
+        }
+    }
+
+    // Keep Aside functionality
+    function keepAside(productId) {
+        const quantity = document.getElementById('quantity').value;
+        
+        fetch('/CustomerDashboard/KeepAside', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Product kept aside successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Added to keep aside!', 'success');
+        });
+    }
+
+    // Add to Cart functionality
+    function addToCart(productId) {
+        const quantity = document.getElementById('quantity').value;
+        
+        fetch('/Cart/Add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Added to cart successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Added to cart!', 'success');
+        });
+    }
+
+    // Quick add to cart from recommendations
+    function quickAddToCart(productId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        fetch('/Cart/Add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: productId, quantity: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Added to cart!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Added to cart!', 'success');
+        });
+    }
+
+    // Notification system
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <i class="bi bi-check-circle"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+<style>
+    /* Notification styles */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        z-index: 10000;
+    }
+
+    .notification.show {
+        transform: translateX(0);
+    }
+
+    .notification-success {
+        border-left: 4px solid #28a745;
+    }
+
+    .notification-info {
+        border-left: 4px solid #17a2b8;
+    }
+
+    .notification i {
+        font-size: 20px;
+        color: #28a745;
+    }
+
+    .product-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .product-link:hover {
+        text-decoration: none;
+    }
+
+    .stock-badge.out-of-stock {
+        background: #dc3545;
+    }
+
+    .stock-info {
+        font-size: 14px;
+        color: #666;
+        margin-left: 10px;
+    }
+
+    .discount-badge-small {
+        background: #ff0000;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 8px;
+    }
+
+    .btn-small {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .btn-keep-aside {
+        background: #9575cd;
+    }
+
+    .btn-keep-aside:hover {
+        background: #7e57c2;
+    }
+
+    .price-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 5px 0;
+    }
+
+    .discount-badge {
+        display: inline-block;
+        background: #ff0000;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+</style>
