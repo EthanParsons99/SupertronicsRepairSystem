@@ -1,4 +1,7 @@
 ﻿using System.Threading.Tasks;
+using FirebaseAdmin.Auth;
+using SupertronicsRepairSystem.Models;
+using SupertronicsRepairSystem.ViewModels;
 
 namespace SupertronicsRepairSystem.Services
 {
@@ -12,6 +15,10 @@ namespace SupertronicsRepairSystem.Services
         Task<bool> IsAuthenticatedAsync();
         Task<string> GetIdTokenAsync();
         Task<AuthResult> ResetPasswordAsync(string email);
+        Task<List<UserInfo>> GetAllTechniciansAsync();
+        Task<UserInfo> GetTechnicianByIdAsync(string userId);
+        Task<bool> UpdateTechnicianAsync(string userId, EditTechnicianViewModel model);
+        Task<bool> DeleteTechnicianAsync(string userId);
     }
 
     public enum UserRole

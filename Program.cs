@@ -1,4 +1,8 @@
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Http;
 using SupertronicsRepairSystem.Services;
 
 namespace SupertronicsRepairSystem
@@ -33,6 +37,23 @@ namespace SupertronicsRepairSystem
                 throw new ArgumentNullException(nameof(firebaseApiKey), "Firebase ApiKey is not set in appsettings.json");
             }
 
+            try
+            {
+                if (FirebaseApp.DefaultInstance == null)
+                {
+                    FirebaseApp.Create(new AppOptions()
+                    {
+                        Credential = GoogleCredential.FromFile(credentialsPath),
+                    });
+                }
+                builder.Services.AddSingleton(FirebaseAuth.DefaultInstance);
+                Console.WriteLine("Firebase Admin SDK initialized successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FATAL ERROR: Failed to initialize Firebase Admin SDK. Delete function will fail. Error: {ex.Message}");
+            }
+
             // Register Firestore Database as a Singleton
             builder.Services.AddSingleton(new FirestoreDbBuilder
             {
@@ -41,14 +62,25 @@ namespace SupertronicsRepairSystem
 
             //  Application Service Registrations 
 
-            builder.Services.AddScoped<IAuthService>(provider =>
-                new FirebaseAuthService(
-                    provider.GetRequiredService<IHttpContextAccessor>(),
-                    provider.GetRequiredService<FirestoreDb>(),
+            // Register IAuthService, passing 5 arguments to the constructor
+            builder.Services.AddScoped<IAuthService, FirebaseAuthService>(provider =>
+            {
+                // Retrieve all required dependencies from the service provider
+                var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var firestoreDb = provider.GetRequiredService<FirestoreDb>();
+                var firebaseApiKey = builder.Configuration["Firebase:ApiKey"];
+                var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+                // This is the fifth argument (the new one)
+                var firebaseAuth = provider.GetRequiredService<FirebaseAuth>();
+
+                return new FirebaseAuthService(
+                    httpContextAccessor,
+                    firestoreDb,
                     firebaseApiKey,
-                    provider.GetRequiredService<IHttpClientFactory>()
-                )
-            );
+                    httpClientFactory,
+                    firebaseAuth // <-- The 5th argument is now passed
+                );
+            });
 
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IQuoteService, QuoteService>();
