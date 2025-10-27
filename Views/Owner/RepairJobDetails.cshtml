@@ -1,0 +1,402 @@
+﻿@model SupertronicsRepairSystem.Models.RepairJob
+@{
+    ViewData["Title"] = "Repair Job Details";
+}
+
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2 class="text-primary mb-0">Repair Job Details</h2>
+            <a href="/Owner/RepairJobs" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Jobs
+            </a>
+        </div>
+    </div>
+
+    @if (Model != null)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-dark text-white">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">
+                            <i class="bi bi-wrench-adjustable"></i> Job #@(Model.Id?.Substring(0, Math.Min(8, Model.Id?.Length ?? 0)))
+                        </h5>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        @{
+                            string status = Model.Status ?? "Unknown";
+                            string badgeClass = "bg-secondary";
+
+                            if (status == "Completed")
+                            {
+                                badgeClass = "bg-success";
+                            }
+                            else if (status == "In Progress")
+                            {
+                                badgeClass = "bg-warning text-dark";
+                            }
+                            else if (status == "Pending")
+                            {
+                                badgeClass = "bg-info";
+                            }
+                            else if (status == "Cancelled")
+                            {
+                                badgeClass = "bg-danger";
+                            }
+                        }
+                        <span class="badge @badgeClass fs-6">@status</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Device Information</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td class="text-muted" style="width: 150px;"><strong>Item Model:</strong></td>
+                                <td>@(Model.ItemModel ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><strong>Serial Number:</strong></td>
+                                <td>@(Model.SerialNumber ?? "N/A")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Customer Information</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td class="text-muted" style="width: 150px;"><strong>Name:</strong></td>
+                                <td>@(Model.CustomerName ?? "Unknown")</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><strong>Customer ID:</strong></td>
+                                <td>@(Model.CustomerId ?? "N/A")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Timeline</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td class="text-muted" style="width: 150px;"><strong>Date Received:</strong></td>
+                                <td>
+                                    @try
+                                    {
+                                        if (Model.DateReceived != null)
+                                        {
+                                            @Model.DateReceived.ToDateTime().ToString("MMMM dd, yyyy 'at' HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <text>N/A</text>
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        <text>N/A</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><strong>Last Updated:</strong></td>
+                                <td>
+                                    @try
+                                    {
+                                        if (Model.LastUpdated != null)
+                                        {
+                                            @Model.LastUpdated.ToDateTime().ToString("MMMM dd, yyyy 'at' HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <text>N/A</text>
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        <text>N/A</text>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Problem Description</h6>
+                        <div class="alert alert-light">
+                            @(Model.ProblemDescription ?? "No description provided")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-file-text"></i> Quotes (@(Model.Quotes?.Count ?? 0))
+                </h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Quotes != null && Model.Quotes.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Quote ID</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var quote in Model.Quotes)
+                                {
+                                    <tr>
+                                        <td><strong>@(quote.Id ?? "N/A")</strong></td>
+                                        <td>
+                                            @{
+                                                var descProp = quote.GetType().GetProperty("Description");
+                                                var desc = descProp != null ? descProp.GetValue(quote)?.ToString() : "N/A";
+                                            }
+                                            @desc
+                                        </td>
+                                        <td>
+                                            @{
+                                                var amountProp = quote.GetType().GetProperty("Amount") ?? quote.GetType().GetProperty("TotalAmount");
+                                                var amount = amountProp != null ? amountProp.GetValue(quote) : 0;
+                                            }
+                                            <strong class="text-success">R @(Convert.ToDecimal(amount).ToString("N2"))</strong>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var statusProp = quote.GetType().GetProperty("Status");
+                                                string quoteStatus = statusProp != null ? statusProp.GetValue(quote)?.ToString() ?? "Pending" : "Pending";
+                                                string quoteBadgeClass = quoteStatus == "Approved" ? "bg-success" :
+                                                quoteStatus == "Rejected" ? "bg-danger" : "bg-warning";
+                                            }
+                                            <span class="badge @quoteBadgeClass">@quoteStatus</span>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var dateProp = quote.GetType().GetProperty("CreatedAt") ?? quote.GetType().GetProperty("DateCreated");
+                                                var dateVal = dateProp?.GetValue(quote);
+                                            }
+                                            @try
+                                            {
+                                                if (dateVal != null && dateVal.GetType().Name == "Timestamp")
+                                                {
+                                                    var timestamp = (Google.Cloud.Firestore.Timestamp)dateVal;
+                                                    @timestamp.ToDateTime().ToString("MMM dd, yyyy")
+                                                }
+                                                else
+                                                {
+                                                    <text>N/A</text>
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                <text>N/A</text>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-2">No quotes available for this job</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-journal-text"></i> Technician Notes (@(Model.TechnicianNotes?.Count ?? 0))
+                </h6>
+            </div>
+            <div class="card-body">
+                @if (Model.TechnicianNotes != null && Model.TechnicianNotes.Any())
+                {
+                    <div class="notes-container">
+                        @foreach (var note in Model.TechnicianNotes.OrderByDescending(n => n.Timestamp))
+                        {
+                            <div class="note-item">
+                                <div class="note-header">
+                                    <i class="bi bi-chat-left-text text-info"></i>
+                                    <small class="text-muted ms-2">
+                                        @try
+                                        {
+                                            if (note.Timestamp != null)
+                                            {
+                                                @note.Timestamp.ToDateTime().ToString("MMMM dd, yyyy 'at' HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <text>Date unknown</text>
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            <text>Date unknown</text>
+                                        }
+                                    </small>
+                                </div>
+                                <div class="note-content">
+                                    @(note.Content ?? "No content")
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-journal-x" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-2">No technician notes available</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body text-center">
+                <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Print Details
+                </button>
+                <a href="/Owner/RepairJobs" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Repair Job Not Found</h4>
+                <p class="text-muted">The repair job you're looking for doesn't exist or has been removed.</p>
+                <a href="/Owner/RepairJobs" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-left"></i> Back to Repair Jobs
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
+
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    .bg-dark {
+        background-color: #2C3E50 !important;
+    }
+
+    .bg-primary {
+        background-color: #5865F2 !important;
+    }
+
+    .bg-info {
+        background-color: #3498DB !important;
+    }
+
+    .text-primary {
+        color: #5865F2 !important;
+    }
+
+    .btn-primary {
+        background-color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-primary:hover {
+            background-color: #4752C4;
+            border-color: #4752C4;
+        }
+
+    .btn-outline-primary {
+        color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #5865F2;
+            border-color: #5865F2;
+            color: white;
+        }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+        .badge.bg-success {
+            background-color: #3DCEA2 !important;
+        }
+
+        .badge.bg-warning {
+            background-color: #F39C12 !important;
+        }
+
+        .badge.bg-info {
+            background-color: #3498DB !important;
+        }
+
+        .badge.bg-danger {
+            background-color: #E74C3C !important;
+        }
+
+    .notes-container {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .note-item {
+        background-color: #f8f9fa;
+        border-left: 4px solid #3498DB;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+    }
+
+    .note-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .note-content {
+        padding-left: 30px;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .alert-light {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        color: #333;
+    }
+
+</style>

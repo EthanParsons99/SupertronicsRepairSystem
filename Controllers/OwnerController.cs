@@ -72,6 +72,25 @@ namespace SupertronicsRepairSystem.Controllers
             return RedirectToAction("Dashboard");
         }
 
+        // GET: Owner/RepairJobDetails/id
+        public async Task<IActionResult> RepairJobDetails(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("RepairJobs");
+            }
+
+            var repairJob = await _repairJobService.GetRepairJobByIdAsync(id);
+
+            if (repairJob == null)
+            {
+                TempData["Error"] = "Repair job not found.";
+                return RedirectToAction("RepairJobs");
+            }
+
+            return View(repairJob);
+        }
+
         // GET: Owner/ProductManagement
         public async Task<IActionResult> ProductManagement(ProductListViewModel filterModel)
         {
