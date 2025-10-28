@@ -1,15 +1,15 @@
-#Supertronics Repair System
+# Supertronics Repair System
 
-##Repair Tracking and Electronic Salaes Management Platform
+## Repair Tracking and Electronic Salaes Management Platform
 The Supertronics Repair System is a multi-user web application designed to improve the business operations for electronic repairs.It provides feautere to manage repair jobs, tracking status updates, generating quotes and providing diffrent user interfaces for each type of user, Customers, Technicians, Owners.
 
-##Key Features
+## Key Features
 The system uses role based access to provide each user with functions that only they can use:
 - **Owner:** Is able to manage technicians by adding them to the system, updating their profiles and being able to delete them from the system. The owner is also able to add new products to the system for customers to browse. They also have a overview of how the business is doing like seeing the progress on repair jobs and quotes that have been sent to the system.
 - **Technician:** Is able to create new repair jobs, update the status of repairs, generate quotes and track devices serial numbers
 - **Customer:** Is able to login and signup to the system, view products, track their repairs and request for quotes.
 
-###Core Technical Features
+### Core Technical Features
 - Secure Authentication by using firebase authentication which is also used for user identity management
 - Storage, the system uses firebase firestore, a NoSQL cloud database to store all the information from the system.
 - Role Security is implemented with AuthorizeRoleAttribute to enforce access controll over all the controllers and actions
