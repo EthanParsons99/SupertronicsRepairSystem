@@ -105,7 +105,7 @@ namespace SupertronicsRepairSystem
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Customer}/{action=CustomerViewProduct}/{id?}");
+             pattern: "{controller=Customer}/{action=Index}/{id?}");
 
             app.Run();
         }

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Cloud.Firestore;
+using Microsoft.AspNetCore.Mvc;
 using SupertronicsRepairSystem.Attributes;
+using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.Services;
 using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.ViewModels.Technician;
@@ -10,11 +12,35 @@ namespace SupertronicsRepairSystem.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IRepairJobService _repairJobService;
-
+        private readonly FirestoreDb _firestoreDb;
         public CustomerController(IAuthService authService, IRepairJobService repairJobService)
         {
             _authService = authService;
             _repairJobService = repairJobService;
+            string path = "path/to/serviceAccountKey.json";
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
+
+            _firestoreDb = FirestoreDb.Create("supertronics-dc0f9");
+        }
+
+
+        public async Task<IActionResult> Index()
+        {
+            var products = new List<Product>();
+
+            CollectionReference productsRef = _firestoreDb.Collection("products");
+            QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
+
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                if (doc.Exists)
+                {
+                    Product product = doc.ConvertTo<Product>();
+                    products.Add(product);
+                }
+            }
+
+            return View(products);
         }
 
         public async Task<IActionResult> Dashboard()
@@ -22,7 +48,6 @@ namespace SupertronicsRepairSystem.Controllers
             var userInfo = await _authService.GetCurrentUserInfoAsync();
             ViewBag.UserInfo = userInfo;
 
-            // Get customer's repair jobs for dashboard
             if (userInfo != null)
             {
                 var repairJobs = await _repairJobService.GetRepairJobsByCustomerIdAsync(userInfo.UserId);
@@ -45,11 +70,106 @@ namespace SupertronicsRepairSystem.Controllers
             return View(new List<SupertronicsRepairSystem.Models.RepairJob>());
         }
 
-        // Changed method name to match the view file
-        public IActionResult CustomerViewProduct()
+        // Controller Method - Fixed to show single product
+        public async Task<IActionResult> CustomerViewProduct(string id)
         {
-            return View();
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("Index"); // Redirect if no ID provided
+            }
+
+            try
+            {
+                // Get single product by ID
+                DocumentReference docRef = _firestoreDb.Collection("products").Document(id);
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+                if (snapshot.Exists)
+                {
+                    Product product = snapshot.ConvertTo<Product>();
+                    Console.WriteLine($"Loaded product: {product.Name}");
+
+                    // Get recommended products (3 random products, excluding current one)
+                    var recommendedProducts = await GetRecommendedProducts(id, 3);
+                    ViewBag.RecommendedProducts = recommendedProducts;
+
+                    return View(product); 
+                }
+                else
+                {
+                    TempData["Error"] = "Product not found.";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Firestore error: {ex.Message}");
+                TempData["Error"] = "Error loading product.";
+                return RedirectToAction("Index");
+            }
         }
+
+        private async Task<List<Product>> GetRecommendedProducts(string excludeId, int count)
+        {
+            var recommendedProducts = new List<Product>();
+            try
+            {
+                CollectionReference productsRef = _firestoreDb.Collection("products");
+                QuerySnapshot snapshot = await productsRef.Limit(count + 5).GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists && doc.Id != excludeId)
+                    {
+                        Product product = doc.ConvertTo<Product>();
+                        recommendedProducts.Add(product);
+
+                        if (recommendedProducts.Count >= count)
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading recommendations: {ex.Message}");
+            }
+
+            return recommendedProducts;
+        }
+
+
+        // GET: Products/All
+        // GET: Customer/AllProducts
+        public async Task<IActionResult> AllProducts()
+        {
+            var products = new List<Product>();
+
+            try
+            {
+                CollectionReference productsRef = _firestoreDb.Collection("products");
+                QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
+
+                foreach (DocumentSnapshot doc in snapshot.Documents)
+                {
+                    if (doc.Exists)
+                    {
+                        var product = doc.ConvertTo<Product>();
+                        products.Add(product);
+                    }
+                }
+
+                Console.WriteLine($"Loaded {products.Count} products from Firestore.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading products from Firestore: {ex.Message}");
+                TempData["Error"] = "Unable to load products at this time. Please try again later.";
+            }
+
+            return View("AllProducts", products); // Ensure it points to AllProducts.cshtml
+        }
+
+
 
         // GET: Customer/RequestRepair
         public IActionResult RequestRepair()
