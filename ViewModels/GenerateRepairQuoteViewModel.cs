@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
     public class GenerateRepairQuoteViewModel
     {
-        [Required]
         public string JobId { get; set; }
 
         [Display(Name = "Customer Name")]
@@ -20,11 +21,9 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         public string? ProblemDescription { get; set; }
 
         [Display(Name = "Customer Email")]
-        [EmailAddress]
         public string? CustomerEmail { get; set; }
 
         [Display(Name = "Customer Phone")]
-        [Phone]
         public string? CustomerPhone { get; set; }
 
         [Display(Name = "Brand/Manufacturer")]
@@ -34,20 +33,14 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         public string? Model { get; set; }
 
         [Display(Name = "Diagnosis Notes")]
-        [StringLength(1000)]
         public string? DiagnosisNotes { get; set; }
 
         public List<QuotePartItem> Parts { get; set; } = new List<QuotePartItem>();
 
-        [Required]
         [Display(Name = "Labor Hours")]
-        [Range(0.25, 100)]
-        // THE FIX: Provide a default value that is within the valid range.
         public decimal LaborHours { get; set; } = 1.0m;
 
-        [Required]
         [Display(Name = "Labor Rate (R/hour)")]
-        [Range(200, 2000)]
         public decimal LaborRate { get; set; } = 750m;
 
         [Display(Name = "Quote Valid Until")]
@@ -65,7 +58,6 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
 
     public class QuotePartItem
     {
-        [Required]
         [Display(Name = "Part Name")]
         public string? PartName { get; set; }
 
@@ -74,13 +66,9 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
 
         public string? Description { get; set; }
 
-        [Required]
-        [Range(1, 100)]
         public int Quantity { get; set; } = 1;
 
-        [Required]
         [Display(Name = "Unit Price")]
-        [Range(0.01, 100000)]
         public decimal UnitPrice { get; set; }
 
         public decimal TotalPrice => Quantity * UnitPrice;

@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Repair Jobs";
 
-    // THE FIX: Create the SelectList here in a clean C# block.
     var statusList = new SelectList(new[] { "Pending", "Diagnosis", "In Progress", "Completed", "Cancelled" });
 }
 
@@ -56,7 +55,6 @@
                     <form method="get" class="row g-3 filter-form">
                         <div class="col-lg-3 col-md-4">
                             <label class="form-label">Status</label>
-                            <!-- THE FIX: The tag is now clean and easy to read. -->
                             <select class="form-select" name="status" asp-items="statusList" asp-for="@ViewData["SelectedStatus"]">
                                 <option value="">All Statuses</option>
                             </select>
@@ -117,10 +115,10 @@
                                     @foreach (var job in Model)
                                     {
                                         <tr>
-                                            <td class="ps-4 fw-semibold">#@(job.DocumentId?.Substring(0, 6).ToUpper() ?? "N/A")</td>
+                                            <td class="ps-4 fw-semibold">#@(job.Id?.Substring(0, 6).ToUpper() ?? "N/A")</td>
                                             <td>
                                                 <div style="color: var(--body-text);">@job.ItemName</div>
-                                                <small style="color: var(--secondary-text);">ID: @(job.DocumentId ?? "N/A")</small>
+                                                <small style="color: var(--secondary-text);">ID: @(job.Id ?? "N/A")</small>
                                             </td>
                                             <td>
                                                 <div style="color: var(--body-text);">@job.CustomerName</div>
@@ -132,13 +130,13 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
-                                                    <a class="btn btn-primary" asp-action="UpdateRepairStatus" asp-route-id="@job.DocumentId" title="Update Status">
+                                                    <a class="btn btn-primary" asp-action="UpdateRepairStatus" asp-route-id="@job.Id" title="Update Status">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
-                                                    <a class="btn btn-primary" asp-action="AddRepairNotes" asp-route-id="@job.DocumentId" title="Add Notes">
+                                                    <a class="btn btn-primary" asp-action="AddRepairNotes" asp-route-id="@job.Id" title="Add Notes">
                                                         <i class="bi bi-chat-text"></i>
                                                     </a>
-                                                    <a class="btn btn-primary" asp-action="GenerateRepairQuote" asp-route-id="@job.DocumentId" title="Generate Quote">
+                                                    <a class="btn btn-primary" asp-action="GenerateRepairQuote" asp-route-id="@job.Id" title="Generate Quote">
                                                         <i class="bi bi-file-text"></i>
                                                     </a>
                                                 </div>
