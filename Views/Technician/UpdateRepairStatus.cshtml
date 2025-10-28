@@ -16,6 +16,9 @@
                 <div class="card-body">
                     <form asp-action="UpdateRepairStatus" method="post">
                         <input type="hidden" asp-for="JobId" />
+                        <input type="hidden" asp-for="ItemModel" />
+                        <input type="hidden" asp-for="CustomerName" />
+                        <input type="hidden" asp-for="CurrentStatus" />
 
                         <div class="mb-3">
                             <label asp-for="NewStatus" class="form-label fw-semibold"></label>
@@ -37,3 +40,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

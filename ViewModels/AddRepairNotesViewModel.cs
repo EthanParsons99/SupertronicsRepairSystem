@@ -1,4 +1,5 @@
-﻿using SupertronicsRepairSystem.Models;
+﻿using SupertronicsRepairSystem.Data.Models;
+using SupertronicsRepairSystem.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
