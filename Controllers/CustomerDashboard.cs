@@ -1,91 +1,9 @@
-﻿//using System.Diagnostics;
-//using Microsoft.AspNetCore.Mvc;
-//using SupertronicsRepairSystem.Models.CustomerModel;
-
-
-//namespace SupertronicsRepairSystem.Controllers
-//{
-//    public class CustomerDashboard : Controller
-//    {
-//        public IActionResult Index()
-//        {
-//            // Simulate fetching data from a owners dashboard, will update it once i get calwyns part
-//            var productsOnSale = new List<Product>
-//            {
-//                new Product
-//                {
-//                    Id = 1,
-//                    Name = "Acer Aspire 3",
-//                    Description = "15.6-inch FHD Laptop with Intel Core i7",
-//                    ImageUrl = "/images/acer.png", 
-//                    Price = 9999m,
-//                    WasPrice = 10999m,
-//                    DiscountPercentage = 9
-//                },
-//                new Product
-//                {
-//                    Id = 2,
-//                    Name = "JBL Live 770NC",
-//                    Description = "Noise Cancelling Wireless Headphones",
-//                    ImageUrl = "/images/jbl-headphones.png",
-//                    WasPrice = 2498m,
-//                    DiscountPercentage = 40
-//                },
-//                 new Product
-//                {
-//                    Id = 3,
-//                    Name = "Acer Aspire 3",
-//                    Description = "15.6-inch FHD Laptop with Intel Core i7",
-//                    ImageUrl = "/images/acer.png",
-//                    Price = 9999m,
-//                    WasPrice = 10999m,
-//                    DiscountPercentage = 9
-//                },
-//                  new Product
-//                {
-//                    Id = 4,
-//                    Name = "Acer Aspire 3",
-//                    Description = "15.6-inch FHD Laptop with Intel Core i7",
-//                    ImageUrl = "/images/acer.png", 
-//                    Price = 9999m,
-//                    WasPrice = 10999m,
-//                    DiscountPercentage = 9
-//                },
-//                   new Product
-//                {
-//                    Id = 5,
-//                    Name = "Acer Aspire 3",
-//                    Description = "15.6-inch FHD Laptop with Intel Core i7",
-//                    ImageUrl = "/images/acer.png", 
-//                    Price = 9999m,
-//                    WasPrice = 10999m,
-//                    DiscountPercentage = 9
-//                },
-//                    new Product
-//                {
-//                    Id = 6,
-//                    Name = "Acer Aspire 3",
-//                    Description = "15.6-inch FHD Laptop with Intel Core i7",
-//                    ImageUrl = "/images/acer.png", 
-//                    Price = 9999m,
-//                    WasPrice = 10999m,
-//                    DiscountPercentage = 9
-//                },
-
-//            };
-
-
-//            return View(productsOnSale);
-//        }
-//    }
-//}
-
-using Google.Cloud.Firestore;
+﻿using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using SupertronicsRepairSystem.Attributes;
 using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.Services;
-using SupertronicsRepairSystem.ViewModels.Technician;
+using SupertronicsRepairSystem.ViewModels;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -115,17 +33,17 @@ namespace SupertronicsRepairSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> CustomerGetQuote()
         {
-            var model = new GenerateRepairQuoteViewModel();
+            var model = new CustomerQuoteViewModel();
             {
-                GenerateDeviceName = new List<string> { "Laptop", "Phone", "Console", "Tablet", "TV", "Other" }
+                model.DeviceTypes = new List<string> { "Laptop", "Phone", "Console", "Tablet", "TV", "Other" };
             };
 
             var userInfo = await _authService.GetCurrentUserInfoAsync();
             if (userInfo != null)
             {
-                model.CustomerName = userInfo.FirstName;
-                model.CustomerEmail = userInfo?.Email;
-                model.CustomerPhone = userInfo?.PhoneNumber;
+                model.Name = userInfo.FirstName;
+                model.Email = userInfo?.Email;
+                model.PhoneNumber = userInfo?.PhoneNumber;
             }
 
             return View(model);
@@ -134,9 +52,9 @@ namespace SupertronicsRepairSystem.Controllers
         // POST: Submit the quote request -> create a RepairJob (status: Pending)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CustomerGetQuote(GenerateRepairQuoteViewModel model)
+        public async Task<IActionResult> CustomerGetQuote(CustomerQuoteViewModel model)
         {
-            model.DeviceName = new List<string> { "Laptop", "Phone", "Console", "Tablet", "TV", "Other" };
+            model.DeviceTypes = new List<string> { "Laptop", "Phone", "Console", "Tablet", "TV", "Other" };
 
             if (!ModelState.IsValid)
             {
@@ -144,20 +62,18 @@ namespace SupertronicsRepairSystem.Controllers
             }
 
             var userId = await _authService.GetCurrentUserIdAsync();
-            var customerName = string.IsNullOrWhiteSpace(model.Surname)
-                ? model.CustomerName?.Trim()
-                : $"{model.Name} {model.Surname}".Trim();
+            var customerName = string.IsNullOrWhiteSpace(model.Name);
 
             var repairJob = new RepairJob
             {
-                ItemModel = $"{model.DeviceName} {model.Brand} {model.Model}".Trim(),
+                ItemModel = $"{model.DeviceType} {model.Brand} {model.Model}".Trim(),
                 SerialNumber = model.SerialNumber,
                 ProblemDescription = model.ProblemDescription,
                 Status = "Pending",
                 DateReceived = Google.Cloud.Firestore.Timestamp.FromDateTime(System.DateTime.UtcNow),
                 LastUpdated = Google.Cloud.Firestore.Timestamp.FromDateTime(System.DateTime.UtcNow),
                 CustomerId = userId ?? string.Empty,
-                CustomerName = string.IsNullOrEmpty(customerName) ? model.CustomerEmail ?? "Guest" : customerName
+                CustomerName = string.IsNullOrEmpty(model.Name) ? model.Email ?? "Guest" : model.Name
             };
 
             await _repairJobsCollection.AddAsync(repairJob);
