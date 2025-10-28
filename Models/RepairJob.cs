@@ -3,7 +3,6 @@ using SupertronicsRepairSystem.Models;
 
 namespace SupertronicsRepairSystem.Models
 {
-    // NEW DATA MODEL: To store notes with timestamps
     [FirestoreData]
     public class Note
     {
@@ -18,6 +17,9 @@ namespace SupertronicsRepairSystem.Models
     public class RepairJob
     {
         [FirestoreDocumentId]
+        public string DocumentId { get; set; } 
+
+        [FirestoreProperty]
         public string Id { get; set; }
 
         [FirestoreProperty]

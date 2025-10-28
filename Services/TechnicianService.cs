@@ -15,6 +15,7 @@ namespace SupertronicsRepairSystem.Services
         public TechnicianService(FirestoreDb firestoreDb)
         {
             _firestoreDb = firestoreDb;
+            // CORRECTED: Collection name should be consistent (e.g., lowercase camelCase)
             _repairJobsCollection = _firestoreDb.Collection("repairJobs");
             _customersCollection = _firestoreDb.Collection("customers");
             _productQuotesCollection = _firestoreDb.Collection("productQuotes");
@@ -33,7 +34,6 @@ namespace SupertronicsRepairSystem.Services
             };
         }
 
-        // CHANGED: Updated method to accept 'DateTime? date' and added the filtering logic.
         public async Task<List<RepairJob>> GetFilteredRepairJobsAsync(string status, string customer, DateTime? date)
         {
             Query query = _repairJobsCollection;
@@ -64,13 +64,16 @@ namespace SupertronicsRepairSystem.Services
             return snapshot.Documents.Select(doc => doc.ConvertTo<RepairJob>()).ToList();
         }
 
+        // THIS IS THE CORRECTED METHOD
         public async Task<string> CreateRepairJobAsync(CreateRepairJobViewModel model)
         {
+            // Use the correct Customer model from Data.Models
             var customer = new CustomerModel { Name = model.CustomerName };
             var customerDocRef = await _customersCollection.AddAsync(customer);
 
             var repairJob = new RepairJob
             {
+                // The 'Id' field is intentionally left empty here
                 ItemModel = model.ItemModel,
                 SerialNumber = model.SerialNumber,
                 ProblemDescription = model.ProblemDescription,
@@ -81,12 +84,19 @@ namespace SupertronicsRepairSystem.Services
                 LastUpdated = Timestamp.FromDateTime(DateTime.UtcNow)
             };
 
-            var jobDocRef = await _repairJobsCollection.AddAsync(repairJob);
+            // 1. Add the job to Firestore to get its auto-generated document ID
+            DocumentReference jobDocRef = await _repairJobsCollection.AddAsync(repairJob);
+
+            // 2. CRITICAL FIX: Update the document we just created with its own ID
+            await jobDocRef.UpdateAsync("Id", jobDocRef.Id);
+
+            // 3. Return the new ID so the system knows what it is
             return jobDocRef.Id;
         }
 
         public async Task<RepairJob> GetRepairJobByIdAsync(string jobId)
         {
+            if (string.IsNullOrEmpty(jobId)) return null;
             var docSnapshot = await _repairJobsCollection.Document(jobId).GetSnapshotAsync();
             return docSnapshot.Exists ? docSnapshot.ConvertTo<RepairJob>() : null;
         }

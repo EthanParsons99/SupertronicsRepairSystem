@@ -42,7 +42,8 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         [Required]
         [Display(Name = "Labor Hours")]
         [Range(0.25, 100)]
-        public decimal LaborHours { get; set; }
+        // THE FIX: Provide a default value that is within the valid range.
+        public decimal LaborHours { get; set; } = 1.0m;
 
         [Required]
         [Display(Name = "Labor Rate (R/hour)")]
