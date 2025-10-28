@@ -1,4 +1,5 @@
-﻿@model SupertronicsRepairSystem.ViewModels.Technician.GenerateRepairQuoteViewModel;
+﻿Views\CustomerDashboard\CustomerGetQuote.cshtml
+@model SupertronicsRepairSystem.ViewModels.CustomerQuoteViewModel
 @{
     ViewData["Title"] = "Get a Quote";
     Layout = "_ViewProductLayout";
@@ -15,19 +16,24 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label asp-for="CustomerName" class="form-label"></label>
-                                <input asp-for="CustomerName" class="form-control" />
-                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="CustomerEmail" class="form-label"></label>
-                                <input asp-for="CustomerEmail" class="form-control" />
-                                <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+                                <label asp-for="Surname" class="form-label"></label>
+                                <input asp-for="Surname" class="form-control" />
+                                <span asp-validation-for="Surname" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="CustomerPhone" class="form-label"></label>
-                                <input asp-for="CustomerPhone" class="form-control" />
-                                <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
@@ -38,15 +44,15 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label asp-for="DeviceName" class="form-label"></label>
-                                <select asp-for="DeviceName" class="form-select">
-                                    <option value="">Select device name</option>
-                                    @foreach (var dt in Model.DeviceName)
+                                <label asp-for="DeviceType" class="form-label"></label>
+                                <select asp-for="DeviceType" class="form-select">
+                                    <option value="">Select device type</option>
+                                    @foreach (var dt in Model.DeviceTypes)
                                     {
-                                        <option value="@dt" selected="@(Model.DeviceName == dt ? "selected" : null)">@dt</option>
+                                        <option value="@dt" selected="@(Model.DeviceType == dt ? "selected" : null)">@dt</option>
                                     }
                                 </select>
-                                <span asp-validation-for="DeviceName" class="text-danger"></span>
+                                <span asp-validation-for="DeviceType" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="SerialNumber" class="form-label"></label>
@@ -81,7 +87,7 @@
             <div class="card sticky-top" style="top:20px;">
                 <div class="card-header">Help</div>
                 <div class="card-body">
-                    <p class="small text-muted">Provide as much detail as possible so we can diagnose remotely. If you are logged in your contact details are pre-filled.</p>
+                    <p class="small text-muted">Provide as much detail as possible so we can diagnose the problem properly. If you are logged in your contact details are pre-filled.</p>
                 </div>
             </div>
         </div>
@@ -89,7 +95,5 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }
