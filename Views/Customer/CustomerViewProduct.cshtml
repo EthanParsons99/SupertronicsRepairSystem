@@ -1,97 +1,800 @@
-﻿@model IEnumerable<SupertronicsRepairSystem.Models.Product>
+﻿@model SupertronicsRepairSystem.Models.Product
+@using SupertronicsRepairSystem.Models
 
 @{
-    ViewData["Title"] = "Customer View Product";
+    ViewData["Title"] = Model?.Name ?? "Product Details";
+    var recommendedProducts = ViewBag.RecommendedProducts as List<Product> ?? new List<Product>();
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-bg: #d8d8d8;
+            --nav-bg: #2c3e50;
+            --accent-blue: #4169e1;
+            --text-dark: #000;
+            --card-bg: #ffffff;
+            --footer-bg: #1a1a2e;
+        }
 
-<link rel="stylesheet" href="~/css/CustomerViewProduct.css">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--nav-bg);
+            color: white;
+            padding: 12px 30px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Sub Navigation */
+        .sub-nav {
+            background-color: var(--accent-blue);
+            padding: 10px 30px;
+            display: flex;
+            gap: 30px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .sub-nav-item {
+            cursor: pointer;
+        }
+
+        /* Main Content Wrapper */
+        .content-wrap {
+            flex: 1;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .product-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        /* Image Gallery */
+        .image-gallery {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .favorite-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 22px;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+            .favorite-btn:hover {
+                border-color: #ff0000;
+                transform: scale(1.1);
+            }
+
+            .favorite-btn.active {
+                color: #ff0000;
+                border-color: #ff0000;
+            }
+
+        .main-image-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .main-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #00c853;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+            .nav-arrow:hover {
+                background: white;
+                border-color: var(--accent-blue);
+            }
+
+            .nav-arrow.left {
+                left: 10px;
+            }
+
+            .nav-arrow.right {
+                right: 10px;
+            }
+
+        .thumbnail-gallery {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .thumbnail {
+            width: 70px;
+            height: 70px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            object-fit: contain;
+            padding: 5px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+            .thumbnail:hover {
+                border-color: var(--accent-blue);
+            }
+
+            .thumbnail.active {
+                border-color: var(--accent-blue);
+                border-width: 3px;
+            }
+
+        /* Product Info */
+        .product-info {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .product-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .product-specs {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+            .product-specs li {
+                padding: 8px 0;
+                padding-left: 20px;
+                position: relative;
+            }
+
+                .product-specs li:before {
+                    content: "•";
+                    position: absolute;
+                    left: 0;
+                    font-weight: bold;
+                }
+
+        .price-section {
+            margin: 25px 0;
+        }
+
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+
+        .old-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .was-label, .now-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .current-price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+
+        .divider {
+            height: 1px;
+            background: #ddd;
+            margin: 20px 0;
+        }
+
+        .quantity-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .quantity-label {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .quantity-btn {
+            background: #f8f9fa;
+            border: none;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-blue);
+            transition: all 0.2s ease;
+            min-width: 45px;
+        }
+
+            .quantity-btn:hover {
+                background: var(--accent-blue);
+                color: white;
+            }
+
+            .quantity-btn:active {
+                transform: scale(0.95);
+            }
+
+        .quantity-value {
+            padding: 10px 25px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 60px;
+            background: white;
+        }
+
+        .stock-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border-radius: 25px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+
+        .btn-add-cart {
+            background: #9575cd;
+            color: white;
+            flex: 1;
+        }
+
+            .btn-add-cart:hover {
+                background: #7e57c2;
+            }
+
+        .btn-buy-now {
+            background: var(--accent-blue);
+            color: white;
+            flex: 1;
+        }
+
+            .btn-buy-now:hover {
+                background: #3157c9;
+            }
+
+        /* Recommendations */
+        .recommendations {
+            margin: 50px 0;
+        }
+
+            .recommendations h2 {
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .recommendation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+            .recommendation-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .recommendation-card img {
+                max-width: 100%;
+                height: 150px;
+                object-fit: contain;
+                margin-bottom: 15px;
+            }
+
+            .recommendation-card h3 {
+                font-size: 14px;
+                margin-bottom: 10px;
+                min-height: 40px;
+            }
+
+            .recommendation-card .price {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 15px;
+            }
+
+        /* Footer */
+        .footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 40px 30px 20px;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .footer-section p,
+        .footer-section div {
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 10000;
+        }
+
+            .notification.show {
+                transform: translateX(0);
+            }
+
+        .notification-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification i {
+            font-size: 20px;
+            color: #28a745;
+        }
+
+        @@media (max-width: 768px) {
+            .product-section
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .recommendation-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .footer-content {
+            grid-template-columns: 1fr;
+        }
+
+        }
+    </style>
+</head>
+<body>
 
 
-<div class="sub-nav">
-    <div class="sub-nav-item">All Products ▼</div>
-    <div class="sub-nav-item">Laptops ▼</div>
-    <div class="sub-nav-item">Consoles ▼</div>
-    <div class="sub-nav-item">Smartwatches ▼</div>
-</div>
 
-<div class="container mt-4">
-    <div class="product-section">
-        <div class="image-gallery">
-            <div class="main-image-container">
-                <span class="stock-badge">In Stock</span>
-                <div class="nav-arrow left">‹</div>
-                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500" alt="Acer Aspire 3" class="main-image">
-                <div class="nav-arrow right">›</div>
-            </div>
-            <div class="thumbnail-gallery">
-                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100" class="thumbnail active">
-                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=100" class="thumbnail">
-                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=100" class="thumbnail">
-                <div class="view-360">👁️</div>
-            </div>
-        </div>
+    <div class="content-wrap">
+        <div class="container">
+            @if (Model != null)
+            {
+                <!-- Product Detail Section -->
+                <div class="product-section">
+                    <!-- Image Gallery -->
+                    <div class="image-gallery">
+                        <button class="favorite-btn" onclick="toggleFavorite(this)" title="Add to favorites">
+                            <i class="bi bi-heart"></i>
+                        </button>
 
-        <div class="product-info">
-            <button class="favorite-btn">♡</button>
-            <h1 class="product-title">Acer Aspire 3</h1>
-            <ul class="product-specs">
-                <li>Processor: Intel Core i7</li>
-                <li>RAM: 8 GB</li>
-                <li>Storage: 512 GB SSD</li>
-                <li>Screen: 15.6 Inch</li>
-                <li>OS: Windows 11 Pro</li>
-            </ul>
+                        <div class="main-image-container">
+                            <span class="stock-badge @(Model.StockQuantity > 0 ? "in-stock" : "out-of-stock")">
+                                @(Model.StockQuantity > 0 ? "In Stock" : "Out of Stock")
+                            </span>
+                            <div class="nav-arrow left" onclick="changeImage(-1)">‹</div>
+                            <img src="@Model.ImageUrl" alt="@Model.Name" class="main-image" id="mainImage"
+                                 onerror="this.src='/images/products/default-product.jpg'" />
+                            <div class="nav-arrow right" onclick="changeImage(1)">›</div>
+                        </div>
 
-            <div class="price-section">
-                <div>
-                    <span class="old-price">R14 900</span>
-                    <span class="was-label">Was</span>
+                        <div class="thumbnail-gallery">
+                            <img src="@Model.ImageUrl" class="thumbnail active" onclick="setMainImage(this)"
+                                 onerror="this.src='/images/products/default-product.jpg'" />
+                            <div class="view-360" title="360° View">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Information -->
+                    <div class="product-info">
+                        <h1 class="product-title">@Model.Name</h1>
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <ul class="product-specs">
+                                @foreach (var line in Model.Description.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <li>@line</li>
+                                }
+                            </ul>
+                        }
+
+                        <div class="divider"></div>
+
+                        <!-- Price Section -->
+                        <div class="price-section">
+                            @if (Model.WasPrice > Model.Price)
+                            {
+                                <div class="price-row">
+                                    <span class="was-label">WAS</span>
+                                    <span class="old-price">R @Model.WasPrice.ToString("N0")</span>
+                                </div>
+                            }
+                            <div class="price-row">
+                                <span class="now-label">NOW</span>
+                                <span class="current-price">R @Model.Price.ToString("N0")</span>
+                            </div>
+                            @if (Model.DiscountPercentage > 0)
+                            {
+                                <div class="discount-badge">-@Model.DiscountPercentage%</div>
+                            }
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- Quantity Section -->
+                        <div class="quantity-section">
+                            <span class="quantity-label">Quantity:</span>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="changeQuantity(-1)" type="button">−</button>
+                                <input type="number" class="quantity-value" id="quantity" value="1" min="1" max="@Model.StockQuantity" readonly />
+                                <button class="quantity-btn" onclick="changeQuantity(1)" type="button">+</button>
+                            </div>
+                            <span class="stock-info">@Model.StockQuantity available</span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="btn btn-keep-aside" onclick="keepAside('@Model.Id')">
+                                <i class="bi bi-bookmark"></i> Keep Aside
+                            </button>
+                            <button class="btn btn-add-cart" onclick="addToCart('@Model.Id')">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <span class="current-price">R14 900</span>
-                    <span class="now-label">Now</span>
+
+                <!-- Recommendations Section -->
+                @if (recommendedProducts.Any())
+                {
+                    <div class="recommendations">
+                        <h2>You may also like</h2>
+                        <div class="recommendation-grid">
+                            @foreach (var recProduct in recommendedProducts)
+                            {
+                                <div class="recommendation-card">
+                                    <a asp-action="CustomerViewProduct" asp-route-id="@recProduct.Id" class="product-link">
+                                        <img src="@recProduct.ImageUrl" alt="@recProduct.Name"
+                                             onerror="this.src='/images/products/default-product.jpg'" />
+                                        <h3>@recProduct.Name</h3>
+                                        <div class="price">
+                                            @if (recProduct.DiscountPercentage > 0)
+                                            {
+                                                <span class="discount-badge-small">-@recProduct.DiscountPercentage%</span>
+                                            }
+                                            <span class="price-value">R @recProduct.Price.ToString("N0")</span>
+                                        </div>
+                                    </a>
+                                    <button class="btn btn-buy-now btn-small" onclick="quickAddToCart('@recProduct.Id')">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning text-center" style="margin: 50px 0;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
+                    <h3>Product not found</h3>
+                    <p>The product you're looking for doesn't exist or has been removed.</p>
+                    <a asp-action="Index" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Products
+                    </a>
                 </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="quantity-section">
-                <span class="quantity-label">Qty:</span>
-                <div class="quantity-controls">
-                    <button class="quantity-btn">-</button>
-                    <span class="quantity-value">1</span>
-                    <button class="quantity-btn">+</button>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button class="btn btn-add-cart">Keep Aside</button>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
+            }
         </div>
     </div>
 
-    <div class="recommendations">
-        <h2>You may also like</h2>
-        <div class="recommendation-grid">
-            <div class="recommendation-card">
-                <img src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300" alt="HP Speakers">
-                <h3>HP Speakers M200 TV Conv 3.0-HDMI-V-M.2</h3>
-                <div class="price">R 1 499</div>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
-            <div class="recommendation-card">
-                <img src="https://images.unsplash.com/photo-1545127398-14699f92334b?w=300" alt="Headphones">
-                <h3>Noise Cancelling Wireless Headphones JBL R 1 488</h3>
-                <div class="price">R 1 488</div>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
-            <div class="recommendation-card">
-                <img src="https://images.unsplash.com/photo-1589003077984-894e133dabab?w=300" alt="HDMI Cable">
-                <h3>18 2+1 2mm Female Y Split Audio Cable</h3>
-                <div class="price">R 69</div>
-                <button class="btn btn-buy-now">Add to cart</button>
-            </div>
-        </div>
-    </div>
-</div>
+    <script>
+        function changeQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            let maxValue = parseInt(quantityInput.max);
+            let newValue = currentValue + change;
+
+            if (newValue >= 1 && newValue <= maxValue) {
+                quantityInput.value = newValue;
+            }
+        }
+
+        function setMainImage(thumbnail) {
+            const mainImage = document.getElementById('mainImage');
+            mainImage.src = thumbnail.src;
+
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            thumbnail.classList.add('active');
+        }
+
+        function changeImage(direction) {
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            const activeThumbnail = document.querySelector('.thumbnail.active');
+            let currentIndex = Array.from(thumbnails).indexOf(activeThumbnail);
+            let newIndex = currentIndex + direction;
+
+            if (newIndex >= 0 && newIndex < thumbnails.length) {
+                setMainImage(thumbnails[newIndex]);
+            }
+        }
+
+        function toggleFavorite(btn) {
+            const icon = btn.querySelector('i');
+            if (icon.classList.contains('bi-heart')) {
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill');
+                btn.classList.add('active');
+                showNotification('Added to favorites!', 'success');
+            } else {
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+                btn.classList.remove('active');
+                showNotification('Removed from favorites', 'info');
+            }
+        }
+
+        function keepAside(productId) {
+            const quantity = document.getElementById('quantity').value;
+
+            fetch('/CustomerDashboard/KeepAside', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Product kept aside successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Added to keep aside!', 'success');
+            });
+        }
+
+        function addToCart(productId) {
+            const quantity = document.getElementById('quantity').value;
+
+            fetch('/Cart/Add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Added to cart successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Added to cart!', 'success');
+            });
+        }
+
+        function quickAddToCart(productId) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            fetch('/Cart/Add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId: productId, quantity: 1 })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Added to cart!', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Added to cart!', 'success');
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="bi bi-check-circle"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

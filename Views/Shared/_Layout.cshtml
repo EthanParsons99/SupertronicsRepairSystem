@@ -41,15 +41,33 @@
                             var role = userInfo.Role;
                             @if (role == UserRole.Customer)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Customer" asp-action="Dashboard">Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Customer" asp-action="CustomerViewProduct">Products</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Customer" asp-action="ViewRepairHistory">Repairs</a>
-                                </li>
+                               
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Customer" asp-action="Index">
+                                        <i class="bi bi-house-door me-1"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
+                                            <i class="bi bi-box-seam me-1"></i>Products
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
+                                            <i class="bi bi-bookmark me-1"></i>Keeps Asides
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
+                                            <i class="bi bi-file-earmark-text me-1"></i>Get Quote
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
+                                            <i class="bi bi-cart me-1"></i>Cart
+                                        </a>
+                                    </li>
+                                
                             }
                             else if (role == UserRole.Technician)
                             {
@@ -153,11 +171,7 @@
         </div>
     </main>
 
-    <footer class="border-top footer text-muted mt-auto">
-        <div class="container-fluid">
-            &copy; 2025 - Supertronics
-        </div>
-    </footer>
+  
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
