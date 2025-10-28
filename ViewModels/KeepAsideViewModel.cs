@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Cloud.Firestore;
+using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SupertronicsRepairSystem.ViewModels
+namespace SupertronicsRepairSystem.Models
 {
     public class KeepAsideViewModel
     {
@@ -21,19 +22,14 @@ namespace SupertronicsRepairSystem.ViewModels
         [Display(Name = "Customer ID/Passport Number")]
         public string IdPassportNumber { get; set; }
 
-        [Required(ErrorMessage = "Device SKU is required")]
-        [Display(Name = "Device Sku")]
-        public string DeviceSku { get; set; }
+        [Required(ErrorMessage = "Device Serial Number is required")]
+        [Display(Name = "Device Serial Number")]
+        public string DeviceSerialNumber { get; set; }
 
         [Display(Name = "Collection Date")]
         [DataType(DataType.Date)]
         public DateTime? CollectionDate { get; set; }
-    }
 
-    public class ProductViewModel
-    {
-        public string Name { get; set; }
-        public string Sku { get; set; }
         public string ImageUrl { get; set; }
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SupertronicsRepairSystem.Attributes;
 using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.Services;
-using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.ViewModels.Technician;
 
 namespace SupertronicsRepairSystem.Controllers
@@ -218,6 +217,117 @@ namespace SupertronicsRepairSystem.Controllers
                 return View(model);
             }
         }
+        // ===================== Keep Aside Section =====================
+
+        // GET: Customer/KeepAside?s
+        public async Task<IActionResult> KeepAside(string serialNumber)
+        {
+            if (string.IsNullOrEmpty(serialNumber))
+            {
+                TempData["ErrorMessage"] = "No product selected to keep aside.";
+                return RedirectToAction("AllProducts");
+            }
+
+            Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber);
+            QuerySnapshot snapshot = await query.GetSnapshotAsync();
+            var doc = snapshot.Documents.FirstOrDefault();
+
+            if (doc == null)
+            {
+                TempData["ErrorMessage"] = "Product not found.";
+                return RedirectToAction("AllProducts");
+            }
+
+            var product = doc.ConvertTo<ProductViewModel>();
+
+            var model = new KeepAsideViewModel
+            {
+                DeviceSerialNumber = product.SerialNumber,
+                CollectionDate = DateTime.Now.AddDays(2) 
+            };
+
+            ViewBag.Product = product;
+            return View("KeepAsideForm", model); 
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KeepAsideCreate(KeepAsideViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return the same form view with the model to show validation errors
+                // Make sure ViewBag.Product is still set so the form shows the product info
+                ViewBag.Product = new ProductViewModel
+                {
+                    SerialNumber = model.DeviceSerialNumber
+                };
+                return View("KeepAsideForm", model); // <- match your GET view
+            }
+             var collectionDateUtc = model.CollectionDate.HasValue
+             ? model.CollectionDate.Value.ToUniversalTime()
+             : (DateTime?)null;
+
+            await _firestoreDb.Collection("KeepAsides").Document().SetAsync(new
+            {
+                model.CustomerName,
+                model.CustomerSurname,
+                model.ContactNumber,
+                model.IdPassportNumber,
+                model.DeviceSerialNumber,
+                CollectionDate = collectionDateUtc,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            TempData["SuccessMessage"] = "Keep aside created successfully!";
+            return RedirectToAction("MyKeepAsides");
+        }
+
+
+        // GET: Customer/MyKeepAsides
+        public async Task<IActionResult> MyKeepAsides()
+        {
+            var keepAsides = new List<KeepAsideViewModel>();
+
+            try
+            {
+                var snapshot = await _firestoreDb.Collection("KeepAsides").GetSnapshotAsync();
+                foreach (var doc in snapshot.Documents)
+                {
+                    var data = doc.ToDictionary();
+
+                    // Convert Firestore Timestamp to UTC DateTime if it exists
+                    DateTime? collectionDate = null;
+                    if (data.ContainsKey("CollectionDate") && data["CollectionDate"] is Google.Cloud.Firestore.Timestamp ts)
+                    {
+                        collectionDate = ts.ToDateTime();
+                    }
+
+                    keepAsides.Add(new KeepAsideViewModel
+                    {
+                        CustomerName = data.ContainsKey("CustomerName") ? data["CustomerName"].ToString() : "",
+                        CustomerSurname = data.ContainsKey("CustomerSurname") ? data["CustomerSurname"].ToString() : "",
+                        ContactNumber = data.ContainsKey("ContactNumber") ? data["ContactNumber"].ToString() : "",
+                        DeviceSerialNumber = data.ContainsKey("DeviceSerialNumber") ? data["DeviceSerialNumber"].ToString() : "",
+                        CollectionDate = collectionDate,
+                        ImageUrl = data.ContainsKey("ImageUrl") ? data["ImageUrl"].ToString() : null // optional
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Unable to load Keep Asides at this time. " + ex.Message;
+            }
+
+            return View(keepAsides); // Views/Customer/MyKeepAsides.cshtml
+        }
+
+        // GET: Customer/KeepAsideSuccess
+        public IActionResult KeepAsideSuccess()
+        {
+            return View();
+        }
+
 
         // GET: Customer/RepairDetails/{id}
         public async Task<IActionResult> RepairDetails(string id)
