@@ -26,11 +26,13 @@
         </div>
     </div>
 
+    <div class="alert alert-info">
+        <strong>For Debugging:</strong> The JobId received by this page is: <strong>@(Model.JobId ?? "NULL")</strong>
+    </div>
+
     <form asp-action="GenerateRepairQuote" method="post" id="quoteForm">
-        <!-- Validation summary will only appear if there are model errors -->
         <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="@(ViewData.ModelState.IsValid ? "display: none;" : "")"></div>
 
-        <!-- Manually set the name and value for all hidden inputs -->
         <input type="hidden" name="JobId" value="@Model.JobId" />
         <input type="hidden" name="DeviceName" value="@Model.DeviceName" />
         <input type="hidden" name="ProblemDescription" value="@Model.ProblemDescription" />
@@ -41,15 +43,27 @@
             <!-- Left Column - Quote Details -->
             <div class="col-lg-8">
 
-                <!-- Job Information (Read-only) -->
+                <!-- Job Information (Read-only) with pure HTML -->
                 <div class="card mb-4 fade-in">
                     <div class="card-header"><h5 class="mb-0">Job Information</h5></div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-6"><label asp-for="CustomerName" class="form-label"></label><input asp-for="CustomerName" class="form-control" readonly /></div>
-                            <div class="col-md-6"><label asp-for="DeviceName" class="form-label"></label><input asp-for="DeviceName" class="form-control" readonly /></div>
-                            <div class="col-md-6"><label asp-for="SerialNumber" class="form-label"></label><input asp-for="SerialNumber" class="form-control" readonly /></div>
-                            <div class="col-12"><label asp-for="ProblemDescription" class="form-label"></label><textarea asp-for="ProblemDescription" class="form-control" rows="2" readonly></textarea></div>
+                            <div class="col-md-6">
+                                <label class="form-label">Customer Name</label>
+                                <input class="form-control" value="@Model.CustomerName" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Device/Item</label>
+                                <input class="form-control" value="@Model.DeviceName" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Serial Number</label>
+                                <input class="form-control" value="@Model.SerialNumber" readonly />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Problem Description</label>
+                                <textarea class="form-control" rows="2" readonly>@Model.ProblemDescription</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>

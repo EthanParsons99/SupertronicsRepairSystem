@@ -1,4 +1,4 @@
-﻿using SupertronicsRepairSystem.Data.Models;
+﻿using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.Models;
 using System.ComponentModel.DataAnnotations;
 

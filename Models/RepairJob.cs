@@ -16,9 +16,6 @@ namespace SupertronicsRepairSystem.Models
     [FirestoreData]
     public class RepairJob
     {
-        [FirestoreDocumentId]
-        public string DocumentId { get; set; } 
-
         [FirestoreProperty]
         public string Id { get; set; }
 
