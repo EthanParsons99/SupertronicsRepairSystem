@@ -1,8 +1,18 @@
-﻿
-html, body {
+﻿html, body {
     height: 100%;
     margin: 0;
 }
+
+.page-wrapper {
+    min-height: 100vh; /* full screen height */
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrap {
+    flex: 1; /* pushes footer down */
+}
+
 :root {
     --primary-bg: #d8d8d8;
     --nav-bg: #2c3e50;
