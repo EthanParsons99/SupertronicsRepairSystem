@@ -51,6 +51,13 @@
                     <button class="add-to-cart-btn" onclick="addToCart('@product.Id', event)">
                         <i class="bi bi-cart-plus"></i> Add to Cart
                     </button>
+                    <a class="btn btn-primary"
+                       asp-controller="Customer"
+                       asp-action="KeepAside"
+                       asp-route-serialNumber="@product.SerialNumber">
+                        Keep Aside
+                    </a>
+
                 </div>
             }
         </div>
