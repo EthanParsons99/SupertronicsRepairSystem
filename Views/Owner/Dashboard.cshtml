@@ -1,4 +1,6 @@
-﻿@{
+﻿@model SupertronicsRepairSystem.ViewModels.OwnerDashboardViewModel
+
+@{
     ViewData["Title"] = "Owner Dashboard";
 }
 
@@ -6,7 +8,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="mb-1">Dashboard</h2>
-            <h4 class="text-primary">Welcome Back, Owner</h4>
+            <h4 class="text-primary">Welcome Back, @Model.OwnerName</h4>
         </div>
     </div>
 
@@ -15,7 +17,7 @@
         <div class="col-md-3">
             <div class="card stat-card bg-primary text-white">
                 <div class="card-body text-center py-4">
-                    <h1 class="display-4 fw-bold mb-0">43</h1>
+                    <h1 class="display-4 fw-bold mb-0">@Model.TotalProducts</h1>
                     <p class="mb-0">Total Products</p>
                 </div>
             </div>
@@ -23,7 +25,7 @@
         <div class="col-md-3">
             <div class="card stat-card bg-primary text-white">
                 <div class="card-body text-center py-4">
-                    <h1 class="display-4 fw-bold mb-0">15</h1>
+                    <h1 class="display-4 fw-bold mb-0">@Model.CompletedRepairs</h1>
                     <p class="mb-0">Completed Repairs</p>
                 </div>
             </div>
@@ -31,7 +33,7 @@
         <div class="col-md-3">
             <div class="card stat-card bg-primary text-white">
                 <div class="card-body text-center py-4">
-                    <h1 class="display-4 fw-bold mb-0">10</h1>
+                    <h1 class="display-4 fw-bold mb-0">@Model.QuotesAccepted</h1>
                     <p class="mb-0">Quotes Accepted</p>
                 </div>
             </div>
@@ -39,7 +41,7 @@
         <div class="col-md-3">
             <div class="card stat-card bg-primary text-white">
                 <div class="card-body text-center py-4">
-                    <h1 class="display-4 fw-bold mb-0">5</h1>
+                    <h1 class="display-4 fw-bold mb-0">@Model.QuotesAssigned</h1>
                     <p class="mb-0">Quotes Assigned</p>
                 </div>
             </div>
@@ -55,14 +57,25 @@
                     <h5 class="mb-0">Warranty Check</h5>
                 </div>
                 <div class="card-body">
-                    <form id="warrantyForm">
+                    <form id="warrantyForm" asp-action="CheckWarranty" method="post">
                         <div class="mb-3">
                             <label for="serialNumber" class="form-label">Enter Serial Number</label>
-                            <input type="text" class="form-control" id="serialNumber" placeholder="e.g., SN-12345">
+                            <input type="text" class="form-control" id="serialNumber" name="serialNumber" placeholder="e.g., SN-12345" required>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 mb-2">Check Status</button>
-                        <button type="button" class="btn btn-primary w-100">Add New Product</button>
+                        <a asp-action="AddProduct" class="btn btn-primary w-100">Add New Product</a>
                     </form>
+
+                    @if (Model.WarrantyCheckResult != null)
+                    {
+                        <div class="mt-3 alert @(Model.WarrantyCheckResult.IsValid ? "alert-success" : "alert-warning")">
+                            <strong>@Model.WarrantyCheckResult.ProductName</strong><br>
+                            <small>Serial: @Model.WarrantyCheckResult.SerialNumber</small><br>
+                            <span class="badge @(Model.WarrantyCheckResult.IsValid ? "bg-success" : "bg-warning")">
+                                @(Model.WarrantyCheckResult.IsValid ? "Valid Warranty" : "No Warranty Found")
+                            </span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -82,16 +95,39 @@
                                     <th>Customer</th>
                                     <th>Technician</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>#JI23456789</td>
-                                    <td>John Doe</td>
-                                    <td>Lewis Hamilton</td>
-                                    <td><span class="badge bg-primary">In Progress</span></td>
-                                </tr>
-                                <!-- Add more rows as needed -->
+                                @if (Model.RecentRepairs != null && Model.RecentRepairs.Any())
+                                {
+                                    @foreach (var repair in Model.RecentRepairs)
+                                    {
+                                        <tr>
+                                            <td>#@repair.Id?.Substring(0, Math.Min(8, repair.Id.Length)).ToUpper()</td>
+                                            <td>@repair.CustomerName</td>
+                                            <td>@(repair.TechnicianName ?? "Unassigned")</td>
+                                            <td>
+                                                <span class="badge @GetStatusBadgeClass(repair.Status)">
+                                                    @repair.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a asp-action="RepairJobDetails" asp-route-id="@repair.Id" class="btn btn-sm btn-outline-primary">
+                                                    View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-3">
+                                            No recent repairs found
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -100,6 +136,20 @@
         </div>
     </div>
 </div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "completed" => "bg-success",
+            "in progress" => "bg-primary",
+            "pending" => "bg-warning",
+            "cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
 
 @*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
 
@@ -148,16 +198,25 @@
     .badge.bg-primary {
         background-color: #5865F2 !important;
     }
+
+    .btn-outline-primary {
+        color: #5865F2;
+        border-color: #5865F2;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #5865F2;
+            border-color: #5865F2;
+            color: white;
+        }
 </style>
 
 <script>
-    document.getElementById('warrantyForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const serialNumber = document.getElementById('serialNumber').value;
-        if (serialNumber) {
-            alert('Checking warranty for: ' + serialNumber);
-            // Add your warranty check logic here
-        } else {
+    // Client-side validation for warranty form
+    document.getElementById('warrantyForm')?.addEventListener('submit', function(e) {
+        const serialNumber = document.getElementById('serialNumber').value.trim();
+        if (!serialNumber) {
+            e.preventDefault();
             alert('Please enter a serial number');
         }
     });
