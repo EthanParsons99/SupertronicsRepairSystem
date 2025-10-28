@@ -27,66 +27,47 @@
     </div>
 
     <form asp-action="GenerateRepairQuote" method="post" id="quoteForm">
-        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        <!-- Validation summary will only appear if there are model errors -->
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="@(ViewData.ModelState.IsValid ? "display: none;" : "")"></div>
 
-        <!-- Hidden fields to ensure data is posted back to the server -->
-        <input type="hidden" asp-for="JobId" />
-        <input type="hidden" asp-for="DeviceName" />
-        <input type="hidden" asp-for="ProblemDescription" />
-        <input type="hidden" asp-for="CustomerName" />
-        <input type="hidden" asp-for="SerialNumber" />
+        <!-- Manually set the name and value for all hidden inputs -->
+        <input type="hidden" name="JobId" value="@Model.JobId" />
+        <input type="hidden" name="DeviceName" value="@Model.DeviceName" />
+        <input type="hidden" name="ProblemDescription" value="@Model.ProblemDescription" />
+        <input type="hidden" name="CustomerName" value="@Model.CustomerName" />
+        <input type="hidden" name="SerialNumber" value="@Model.SerialNumber" />
 
         <div class="row">
             <!-- Left Column - Quote Details -->
             <div class="col-lg-8">
 
-                <!-- Customer Information -->
+                <!-- Job Information (Read-only) -->
                 <div class="card mb-4 fade-in">
-                    <div class="card-header"><h5 class="mb-0">Customer Information</h5></div>
+                    <div class="card-header"><h5 class="mb-0">Job Information</h5></div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-4">
-                                <label asp-for="CustomerName" class="form-label"></label>
-                                <input asp-for="CustomerName" class="form-control" readonly />
-                            </div>
-                            <div class="col-md-4">
-                                <label asp-for="CustomerEmail" class="form-label"></label>
-                                <input asp-for="CustomerEmail" class="form-control" type="email" placeholder="john@email.com" />
-                                <span asp-validation-for="CustomerEmail" class="text-danger small"></span>
-                            </div>
-                            <div class="col-md-4">
-                                <label asp-for="CustomerPhone" class="form-label"></label>
-                                <input asp-for="CustomerPhone" class="form-control" type="tel" placeholder="+27 82 123 4567" />
-                                <span asp-validation-for="CustomerPhone" class="text-danger small"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Device Information -->
-                <div class="card mb-4">
-                    <div class="card-header"><h5 class="mb-0">Device Information</h5></div>
-                    <div class="card-body">
-                        <div class="row g-3">
+                            <div class="col-md-6"><label asp-for="CustomerName" class="form-label"></label><input asp-for="CustomerName" class="form-control" readonly /></div>
                             <div class="col-md-6"><label asp-for="DeviceName" class="form-label"></label><input asp-for="DeviceName" class="form-control" readonly /></div>
                             <div class="col-md-6"><label asp-for="SerialNumber" class="form-label"></label><input asp-for="SerialNumber" class="form-control" readonly /></div>
-                            <div class="col-md-6"><label asp-for="Brand" class="form-label"></label><input asp-for="Brand" class="form-control" placeholder="e.g., Apple" /></div>
-                            <div class="col-md-6"><label asp-for="Model" class="form-label"></label><input asp-for="Model" class="form-control" placeholder="e.g., A2894" /></div>
+                            <div class="col-12"><label asp-for="ProblemDescription" class="form-label"></label><textarea asp-for="ProblemDescription" class="form-control" rows="2" readonly></textarea></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Problem & Diagnosis -->
-                <div class="card mb-4">
-                    <div class="card-header"><h5 class="mb-0">Problem & Diagnosis</h5></div>
+                <!-- Diagnosis and Editable Details -->
+                <div class="card mb-4 fade-in">
+                    <div class="card-header"><h5 class="mb-0">Diagnosis & Details</h5></div>
                     <div class="card-body">
-                        <div class="mb-3"><label asp-for="ProblemDescription" class="form-label"></label><textarea asp-for="ProblemDescription" class="form-control" rows="2" readonly></textarea></div>
-                        <div><label asp-for="DiagnosisNotes" class="form-label"></label><textarea asp-for="DiagnosisNotes" class="form-control" rows="4" placeholder="Your technical diagnosis and findings..."></textarea></div>
+                        <div class="row g-3">
+                            <div class="col-md-6"><label asp-for="Brand" class="form-label"></label><input asp-for="Brand" class="form-control" placeholder="e.g., Apple" /></div>
+                            <div class="col-md-6"><label asp-for="Model" class="form-label"></label><input asp-for="Model" class="form-control" placeholder="e.g., A2894" /></div>
+                            <div class="col-12"><label asp-for="DiagnosisNotes" class="form-label"></label><textarea asp-for="DiagnosisNotes" class="form-control" rows="4" placeholder="Your technical diagnosis and findings..."></textarea></div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Parts Required -->
-                <div class="card mb-4">
+                <div class="card mb-4 slide-in-right">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Required Parts</h5>
                         <button type="button" class="btn btn-primary btn-sm" id="addPartBtn"><i class="bi bi-plus me-1"></i>Add Part</button>
@@ -98,7 +79,7 @@
                 </div>
 
                 <!-- Labor Information -->
-                <div class="card mb-4">
+                <div class="card mb-4 fade-in">
                     <div class="card-header"><h5 class="mb-0">Labor Information</h5></div>
                     <div class="card-body">
                         <div class="row g-3">
