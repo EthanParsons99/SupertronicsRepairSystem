@@ -1,0 +1,141 @@
+﻿body {
+    background-color: #F5F7FB !important;
+}
+
+/* Main container layout */
+.keep-aside-container {
+    max-width: 1300px;
+    margin: 40px auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 50px;
+}
+
+/* Form styling */
+.keep-aside-form-section {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 40px 50px;
+}
+
+.form-title {
+    background-color: #0F172A;
+    color: #ffffff;
+    padding: 14px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+/* Inputs */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 13px;
+    color: #4B5563;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="date"] {
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    background-color: #F9FAFB;
+    font-size: 14px;
+    width: 100%;
+}
+
+input:focus {
+    outline: none;
+    border-color: #6366F1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid #9CA3AF;
+    color: #4B5563;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+    .btn-cancel:hover {
+        background-color: #E5E7EB;
+    }
+
+.btn-submit {
+    background-color: #4F46E5;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .btn-submit:hover {
+        background-color: #4338CA;
+    }
+
+/* Product section */
+.keep-aside-product-card {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.product-image {
+    width: 230px;
+    height: 170px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.product-name {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.product-sku {
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.btn-remove {
+    background-color: #EF4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+    .btn-remove:hover {
+        background-color: #DC2626;
+    }
