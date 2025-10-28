@@ -16,6 +16,9 @@
                 <div class="card-body">
                     <form asp-action="AddRepairNotes" method="post">
                         <input type="hidden" asp-for="JobId" />
+                        <input type="hidden" asp-for="ItemModel" />
+                        <input type="hidden" asp-for="CustomerName" />
+
                         <div class="mb-3">
                             <label asp-for="NewNote" class="form-label fw-semibold"></label>
                             <textarea asp-for="NewNote" class="form-control" rows="4" placeholder="Enter internal note here..."></textarea>
@@ -53,3 +56,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

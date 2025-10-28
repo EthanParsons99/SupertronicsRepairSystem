@@ -12,8 +12,10 @@
                     <h1 class="display-6 fw-bold mb-1" style="color: var(--primary-blue);">
                         Generate Repair Quote
                     </h1>
-                    <!-- FIXED: Correctly display a substring of the string JobId -->
-                    <p class="mb-0" style="color: var(--secondary-text);">Create a comprehensive repair quote for Job #@Model.JobId.Substring(0, 6).ToUpper()</p>
+                    @if (Model != null && !string.IsNullOrEmpty(Model.JobId))
+                    {
+                        <p class="mb-0" style="color: var(--secondary-text);">For Job #@Model.JobId.Substring(0, 6).ToUpper()</p>
+                    }
                 </div>
                 <div>
                     <a class="btn btn-secondary" asp-action="RepairJobs">
@@ -25,49 +27,66 @@
     </div>
 
     <form asp-action="GenerateRepairQuote" method="post" id="quoteForm">
-        <!-- FIXED: Hidden input now correctly binds to the string JobId property using the asp-for tag helper -->
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+        <!-- Hidden fields to ensure data is posted back to the server -->
         <input type="hidden" asp-for="JobId" />
+        <input type="hidden" asp-for="DeviceName" />
+        <input type="hidden" asp-for="ProblemDescription" />
+        <input type="hidden" asp-for="CustomerName" />
+        <input type="hidden" asp-for="SerialNumber" />
 
         <div class="row">
             <!-- Left Column - Quote Details -->
             <div class="col-lg-8">
 
                 <!-- Customer Information -->
-                <div class="card mb-4 fade-in" style="animation-delay: 0.1s;">
+                <div class="card mb-4 fade-in">
                     <div class="card-header"><h5 class="mb-0">Customer Information</h5></div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-4"><label asp-for="CustomerName" class="form-label"></label><input asp-for="CustomerName" class="form-control" readonly /></div>
-                            <div class="col-md-4"><label asp-for="CustomerEmail" class="form-label"></label><input asp-for="CustomerEmail" class="form-control" type="email" placeholder="john@email.com" /><span asp-validation-for="CustomerEmail" class="text-danger"></span></div>
-                            <div class="col-md-4"><label asp-for="CustomerPhone" class="form-label"></label><input asp-for="CustomerPhone" class="form-control" type="tel" placeholder="+27 82 123 4567" /><span asp-validation-for="CustomerPhone" class="text-danger"></span></div>
+                            <div class="col-md-4">
+                                <label asp-for="CustomerName" class="form-label"></label>
+                                <input asp-for="CustomerName" class="form-control" readonly />
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="CustomerEmail" class="form-label"></label>
+                                <input asp-for="CustomerEmail" class="form-control" type="email" placeholder="john@email.com" />
+                                <span asp-validation-for="CustomerEmail" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="CustomerPhone" class="form-label"></label>
+                                <input asp-for="CustomerPhone" class="form-control" type="tel" placeholder="+27 82 123 4567" />
+                                <span asp-validation-for="CustomerPhone" class="text-danger small"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Device Information -->
-                <div class="card mb-4 slide-in-left" style="animation-delay: 0.2s;">
+                <div class="card mb-4">
                     <div class="card-header"><h5 class="mb-0">Device Information</h5></div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6"><label asp-for="DeviceName" class="form-label"></label><input asp-for="DeviceName" class="form-control" readonly /></div>
                             <div class="col-md-6"><label asp-for="SerialNumber" class="form-label"></label><input asp-for="SerialNumber" class="form-control" readonly /></div>
-                            <div class="col-md-6"><label asp-for="Brand" class="form-label"></label><input asp-for="Brand" class="form-control" placeholder="Apple" /></div>
-                            <div class="col-md-6"><label asp-for="Model" class="form-label"></label><input asp-for="Model" class="form-control" placeholder="A2894" /></div>
+                            <div class="col-md-6"><label asp-for="Brand" class="form-label"></label><input asp-for="Brand" class="form-control" placeholder="e.g., Apple" /></div>
+                            <div class="col-md-6"><label asp-for="Model" class="form-label"></label><input asp-for="Model" class="form-control" placeholder="e.g., A2894" /></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Problem & Diagnosis -->
-                <div class="card mb-4 fade-in" style="animation-delay: 0.3s;">
+                <div class="card mb-4">
                     <div class="card-header"><h5 class="mb-0">Problem & Diagnosis</h5></div>
                     <div class="card-body">
-                        <div class="col-12 mb-3"><label asp-for="ProblemDescription" class="form-label"></label><textarea asp-for="ProblemDescription" class="form-control" rows="3" readonly></textarea></div>
-                        <div class="col-12"><label asp-for="DiagnosisNotes" class="form-label"></label><textarea asp-for="DiagnosisNotes" class="form-control" rows="4" placeholder="Your technical diagnosis and findings..."></textarea><span asp-validation-for="DiagnosisNotes" class="text-danger"></span></div>
+                        <div class="mb-3"><label asp-for="ProblemDescription" class="form-label"></label><textarea asp-for="ProblemDescription" class="form-control" rows="2" readonly></textarea></div>
+                        <div><label asp-for="DiagnosisNotes" class="form-label"></label><textarea asp-for="DiagnosisNotes" class="form-control" rows="4" placeholder="Your technical diagnosis and findings..."></textarea></div>
                     </div>
                 </div>
 
                 <!-- Parts Required -->
-                <div class="card mb-4 slide-in-right" style="animation-delay: 0.4s;">
+                <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Required Parts</h5>
                         <button type="button" class="btn btn-primary btn-sm" id="addPartBtn"><i class="bi bi-plus me-1"></i>Add Part</button>
@@ -79,12 +98,20 @@
                 </div>
 
                 <!-- Labor Information -->
-                <div class="card mb-4 fade-in" style="animation-delay: 0.5s;">
+                <div class="card mb-4">
                     <div class="card-header"><h5 class="mb-0">Labor Information</h5></div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-6"><label asp-for="LaborHours" class="form-label"></label><div class="input-group"><input asp-for="LaborHours" class="form-control" type="number" step="0.25" min="0.25" /><span class="input-group-text">hours</span></div><span asp-validation-for="LaborHours" class="text-danger"></span></div>
-                            <div class="col-md-6"><label asp-for="LaborRate" class="form-label"></label><div class="input-group"><span class="input-group-text">R</span><input asp-for="LaborRate" class="form-control" type="number" step="0.01" min="200" /><span class="input-group-text">/hour</span></div><span asp-validation-for="LaborRate" class="text-danger"></span></div>
+                            <div class="col-md-6">
+                                <label asp-for="LaborHours" class="form-label"></label>
+                                <div class="input-group"><input asp-for="LaborHours" class="form-control" type="number" step="0.25" min="0.25" /><span class="input-group-text">hours</span></div>
+                                <span asp-validation-for="LaborHours" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LaborRate" class="form-label"></label>
+                                <div class="input-group"><span class="input-group-text">R</span><input asp-for="LaborRate" class="form-control" type="number" step="0.01" min="200" /><span class="input-group-text">/hour</span></div>
+                                <span asp-validation-for="LaborRate" class="text-danger small"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -92,7 +119,7 @@
 
             <!-- Right Column - Quote Summary -->
             <div class="col-lg-4">
-                <div class="card slide-in-right sticky-top" style="top: 20px;">
+                <div class="card sticky-top" style="top: 20px;">
                     <div class="card-header"><h5 class="mb-0">Quote Summary</h5></div>
                     <div class="card-body">
                         <div class="quote-summary">
@@ -117,12 +144,39 @@
     <div class="part-item border rounded p-3 mb-3 bg-light">
         <div class="d-flex justify-content-between align-items-start mb-3"><h6 class="mb-0">Part Item</h6><button type="button" class="btn btn-danger btn-sm remove-part-btn"><i class="bi bi-trash"></i></button></div>
         <div class="row g-2">
-            <div class="col-md-6"><label class="form-label">Part Name *</label><input type="text" class="form-control part-name" placeholder="Screen Assembly" required /></div>
-            <div class="col-md-6"><label class="form-label">Part Number</label><input type="text" class="form-control part-number" placeholder="SCR-IP14-ZA001" /></div>
-            <div class="col-12"><label class="form-label">Description</label><input type="text" class="form-control part-description" placeholder="OLED display with digitizer" /></div>
-            <div class="col-md-4"><label class="form-label">Quantity *</label><input type="number" class="form-control part-quantity" min="1" value="1" required /></div>
-            <div class="col-md-4"><label class="form-label">Unit Price *</label><div class="input-group"><span class="input-group-text">R</span><input type="number" class="form-control part-price" step="0.01" min="0.01" required /></div></div>
-            <div class="col-md-4"><label class="form-label">Total</label><div class="input-group"><span class="input-group-text">R</span><input type="text" class="form-control part-total" readonly /></div></div>
+            <div class="col-md-6">
+                <label class="form-label">Part Name *</label>
+                <input type="text" class="form-control part-name" placeholder="Screen Assembly" />
+                <span class="text-danger small part-name-validation" data-valmsg-replace="true"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Part Number</label>
+                <input type="text" class="form-control part-number" placeholder="SCR-IP14-ZA001" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <input type="text" class="form-control part-description" placeholder="OLED display with digitizer" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Quantity *</label>
+                <input type="number" class="form-control part-quantity" min="1" value="1" />
+                <span class="text-danger small part-quantity-validation" data-valmsg-replace="true"></span>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Unit Price *</label>
+                <div class="input-group">
+                    <span class="input-group-text">R</span>
+                    <input type="number" class="form-control part-price" step="0.01" min="0.01" />
+                </div>
+                <span class="text-danger small part-price-validation" data-valmsg-replace="true"></span>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Total</label>
+                <div class="input-group">
+                    <span class="input-group-text">R</span>
+                    <input type="text" class="form-control part-total" readonly />
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -131,8 +185,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <!-- SCRIPT RESTORED TO ORIGINAL LOCATION -->
     <script>
         let partIndex = 0;
 
@@ -168,9 +220,18 @@
             newPart.find('.part-quantity').attr('name', `Parts[${partIndex}].Quantity`);
             newPart.find('.part-price').attr('name', `Parts[${partIndex}].UnitPrice`);
 
-            $('#partsContainer').append(newPart);
-            partIndex++;
+            newPart.find('.part-name-validation').attr('data-valmsg-for', `Parts[${partIndex}].PartName`);
+            newPart.find('.part-quantity-validation').attr('data-valmsg-for', `Parts[${partIndex}].Quantity`);
+            newPart.find('.part-price-validation').attr('data-valmsg-for', `Parts[${partIndex}].UnitPrice`);
 
+            $('#partsContainer').append(newPart);
+
+            var form = $("#quoteForm");
+            form.removeData("validator");
+            form.removeData("unobtrusiveValidation");
+            $.validator.unobtrusive.parse(form);
+
+            partIndex++;
             toggleNoPartsMessage();
         }
 
@@ -178,13 +239,11 @@
             const quantity = parseFloat(partItem.find('.part-quantity').val()) || 0;
             const price = parseFloat(partItem.find('.part-price').val()) || 0;
             const total = quantity * price;
-
             partItem.find('.part-total').val(total.toFixed(2));
         }
 
         function updateTotals() {
             let partsTotal = 0;
-
             $('.part-item').each(function() {
                 const quantity = parseFloat($(this).find('.part-quantity').val()) || 0;
                 const price = parseFloat($(this).find('.part-price').val()) || 0;

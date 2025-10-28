@@ -3,16 +3,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SupertronicsRepairSystem.Services;
 using SupertronicsRepairSystem.ViewModels.Technician;
 using SupertronicsRepairSystem.Data.Models;
+using Microsoft.Extensions.Logging;
 
 namespace SupertronicsRepairSystem.Controllers
 {
     public class TechnicianController : Controller
     {
         private readonly ITechnicianService _technicianService;
+        private readonly ILogger<TechnicianController> _logger;
 
-        public TechnicianController(ITechnicianService technicianService)
+        public TechnicianController(ITechnicianService technicianService, ILogger<TechnicianController> logger)
         {
             _technicianService = technicianService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -95,12 +98,52 @@ namespace SupertronicsRepairSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRepairQuote(GenerateRepairQuoteViewModel model)
         {
-            if (ModelState.IsValid)
+            _logger.LogInformation("--- GenerateRepairQuote [HttpPost] action initiated. ---");
+            _logger.LogInformation($"Attempting to generate quote for JobId: {model?.JobId}");
+
+            if (model == null)
             {
-                await _technicianService.AddQuoteToRepairJobAsync(model.JobId, model);
-                TempData["SuccessMessage"] = $"Quote added to job #{model.JobId.Substring(0, 6).ToUpper()}.";
+                _logger.LogError("Model object is null. Cannot proceed.");
+                TempData["ErrorMessage"] = "An unexpected error occurred. The submitted data was empty.";
                 return RedirectToAction(nameof(RepairJobs));
             }
+
+            if (ModelState.IsValid)
+            {
+                _logger.LogInformation("ModelState is VALID. Proceeding to save quote data.");
+                try
+                {
+                    var success = await _technicianService.AddQuoteToRepairJobAsync(model.JobId, model);
+                    if (success)
+                    {
+                        _logger.LogInformation("Service call to AddQuoteToRepairJobAsync SUCCEEDED. Redirecting with success message.");
+                        TempData["SuccessMessage"] = $"Quote added to job #{model.JobId.Substring(0, 6).ToUpper()}.";
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Service call to AddQuoteToRepairJobAsync FAILED. The service returned false. Redirecting with error message.");
+                        TempData["ErrorMessage"] = "Error: Could not find the job to add the quote to.";
+                    }
+                    return RedirectToAction(nameof(RepairJobs));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An exception occurred while trying to save the quote.");
+                    TempData["ErrorMessage"] = "A critical error occurred while saving the quote.";
+                    return RedirectToAction(nameof(RepairJobs));
+                }
+            }
+
+            _logger.LogWarning("ModelState is INVALID. Reloading the view with validation errors.");
+            foreach (var key in ModelState.Keys)
+            {
+                var state = ModelState[key];
+                if (state.Errors.Any())
+                {
+                    _logger.LogWarning($"-- Validation Error for '{key}': {state.Errors.First().ErrorMessage}");
+                }
+            }
+
             return View(model);
         }
 
@@ -119,7 +162,6 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        // THIS IS THE CORRECTED [HttpPost] ACTION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRepairStatus(UpdateRepairStatusViewModel model)
@@ -138,7 +180,6 @@ namespace SupertronicsRepairSystem.Controllers
                 return RedirectToAction(nameof(RepairJobs));
             }
 
-            // THE FIX: If validation fails, re-populate the dropdown options before returning the view.
             model.StatusOptions = new List<SelectListItem>
             {
                 new SelectListItem { Value = "Pending", Text = "Pending" },
@@ -165,7 +206,6 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        // THIS IS THE CORRECTED [HttpPost] ACTION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRepairNotes(AddRepairNotesViewModel model)
@@ -184,7 +224,6 @@ namespace SupertronicsRepairSystem.Controllers
                 return RedirectToAction(nameof(RepairJobs));
             }
 
-            // THE FIX: If validation fails, reload the existing notes before showing the form again.
             var job = await _technicianService.GetRepairJobByIdAsync(model.JobId);
             if (job != null)
             {
