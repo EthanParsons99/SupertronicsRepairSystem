@@ -6,7 +6,144 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="~/css/CustomerDashboard.css">
+<style>
+    /* Product Card */
+    .product-card {
+        background-color: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        overflow: hidden;
+        height: 100%;
+        cursor: pointer;
+    }
 
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-color: #4169e1; /* highlight border */
+        }
+
+    /* Make the link inside take full space */
+    .product-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding: 0;
+    }
+
+    /* Prevent hover effect when hovering buttons */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        padding: 16px;
+    }
+
+        .action-buttons .btn {
+            flex: 1;
+            border-radius: 10px;
+            padding: 12px 0;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+    /* Keep Aside Button */
+    .btn-keep-aside {
+        background: var(--btn-blue);
+        color: white;
+        border: none;
+    }
+
+        .btn-keep-aside:hover {
+            background: #2f5dd0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(65,105,225,0.3);
+        }
+
+    /* Add to Cart Button */
+    .btn-add-cart {
+        background: #9575cd;
+        color: white;
+        border: none;
+    }
+
+        .btn-add-cart:hover {
+            background: #7e57c2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(149,117,205,0.3);
+        }
+
+    /* Action Buttons Container */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        padding: 16px;
+    }
+
+    /* Keep Aside Button */
+    .btn-keep-aside {
+        background: var(--btn-blue);
+        color: white;
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-keep-aside:hover {
+            background: #2f5dd0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+        }
+
+        .btn-keep-aside:active {
+            transform: translateY(0);
+        }
+
+    /* Add to Cart Button */
+    .btn-add-cart {
+        background: #9575cd; /* your purple shade */
+        color: white;
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-add-cart:hover {
+            background: #7e57c2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(149, 117, 205, 0.3);
+        }
+
+        .btn-add-cart:active {
+            transform: translateY(0);
+        }
+</style>
 <div class="search-bar">
     <input type="text" class="search-input" placeholder="Search " />
 </div>
@@ -24,34 +161,51 @@
 </div>
 
 <div class="product-grid">
-
     @foreach (var product in Model)
     {
         <div class="product-card">
-            <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+            <!-- Clickable area for the card -->
+            <a asp-controller="Customer" asp-action="CustomerViewProduct" asp-route-id="@product.Id" class="product-card-link">
+                <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : Url.Content("~/images/placeholder.png"))"
+                     alt="@product.Name" class="product-image" />
 
-            <div class="product-info">
-                <h3>@product.Name</h3>
-                <p>@product.Description</p>
+                <div class="product-info">
+                    <h3>@product.Name</h3>
+                    <p>
+                        @(string.IsNullOrEmpty(product.Description) ? "Quality product available now"
+                            : (product.Description.Length > 80 ? product.Description.Substring(0, 77) + "..." : product.Description))
+                    </p>
 
-                <div class="price-details">
-                    <span class="discount">-@product.DiscountPercentage%</span>
-                    <span class="current-price">R @product.Price.ToString("N0")</span>
-                    <span class="was-price">Was R @product.WasPrice.ToString("N0")</span>
+                    <div class="price-details">
+                        @if (product.DiscountPercentage > 0)
+                        {
+                            <span class="discount">-@product.DiscountPercentage%</span>
+                        }
+                        <span class="current-price">R @product.Price.ToString("N0")</span>
+                        @if (product.WasPrice > 0 && product.WasPrice > product.Price)
+                        {
+                            <span class="was-price">R @product.WasPrice.ToString("N0")</span>
+                        }
+                    </div>
                 </div>
+            </a>
 
-                <div class="button-group">
-                    <button class="add-to-cart-btn">Add to cart</button>
+            <!-- Buttons separate from clickable card -->
+            <div class="action-buttons">
+                <a class="btn btn-keep-aside"
+                   asp-controller="Customer"
+                   asp-action="KeepAside"
+                   asp-route-serialNumber="@product.SerialNumber">
+                    <i class="bi bi-bookmark"></i> Keep Aside
+                </a>
 
-                    <a class="btn btn-primary"
-                       asp-controller="KeepAside"
-                       asp-action="Index"
-                       asp-route-serialNumber="@product.SerialNumber">
-                        Keep Aside
-                    </a>
-                </div>
+                <a class="btn btn-add-cart"
+                   asp-controller="Customer"
+                   asp-action="AddToCart"
+                   asp-route-serialNumber="@product.SerialNumber">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </a>
             </div>
         </div>
     }
-
 </div>
