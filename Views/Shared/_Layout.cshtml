@@ -1,4 +1,5 @@
-﻿@inject SupertronicsRepairSystem.Services.IAuthService AuthService
+﻿@using SupertronicsRepairSystem.Services
+@inject SupertronicsRepairSystem.Services.IAuthService AuthService
 @{
     var userInfo = await AuthService.GetCurrentUserInfoAsync();
     var isAuthenticated = userInfo != null;
@@ -10,7 +11,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SupertronicsRepairSystem</title>
+    <title>@ViewData["Title"] - Supertronics</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -41,60 +42,60 @@
                             var role = userInfo.Role;
                             @if (role == UserRole.Customer)
                             {
-                               
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Customer" asp-action="Index">
+
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="Index">
                                         <i class="bi bi-house-door me-1"></i>Dashboard
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
-                                            <i class="bi bi-box-seam me-1"></i>Products
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
-                                            <i class="bi bi-bookmark me-1"></i>Keeps Asides
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
-                                            <i class="bi bi-file-earmark-text me-1"></i>Get Quote
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
-                                            <i class="bi bi-cart me-1"></i>Cart
-                                        </a>
-                                    </li>
-                                
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
+                                        <i class="bi bi-box-seam me-1"></i>Products
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
+                                        <i class="bi bi-bookmark me-1"></i>Keeps Asides
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
+                                        <i class="bi bi-file-earmark-text me-1"></i>Get Quote
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
+                                        <i class="bi bi-cart me-1"></i>Cart
+                                    </a>
+                                </li>
+
                             }
                             else if (role == UserRole.Technician)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="Dashboard">Dashboard</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="Dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs">Repair Jobs</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs"><i class="bi bi-wrench me-1"></i>Repair Jobs</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="CreateRepairJob">New Jobs</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="CreateRepairJob"><i class="bi bi-plus-circle me-1"></i>New Job</a>
                                 </li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="quotesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Quotes
+                                        <i class="bi bi-file-text me-1"></i>Quotes
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="quotesDropdown">
                                         <li>
                                             <a class="dropdown-item" asp-controller="Technician" asp-action="GenerateProductQuote">Generate Product Quote</a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Technician" asp-action="GenerateRepairQuote">Generate Repair Quote</a>
+                                            <a class="dropdown-item" asp-controller="Technician" asp-action="SelectJobForQuote">Generate Repair Quote</a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="TrackSerialNumber">Serial Lookup</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="TrackSerialNumber"><i class="bi bi-search me-1"></i>Serial Lookup</a>
                                 </li>
                             }
                             else if (role == UserRole.Owner)
@@ -166,16 +167,89 @@
     </header>
 
     <main role="main" class="flex-grow-1 pb-3">
-        <div class="container-fluid">
+        <div class="container-fluid pt-3">
             @RenderBody()
         </div>
     </main>
 
-  
+    <div class="modal fade" id="quoteSummaryModal" tabindex="-1" aria-labelledby="quoteModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="quoteModalTitle">Quote Summary</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="quote-summary">
+                        <div id="quotePartsList" class="mb-3"></div>
+                        <div class="d-flex justify-content-between py-2 border-top"><span>Parts Total:</span><span class="fw-semibold" id="quotePartsTotal">R0.00</span></div>
+                        <div class="d-flex justify-content-between py-2 border-bottom"><span>Labor Total:</span><span class="fw-semibold" id="quoteLaborTotal">R0.00</span></div>
+                        <div class="d-flex justify-content-between py-2 border-bottom"><span>Subtotal:</span><span class="fw-semibold" id="quoteSubtotal">R0.00</span></div>
+                        <div class="d-flex justify-content-between py-2 border-bottom"><span>VAT (15%):</span><span class="fw-semibold" id="quoteTaxAmount">R0.00</span></div>
+                        <div class="d-flex justify-content-between py-3 bg-light rounded mt-2 px-3 align-items-center">
+                            <strong style="color: var(--heading-text);">Total:</strong>
+                            <strong class="fs-4" style="color: var(--primary-blue);" id="quoteGrandTotal">R0.00</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '.view-quote-btn', function (e) {
+                e.preventDefault();
+
+                var button = $(this);
+                var modal = new bootstrap.Modal($('#quoteSummaryModal'));
+
+                var jobId = button.data('job-id');
+
+                // THE FIX IS HERE: Use .data('parts') directly, as jQuery already parsed it.
+                var parts = button.data('parts');
+
+                var partsTotal = parseFloat(button.data('parts-total'));
+                var laborTotal = parseFloat(button.data('labor-total'));
+                var subTotal = parseFloat(button.data('sub-total'));
+                var taxAmount = parseFloat(button.data('tax-amount'));
+                var grandTotal = parseFloat(button.data('total'));
+
+                $('#quoteModalTitle').text('Quote Summary for Job #' + jobId);
+                $('#quotePartsTotal').text('R' + partsTotal.toFixed(2));
+                $('#quoteLaborTotal').text('R' + laborTotal.toFixed(2));
+                $('#quoteSubtotal').text('R' + subTotal.toFixed(2));
+                $('#quoteTaxAmount').text('R' + taxAmount.toFixed(2));
+                $('#quoteGrandTotal').text('R' + grandTotal.toFixed(2));
+
+                var partsListContainer = $('#quotePartsList');
+                partsListContainer.empty();
+                if (parts && parts.length > 0) {
+                    var partsHtml = '<h6 class="mb-2">Required Parts:</h6><ul class="list-group list-group-flush">';
+                    $.each(parts, function (index, part) {
+                        var partTotal = part.Quantity * part.UnitPrice;
+                        partsHtml += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                        partsHtml += '<span>' + part.Quantity + 'x ' + part.PartName + '</span>';
+                        partsHtml += '<span class="badge bg-secondary rounded-pill">R' + partTotal.toFixed(2) + '</span>';
+                        partsHtml += '</li>';
+                    });
+                    partsHtml += '</ul>';
+                    partsListContainer.html(partsHtml);
+                } else {
+                    partsListContainer.html('<p class="text-muted text-center">No parts were quoted for this job.</p>');
+                }
+
+                modal.show();
+            });
+        });
+    </script>
 </body>
 </html>

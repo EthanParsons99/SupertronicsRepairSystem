@@ -1,3 +1,5 @@
+using SupertronicsRepairSystem.Models;
+
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
     public class RepairJobViewModel
@@ -8,5 +10,6 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         public string? SerialNumber { get; set; }
         public string? CustomerName { get; set; }
         public DateTime LastUpdated { get; set; }
+        public List<Quote> Quotes { get; set; } = new List<Quote>();
     }
 }
