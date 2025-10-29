@@ -165,7 +165,7 @@ namespace SupertronicsRepairSystem.Controllers
                 TempData["Error"] = "Unable to load products at this time. Please try again later.";
             }
 
-            return View("AllProducts", products); // Ensure it points to AllProducts.cshtml
+            return View("AllProducts", products); 
         }
 
 
@@ -256,13 +256,12 @@ namespace SupertronicsRepairSystem.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Return the same form view with the model to show validation errors
-                // Make sure ViewBag.Product is still set so the form shows the product info
+                
                 ViewBag.Product = new ProductViewModel
                 {
                     SerialNumber = model.DeviceSerialNumber
                 };
-                return View("KeepAsideForm", model); // <- match your GET view
+                return View("KeepAsideForm", model); 
             }
              var collectionDateUtc = model.CollectionDate.HasValue
              ? model.CollectionDate.Value.ToUniversalTime()

@@ -161,10 +161,10 @@
 </div>
 
 <div class="product-grid">
-    @foreach (var product in Model)
+    @foreach (var product in Model.Where(p => p.DiscountPercentage > 0))
     {
         <div class="product-card">
-            <!-- Clickable area for the card -->
+           
             <a asp-controller="Customer" asp-action="CustomerViewProduct" asp-route-id="@product.Id" class="product-card-link">
                 <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : Url.Content("~/images/placeholder.png"))"
                      alt="@product.Name" class="product-image" />
@@ -177,10 +177,7 @@
                     </p>
 
                     <div class="price-details">
-                        @if (product.DiscountPercentage > 0)
-                        {
-                            <span class="discount">-@product.DiscountPercentage%</span>
-                        }
+                        <span class="discount">-@product.DiscountPercentage%</span>
                         <span class="current-price">R @product.Price.ToString("N0")</span>
                         @if (product.WasPrice > 0 && product.WasPrice > product.Price)
                         {
@@ -190,7 +187,6 @@
                 </div>
             </a>
 
-            <!-- Buttons separate from clickable card -->
             <div class="action-buttons">
                 <a class="btn btn-keep-aside"
                    asp-controller="Customer"
