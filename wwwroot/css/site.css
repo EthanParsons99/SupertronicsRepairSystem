@@ -464,3 +464,7 @@ body {
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
+
+.modal-header-custom {
+    background-color: var(--primary-blue, #4A69FF);
+}

@@ -117,7 +117,6 @@
                                             <td class="ps-4 fw-semibold">#@(job.Id?.Substring(0, 6).ToUpper() ?? "N/A")</td>
                                             <td>
                                                 <div style="color: var(--body-text);">@job.ItemName</div>
-                                                <!-- THIS IS THE UPDATED LINE -->
                                                 <small style="color: var(--secondary-text);">Serial: @(job.SerialNumber ?? "N/A")</small>
                                             </td>
                                             <td>
@@ -130,6 +129,21 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
+                                                    @if (job.Quotes != null && job.Quotes.Any())
+                                                    {
+                                                        var firstQuote = job.Quotes.First();
+                                                        var partsJson = System.Text.Json.JsonSerializer.Serialize(firstQuote.QuoteParts);
+                                                        <a href="#" class="btn btn-primary view-quote-btn" title="View Quote"
+                                                           data-job-id="@(job.Id?.Substring(0, 6).ToUpper() ?? "N/A")"
+                                                           data-parts-total="@firstQuote.PartsTotal.ToString("F2")"
+                                                           data-labor-total="@firstQuote.LaborTotal.ToString("F2")"
+                                                           data-sub-total="@firstQuote.SubTotal.ToString("F2")"
+                                                           data-tax-amount="@firstQuote.TaxAmount.ToString("F2")"
+                                                           data-total="@firstQuote.TotalAmount.ToString("F2")"
+                                                           data-parts='@Html.Raw(partsJson)'>
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                    }
                                                     <a class="btn btn-primary" asp-action="UpdateRepairStatus" asp-route-id="@job.Id" title="Update Status">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
