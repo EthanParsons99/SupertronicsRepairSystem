@@ -15,7 +15,7 @@ namespace SupertronicsRepairSystem.Controllers
     public class TechnicianController : Controller
     {
         private readonly IRepairJobService _repairJobService;
-        private readonly FirestoreDb _firestoreDb; // Keep for ProductQuote
+        private readonly FirestoreDb _firestoreDb; 
         private readonly ILogger<TechnicianController> _logger;
 
         public TechnicianController(
@@ -28,7 +28,6 @@ namespace SupertronicsRepairSystem.Controllers
             _logger = logger;
         }
 
-        // --- THIS IS THE DEFINITIVELY CORRECTED POST ACTION ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRepairQuote(
@@ -44,7 +43,6 @@ namespace SupertronicsRepairSystem.Controllers
                 return RedirectToAction(nameof(RepairJobs));
             }
 
-            // Manually reconstruct the ViewModel to pass to the service
             var model = new GenerateRepairQuoteViewModel
             {
                 JobId = JobId,
@@ -53,7 +51,6 @@ namespace SupertronicsRepairSystem.Controllers
                 Parts = Parts ?? new List<QuotePartItem>()
             };
 
-            // THE FIX FOR ERROR 1: Create the 'Quote' data model from the ViewModel
             var quote = new Quote
             {
                 Id = Guid.NewGuid().ToString(),
@@ -89,12 +86,10 @@ namespace SupertronicsRepairSystem.Controllers
             return RedirectToAction(nameof(RepairJobs));
         }
 
-        // --- THIS IS THE DEFINITIVELY CORRECTED POST ACTION ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateProductQuote(GenerateProductQuoteViewModel model)
         {
-            // THE FIX FOR ERROR 2: Keep this logic inside the controller as it's not a "repair job"
             if (ModelState.IsValid)
             {
                 var simulatedProductName = $"Product ({model.ProductId})";
@@ -118,7 +113,6 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        // --- ALL OTHER METHODS ARE UNCHANGED AND CORRECT ---
 
         public async Task<IActionResult> Dashboard()
         {
@@ -135,20 +129,25 @@ namespace SupertronicsRepairSystem.Controllers
         public async Task<IActionResult> RepairJobs(string status, string customer, DateTime? date)
         {
             var repairJobs = await _repairJobService.GetAllRepairJobsAsync();
+
             if (!string.IsNullOrEmpty(status)) { repairJobs = repairJobs.Where(j => j.Status.Equals(status, StringComparison.OrdinalIgnoreCase)).ToList(); }
             if (!string.IsNullOrEmpty(customer)) { repairJobs = repairJobs.Where(j => j.CustomerName.Contains(customer, StringComparison.OrdinalIgnoreCase)).ToList(); }
             if (date.HasValue) { repairJobs = repairJobs.Where(j => j.DateReceived.ToDateTime().Date == date.Value.Date).ToList(); }
+
             var viewModels = repairJobs.Select(job => new RepairJobViewModel
             {
                 Id = job.Id,
                 ItemName = job.ItemModel,
+                SerialNumber = job.SerialNumber,
                 Status = job.Status,
                 CustomerName = job.CustomerName,
                 LastUpdated = job.LastUpdated.ToDateTime()
             }).ToList();
+
             ViewData["SelectedStatus"] = status;
             ViewData["SelectedCustomer"] = customer;
             ViewData["SelectedDate"] = date?.ToString("yyyy-MM-dd");
+
             return View(viewModels);
         }
 
