@@ -46,29 +46,29 @@
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Customer" asp-action="Index">
                                         <i class="bi bi-house-door me-1"></i>Dashboard
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
-                                            <i class="bi bi-box-seam me-1"></i>Products
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
-                                            <i class="bi bi-bookmark me-1"></i>Keeps Asides
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
-                                            <i class="bi bi-file-earmark-text me-1"></i>Get Quote
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
-                                            <i class="bi bi-cart me-1"></i>Cart
-                                        </a>
-                                    </li>
-                                
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
+                                        <i class="bi bi-box-seam me-1"></i>Products
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="MyKeepAsides">
+                                        <i class="bi bi-bookmark me-1"></i>Keeps Asides
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
+                                        <i class="bi bi-file-earmark-text me-1"></i>Get Quote
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
+                                        <i class="bi bi-cart me-1"></i>Cart
+                                    </a>
+                                </li>
+
                             }
                             else if (role == UserRole.Technician)
                             {
@@ -175,7 +175,7 @@
     <div class="modal fade" id="quoteSummaryModal" tabindex="-1" aria-labelledby="quoteModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header modal-header-custom text-white">
                     <h5 class="modal-title" id="quoteModalTitle">Quote Summary</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -205,18 +205,16 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-        $(document).ready(function () {
-            $(document).on('click', '.view-quote-btn', function (e) {
+        $(document).ready(function () 
+        {
+            $(document).on('click', '.view-quote-btn', function (e) 
+            {
                 e.preventDefault();
 
                 var button = $(this);
                 var modal = new bootstrap.Modal($('#quoteSummaryModal'));
-
                 var jobId = button.data('job-id');
-
-                // THE FIX IS HERE: Use .data('parts') directly, as jQuery already parsed it.
-                var parts = button.data('parts');
-
+                var parts = button.data('parts'); 
                 var partsTotal = parseFloat(button.data('parts-total'));
                 var laborTotal = parseFloat(button.data('labor-total'));
                 var subTotal = parseFloat(button.data('sub-total'));
@@ -231,9 +229,13 @@
                 $('#quoteGrandTotal').text('R' + grandTotal.toFixed(2));
 
                 var partsListContainer = $('#quotePartsList');
+
                 partsListContainer.empty();
-                if (parts && parts.length > 0) {
+
+                if (parts && parts.length > 0) 
+                {
                     var partsHtml = '<h6 class="mb-2">Required Parts:</h6><ul class="list-group list-group-flush">';
+
                     $.each(parts, function (index, part) {
                         var partTotal = part.Quantity * part.UnitPrice;
                         partsHtml += '<li class="list-group-item d-flex justify-content-between align-items-center">';
@@ -241,12 +243,16 @@
                         partsHtml += '<span class="badge bg-secondary rounded-pill">R' + partTotal.toFixed(2) + '</span>';
                         partsHtml += '</li>';
                     });
+
                     partsHtml += '</ul>';
+
                     partsListContainer.html(partsHtml);
-                } else {
+
+                } 
+                else 
+                {
                     partsListContainer.html('<p class="text-muted text-center">No parts were quoted for this job.</p>');
                 }
-
                 modal.show();
             });
         });
