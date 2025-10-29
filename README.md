@@ -1,7 +1,7 @@
 # Supertronics Repair System
 
-## Repair Tracking and Electronic Salaes Management Platform
-The Supertronics Repair System is a multi-user web application designed to improve the business operations for electronic repairs.It provides feautere to manage repair jobs, tracking status updates, generating quotes and providing diffrent user interfaces for each type of user, Customers, Technicians, Owners.
+## Repair Tracking and Electronic Sales Management Platform
+The Supertronics Repair System is a multi-user web application designed to improve the business operations for electronic repairs. It provides feature to manage repair jobs, tracking status updates, generating quotes and providing different user interfaces for each type of user, Customers, Technicians, Owners.
 
 ## Key Features
 The system uses role based access to provide each user with functions that only they can use:
