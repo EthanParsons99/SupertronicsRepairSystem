@@ -12,12 +12,14 @@ using System.Threading.Tasks;
 
 namespace SupertronicsRepairSystem.Controllers
 {
+    // Technician Controller to manage repair jobs and quotes
     public class TechnicianController : Controller
     {
         private readonly IRepairJobService _repairJobService;
-        private readonly FirestoreDb _firestoreDb; // Keep for ProductQuote
+        private readonly FirestoreDb _firestoreDb; 
         private readonly ILogger<TechnicianController> _logger;
 
+        // Constructor
         public TechnicianController(
             IRepairJobService repairJobService,
             FirestoreDb firestoreDb,
@@ -28,7 +30,7 @@ namespace SupertronicsRepairSystem.Controllers
             _logger = logger;
         }
 
-        // --- THIS IS THE DEFINITIVELY CORRECTED POST ACTION ---
+        // POST: Generate Repair Quote
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRepairQuote(
@@ -37,14 +39,14 @@ namespace SupertronicsRepairSystem.Controllers
             decimal LaborRate,
             List<QuotePartItem> Parts)
         {
-            // Manual Validation
+            // Validate input
             if (string.IsNullOrEmpty(JobId))
             {
                 TempData["ErrorMessage"] = "CRITICAL ERROR: Job ID was lost. Please try again.";
                 return RedirectToAction(nameof(RepairJobs));
             }
 
-            // Manually reconstruct the ViewModel to pass to the service
+            // Build the ViewModel
             var model = new GenerateRepairQuoteViewModel
             {
                 JobId = JobId,
@@ -53,7 +55,7 @@ namespace SupertronicsRepairSystem.Controllers
                 Parts = Parts ?? new List<QuotePartItem>()
             };
 
-            // THE FIX FOR ERROR 1: Create the 'Quote' data model from the ViewModel
+            // Create Quote object
             var quote = new Quote
             {
                 Id = Guid.NewGuid().ToString(),
@@ -76,6 +78,7 @@ namespace SupertronicsRepairSystem.Controllers
                 }).ToList()
             };
 
+            // Add quote to the repair job
             var success = await _repairJobService.AddQuoteToRepairJobAsync(model.JobId, quote);
 
             if (success)
@@ -89,12 +92,12 @@ namespace SupertronicsRepairSystem.Controllers
             return RedirectToAction(nameof(RepairJobs));
         }
 
-        // --- THIS IS THE DEFINITIVELY CORRECTED POST ACTION ---
+        // POST: Generate Product Quote
+        // This functiion handles the creation of a product quote
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateProductQuote(GenerateProductQuoteViewModel model)
         {
-            // THE FIX FOR ERROR 2: Keep this logic inside the controller as it's not a "repair job"
             if (ModelState.IsValid)
             {
                 var simulatedProductName = $"Product ({model.ProductId})";
@@ -118,7 +121,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
-        // --- ALL OTHER METHODS ARE UNCHANGED AND CORRECT ---
+        // The main dashboard for technicians
 
         public async Task<IActionResult> Dashboard()
         {
@@ -132,26 +135,34 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // View all repair jobs with optional filtering
         public async Task<IActionResult> RepairJobs(string status, string customer, DateTime? date)
         {
             var repairJobs = await _repairJobService.GetAllRepairJobsAsync();
+
             if (!string.IsNullOrEmpty(status)) { repairJobs = repairJobs.Where(j => j.Status.Equals(status, StringComparison.OrdinalIgnoreCase)).ToList(); }
             if (!string.IsNullOrEmpty(customer)) { repairJobs = repairJobs.Where(j => j.CustomerName.Contains(customer, StringComparison.OrdinalIgnoreCase)).ToList(); }
             if (date.HasValue) { repairJobs = repairJobs.Where(j => j.DateReceived.ToDateTime().Date == date.Value.Date).ToList(); }
+
             var viewModels = repairJobs.Select(job => new RepairJobViewModel
             {
                 Id = job.Id,
                 ItemName = job.ItemModel,
+                SerialNumber = job.SerialNumber,
                 Status = job.Status,
                 CustomerName = job.CustomerName,
-                LastUpdated = job.LastUpdated.ToDateTime()
+                LastUpdated = job.LastUpdated.ToDateTime(),
+                Quotes = job.Quotes
             }).ToList();
+
             ViewData["SelectedStatus"] = status;
             ViewData["SelectedCustomer"] = customer;
             ViewData["SelectedDate"] = date?.ToString("yyyy-MM-dd");
+
             return View(viewModels);
         }
 
+        // Create a new repair job
         public IActionResult CreateRepairJob() => View();
 
         [HttpPost]
@@ -167,6 +178,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Select a job to generate a quote for
         public async Task<IActionResult> SelectJobForQuote()
         {
             var allJobs = await _repairJobService.GetAllRepairJobsAsync();
@@ -183,6 +195,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Generate repair quote for a specific job
         public async Task<IActionResult> GenerateRepairQuote(string id)
         {
             if (string.IsNullOrEmpty(id)) { return RedirectToAction(nameof(SelectJobForQuote)); }
@@ -200,10 +213,13 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Update repair job status
         public async Task<IActionResult> UpdateRepairStatus(string id)
         {
             var job = await _repairJobService.GetRepairJobByIdAsync(id);
+
             if (job == null) return NotFound();
+
             var model = new UpdateRepairStatusViewModel
             {
                 JobId = job.Id,
@@ -211,9 +227,11 @@ namespace SupertronicsRepairSystem.Controllers
                 CustomerName = job.CustomerName,
                 CurrentStatus = job.Status
             };
+
             return View(model);
         }
 
+        // POST: Update repair job status
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRepairStatus(UpdateRepairStatusViewModel model)
@@ -221,8 +239,15 @@ namespace SupertronicsRepairSystem.Controllers
             if (ModelState.IsValid)
             {
                 var success = await _repairJobService.UpdateRepairJobStatusAsync(model.JobId, model.NewStatus);
-                if (success) { TempData["SuccessMessage"] = $"Status for job #{model.JobId.Substring(0, 6).ToUpper()} updated to '{model.NewStatus}'."; }
-                else { TempData["ErrorMessage"] = "Error: Could not find the job to update."; }
+
+                if (success) { 
+                    TempData["SuccessMessage"] = $"Status for job #{model.JobId.Substring(0, 6).ToUpper()} updated to '{model.NewStatus}'."; 
+                }
+
+                else { 
+                    TempData["ErrorMessage"] = "Error: Could not find the job to update."; 
+                }
+
                 return RedirectToAction(nameof(RepairJobs));
             }
             model.StatusOptions = new List<SelectListItem>
@@ -233,13 +258,17 @@ namespace SupertronicsRepairSystem.Controllers
                 new SelectListItem { Value = "Completed", Text = "Completed" },
                 new SelectListItem { Value = "Cancelled", Text = "Cancelled" }
             };
+
             return View(model);
         }
 
+        // Add repair notes to a job
         public async Task<IActionResult> AddRepairNotes(string id)
         {
             var job = await _repairJobService.GetRepairJobByIdAsync(id);
+
             if (job == null) return NotFound();
+
             var model = new AddRepairNotesViewModel
             {
                 JobId = job.Id,
@@ -247,9 +276,11 @@ namespace SupertronicsRepairSystem.Controllers
                 CustomerName = job.CustomerName,
                 ExistingNotes = job.TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList()
             };
+
             return View(model);
         }
 
+        // POST: Add repair notes to a job
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRepairNotes(AddRepairNotesViewModel model)
@@ -257,17 +288,29 @@ namespace SupertronicsRepairSystem.Controllers
             if (ModelState.IsValid)
             {
                 var success = await _repairJobService.AddNoteToRepairJobAsync(model.JobId, model.NewNote);
-                if (success) { TempData["SuccessMessage"] = $"Note added to job #{model.JobId.Substring(0, 6).ToUpper()}."; }
-                else { TempData["ErrorMessage"] = "Error: Could not find the job to add a note to."; }
+
+                if (success) { 
+                    TempData["SuccessMessage"] = $"Note added to job #{model.JobId.Substring(0, 6).ToUpper()}."; 
+                }
+                else { 
+                    TempData["ErrorMessage"] = "Error: Could not find the job to add a note to.";
+                }
+
                 return RedirectToAction(nameof(RepairJobs));
             }
             var job = await _repairJobService.GetRepairJobByIdAsync(model.JobId);
-            if (job != null) { model.ExistingNotes = job.TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList(); }
+
+            if (job != null) { 
+                model.ExistingNotes = job.TechnicianNotes.OrderByDescending(n => n.Timestamp).ToList(); 
+            }
+
             return View(model);
         }
 
+        // Track serial number across repair jobs
         public IActionResult TrackSerialNumber() => View(new TrackSerialNumberViewModel());
 
+        // POST: Track serial number across repair jobs
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TrackSerialNumber(TrackSerialNumberViewModel model)

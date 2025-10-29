@@ -26,24 +26,17 @@
         </div>
     </div>
 
-    <div class="alert alert-info">
-        <strong>For Debugging:</strong> The JobId received by this page is: <strong>@(Model.JobId ?? "NULL")</strong>
-    </div>
-
     <form asp-action="GenerateRepairQuote" method="post" id="quoteForm">
         <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="@(ViewData.ModelState.IsValid ? "display: none;" : "")"></div>
 
-        <input type="hidden" name="JobId" value="@Model.JobId" />
-        <input type="hidden" name="DeviceName" value="@Model.DeviceName" />
-        <input type="hidden" name="ProblemDescription" value="@Model.ProblemDescription" />
-        <input type="hidden" name="CustomerName" value="@Model.CustomerName" />
-        <input type="hidden" name="SerialNumber" value="@Model.SerialNumber" />
-
+        <!-- Hidden input to ensure the JobId is submitted with the form -->
+        <input type="hidden" id="JobId" name="JobId" value="@Model.JobId" />
+        
         <div class="row">
-            <!-- Left Column - Quote Details -->
+            <!-- Left Column -->
             <div class="col-lg-8">
 
-                <!-- Job Information (Read-only) with pure HTML -->
+                <!-- Job Information (Read-only) -->
                 <div class="card mb-4 fade-in">
                     <div class="card-header"><h5 class="mb-0">Job Information</h5></div>
                     <div class="card-body">
