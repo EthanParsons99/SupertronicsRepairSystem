@@ -6,54 +6,58 @@
 <div class="container-fluid p-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="text-primary">Repair Jobs</h2>
+            <h2 class="mb-0" style="color: var(--heading-text); font-weight: 700;">Repair Jobs</h2>
         </div>
     </div>
 
     <!-- Filter Section -->
-    <div class="card filter-card mb-3">
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-funnel me-2"></i>Filter Jobs
+        </div>
         <div class="card-body">
-            <h6 class="text-white mb-3">Filter Jobs</h6>
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label text-white">Status</label>
-                    <select class="form-select" id="statusFilter">
-                        <option value="">All Statuses</option>
-                        <option value="Pending">Pending</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                    </select>
+            <form class="filter-form">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label" style="color: var(--body-text); font-weight: 600;">Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" style="color: var(--body-text); font-weight: 600;">Date</label>
+                        <input type="date" class="form-control" id="dateFilter">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" style="color: var(--body-text); font-weight: 600;">Customer</label>
+                        <input type="text" class="form-control" id="customerFilter" placeholder="Search customer...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary w-100 mb-2" onclick="applyFilters()">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                        <button type="button" class="btn btn-secondary w-100" onclick="clearFilters()">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label text-white">Date</label>
-                    <input type="date" class="form-control" id="dateFilter">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label text-white">Customer</label>
-                    <input type="text" class="form-control" id="customerFilter" placeholder="Search customer...">
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-primary w-100" onclick="applyFilters()">
-                        <i class="bi bi-funnel"></i> Filter
-                    </button>
-                    <button class="btn btn-outline-light w-100 mt-2" onclick="clearFilters()">
-                        <i class="bi bi-x"></i> Clear
-                    </button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- Repair Jobs Table -->
     <div class="card">
-        <div class="card-header bg-dark text-white">
+        <div class="card-header">
             <h5 class="mb-0" id="jobsHeader">Active Repair Jobs (@(Model != null ? Model.Count : 0) Total)</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="repairJobsTable">
-                    <thead class="table-primary">
+                    <thead>
                         <tr>
                             <th>Job ID</th>
                             <th>Device/Item</th>
@@ -108,17 +112,17 @@
                                     data-customer="@(job.CustomerName ?? "")"
                                     data-date="@dateReceivedStr">
                                     <td>
-                                        <strong class="text-primary">#@jobId</strong>
+                                        <span style="color: var(--link-text); font-weight: 600;">#@jobId</span>
                                     </td>
                                     <td>
-                                        <div><strong>@(job.ItemModel ?? "N/A")</strong></div>
-                                        <small class="text-muted">Serial: @(job.SerialNumber ?? "N/A")</small>
+                                        <div style="font-weight: 600;">@(job.ItemModel ?? "N/A")</div>
+                                        <small style="color: var(--secondary-text);">Serial: @(job.SerialNumber ?? "N/A")</small>
                                     </td>
                                     <td>
                                         <div>@(job.CustomerName ?? "Unknown")</div>
                                         @if (!string.IsNullOrEmpty(customerId))
                                         {
-                                            <small class="text-muted">@customerId</small>
+                                            <small style="color: var(--secondary-text);">@customerId</small>
                                         }
                                     </td>
                                     <td>
@@ -136,7 +140,7 @@
                                             }
                                             else
                                             {
-                                                <span class="text-muted">No description</span>
+                                                <span style="color: var(--secondary-text);">No description</span>
                                             }
                                         </div>
                                     </td>
@@ -147,19 +151,19 @@
 
                                             if (status == "Completed")
                                             {
-                                                badgeClass = "bg-success";
+                                                badgeClass = "badge-completed";
                                             }
                                             else if (status == "In Progress")
                                             {
-                                                badgeClass = "bg-warning text-dark";
+                                                badgeClass = "badge-in-progress";
                                             }
                                             else if (status == "Pending")
                                             {
-                                                badgeClass = "bg-info";
+                                                badgeClass = "badge-pending";
                                             }
                                             else if (status == "Cancelled")
                                             {
-                                                badgeClass = "bg-danger";
+                                                badgeClass = "badge-cancelled";
                                             }
                                         }
                                         <span class="badge @badgeClass">@status</span>
@@ -168,19 +172,19 @@
                                         <div>@dateReceivedDisplay</div>
                                         @if (!string.IsNullOrEmpty(dateReceivedTime))
                                         {
-                                            <small class="text-muted">@dateReceivedTime</small>
+                                            <small style="color: var(--secondary-text);">@dateReceivedTime</small>
                                         }
                                     </td>
                                     <td>
                                         <div>@lastUpdatedDisplay</div>
                                         @if (!string.IsNullOrEmpty(lastUpdatedTime))
                                         {
-                                            <small class="text-muted">@lastUpdatedTime</small>
+                                            <small style="color: var(--secondary-text);">@lastUpdatedTime</small>
                                         }
                                     </td>
                                     <td>
-                                        <a href="/Owner/RepairJobDetails/@job.Id" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-eye"></i> View
+                                        <a href="/Owner/RepairJobDetails/@job.Id" class="btn btn-sm btn-secondary">
+                                            View
                                         </a>
                                     </td>
                                 </tr>
@@ -190,8 +194,8 @@
                         {
                             <tr>
                                 <td colspan="8" class="text-center py-5">
-                                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
-                                    <p class="mb-0 mt-3 text-muted">No repair jobs found</p>
+                                    <i class="bi bi-inbox" style="font-size: 3rem; color: var(--secondary-text);"></i>
+                                    <p class="mb-0 mt-3" style="color: var(--secondary-text);">No repair jobs found</p>
                                 </td>
                             </tr>
                         }
@@ -202,95 +206,33 @@
     </div>
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
 <style>
-    .filter-card {
-        background-color: #2C3E50;
-        border-radius: 15px;
-        border: none;
+    /* Form controls styling */
+    .form-control, .form-select {
+        border: 1px solid rgba(139, 155, 183, 0.3);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: var(--transition-fast);
+        color: var(--body-text);
+        background: var(--card-bg);
     }
 
-    .card {
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border: none;
-    }
-
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
-    }
-
-    .table-primary {
-        background-color: #5865F2 !important;
-        color: white;
-    }
-
-        .table-primary th {
-            border: none;
-            padding: 1rem;
-            font-weight: 600;
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(74, 105, 255, 0.15);
+            outline: none;
         }
 
-    .table tbody td {
-        vertical-align: middle;
-        padding: 1rem;
+    .form-label {
+        font-weight: 600;
+        color: var(--body-text);
+        margin-bottom: 0.5rem;
     }
-
-    .bg-dark {
-        background-color: #2C3E50 !important;
-    }
-
-    .text-primary {
-        color: #5865F2 !important;
-    }
-
-    .btn-primary {
-        background-color: #5865F2;
-        border-color: #5865F2;
-    }
-
-        .btn-primary:hover {
-            background-color: #4752C4;
-            border-color: #4752C4;
-        }
-
-    .btn-outline-light {
-        color: white;
-        border-color: white;
-    }
-
-        .btn-outline-light:hover {
-            background-color: rgba(255,255,255,0.1);
-            border-color: white;
-            color: white;
-        }
-
-    .badge {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-        .badge.bg-success {
-            background-color: #3DCEA2 !important;
-        }
-
-        .badge.bg-warning {
-            background-color: #F39C12 !important;
-        }
-
-        .badge.bg-info {
-            background-color: #3498DB !important;
-        }
-
-        .badge.bg-danger {
-            background-color: #E74C3C !important;
-        }
 
     .problem-description {
         max-width: 200px;
         word-wrap: break-word;
+        color: var(--body-text);
     }
 
     .table-responsive {
@@ -299,15 +241,18 @@
     }
 
     .job-row {
-        transition: background-color 0.2s ease;
+        transition: var(--transition-fast);
     }
 
         .job-row:hover {
-            background-color: #f8f9fa;
+            background-color: rgba(74, 105, 255, 0.03);
         }
-</style>
 
-@*------------------------------------------------------------------------------------------------ Filter Script ------------------------------------------------------------------------------------------------*@
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+</style>
 
 <script>
     function applyFilters() {
