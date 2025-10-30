@@ -4,13 +4,14 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page title -->
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="mb-0" style="color: var(--heading-text); font-weight: 700;">Repair Jobs</h2>
         </div>
     </div>
 
-    <!-- Filter Section -->
+    <!-- Filter section -->
     <div class="card mb-4">
         <div class="card-header">
             <i class="bi bi-funnel me-2"></i>Filter Jobs
@@ -18,6 +19,7 @@
         <div class="card-body">
             <form class="filter-form">
                 <div class="row g-3 align-items-end">
+                    <!-- Status filter -->
                     <div class="col-md-3">
                         <label class="form-label" style="color: var(--body-text); font-weight: 600;">Status</label>
                         <select class="form-select" id="statusFilter">
@@ -28,14 +30,17 @@
                             <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
+                    <!-- Date filter -->
                     <div class="col-md-3">
                         <label class="form-label" style="color: var(--body-text); font-weight: 600;">Date</label>
                         <input type="date" class="form-control" id="dateFilter">
                     </div>
+                    <!-- Customer search -->
                     <div class="col-md-3">
                         <label class="form-label" style="color: var(--body-text); font-weight: 600;">Customer</label>
                         <input type="text" class="form-control" id="customerFilter" placeholder="Search customer...">
                     </div>
+                    <!-- Filter buttons -->
                     <div class="col-md-2">
                         <button type="button" class="btn btn-primary w-100 mb-2" onclick="applyFilters()">
                             <i class="bi bi-search"></i> Filter
@@ -49,7 +54,7 @@
         </div>
     </div>
 
-    <!-- Repair Jobs Table -->
+    <!-- Jobs table -->
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0" id="jobsHeader">Active Repair Jobs (@(Model != null ? Model.Count : 0) Total)</h5>
@@ -72,8 +77,10 @@
                     <tbody>
                         @if (Model != null && Model.Any())
                         {
+                            // Loop through jobs
                             @foreach (var job in Model)
                             {
+                                // Format date received
                                 string dateReceivedStr = "";
                                 string dateReceivedDisplay = "N/A";
                                 string dateReceivedTime = "";
@@ -90,6 +97,7 @@
                                 }
                                 catch { }
 
+                                // Format last updated
                                 string lastUpdatedDisplay = "N/A";
                                 string lastUpdatedTime = "";
 
@@ -104,6 +112,7 @@
                                 }
                                 catch { }
 
+                                // Format IDs
                                 string jobId = !string.IsNullOrEmpty(job.Id) && job.Id.Length >= 8 ? job.Id.Substring(0, 8) : (job.Id ?? "N/A");
                                 string customerId = !string.IsNullOrEmpty(job.CustomerId) && job.CustomerId.Length >= 12 ? job.CustomerId.Substring(0, 12) : (job.CustomerId ?? "");
 
@@ -111,13 +120,16 @@
                                     data-status="@(job.Status ?? "")"
                                     data-customer="@(job.CustomerName ?? "")"
                                     data-date="@dateReceivedStr">
+                                    <!-- Job ID -->
                                     <td>
                                         <span style="color: var(--link-text); font-weight: 600;">#@jobId</span>
                                     </td>
+                                    <!-- Device info -->
                                     <td>
                                         <div style="font-weight: 600;">@(job.ItemModel ?? "N/A")</div>
                                         <small style="color: var(--secondary-text);">Serial: @(job.SerialNumber ?? "N/A")</small>
                                     </td>
+                                    <!-- Customer info -->
                                     <td>
                                         <div>@(job.CustomerName ?? "Unknown")</div>
                                         @if (!string.IsNullOrEmpty(customerId))
@@ -125,6 +137,7 @@
                                             <small style="color: var(--secondary-text);">@customerId</small>
                                         }
                                     </td>
+                                    <!-- Problem description -->
                                     <td>
                                         <div class="problem-description">
                                             @if (!string.IsNullOrEmpty(job.ProblemDescription))
@@ -144,6 +157,7 @@
                                             }
                                         </div>
                                     </td>
+                                    <!-- Status badge -->
                                     <td>
                                         @{
                                             string status = job.Status ?? "Unknown";
@@ -168,6 +182,7 @@
                                         }
                                         <span class="badge @badgeClass">@status</span>
                                     </td>
+                                    <!-- Date received -->
                                     <td>
                                         <div>@dateReceivedDisplay</div>
                                         @if (!string.IsNullOrEmpty(dateReceivedTime))
@@ -175,6 +190,7 @@
                                             <small style="color: var(--secondary-text);">@dateReceivedTime</small>
                                         }
                                     </td>
+                                    <!-- Last updated -->
                                     <td>
                                         <div>@lastUpdatedDisplay</div>
                                         @if (!string.IsNullOrEmpty(lastUpdatedTime))
@@ -182,6 +198,7 @@
                                             <small style="color: var(--secondary-text);">@lastUpdatedTime</small>
                                         }
                                     </td>
+                                    <!-- View button -->
                                     <td>
                                         <a href="/Owner/RepairJobDetails/@job.Id" class="btn btn-sm btn-secondary">
                                             View
@@ -192,6 +209,7 @@
                         }
                         else
                         {
+                            <!-- Empty state -->
                             <tr>
                                 <td colspan="8" class="text-center py-5">
                                     <i class="bi bi-inbox" style="font-size: 3rem; color: var(--secondary-text);"></i>
@@ -206,8 +224,8 @@
     </div>
 </div>
 
+<!-- Styling -->
 <style>
-    /* Form controls styling */
     .form-control, .form-select {
         border: 1px solid rgba(139, 155, 183, 0.3);
         border-radius: 0.5rem;
@@ -255,6 +273,7 @@
 </style>
 
 <script>
+    // Apply filter logic
     function applyFilters() {
         const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
         const dateFilter = document.getElementById('dateFilter').value;
@@ -270,17 +289,15 @@
 
             let showRow = true;
 
-            // Status filter
+            // Check filters
             if (statusFilter && status !== statusFilter) {
                 showRow = false;
             }
 
-            // Date filter
             if (dateFilter && date !== dateFilter) {
                 showRow = false;
             }
 
-            // Customer filter (search)
             if (customerFilter && !customer.includes(customerFilter)) {
                 showRow = false;
             }
@@ -289,10 +306,10 @@
             if (showRow) visibleCount++;
         });
 
-        // Update count in header
         updateJobCount(visibleCount);
     }
 
+    // Clear all filters
     function clearFilters() {
         document.getElementById('statusFilter').value = '';
         document.getElementById('dateFilter').value = '';
@@ -303,10 +320,10 @@
             row.style.display = '';
         });
 
-        // Reset count
         updateJobCount(rows.length);
     }
 
+    // Update job count display
     function updateJobCount(count) {
         const header = document.getElementById('jobsHeader');
         const totalJobs = document.querySelectorAll('.job-row').length;
@@ -317,7 +334,7 @@
         }
     }
 
-    // Add event listeners for real-time filtering
+    // Real-time search on Enter
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('customerFilter').addEventListener('keyup', function(e) {
             if (e.key === 'Enter') {

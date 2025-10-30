@@ -4,6 +4,7 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page header -->
     <div class="row mb-4">
         <div class="col-12">
             <h2 style="color: var(--heading-text); font-weight: 700;">Add New Product</h2>
@@ -17,32 +18,39 @@
                     <h5 class="mb-0">Product Information</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Product form -->
                     <form asp-action="AddProduct" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <!-- Name field -->
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="Name" type="text" class="form-control" placeholder="Enter the name" required>
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
+                        <!-- Description field -->
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter the description" required></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
+                        <!-- Serial number field -->
                         <div class="mb-3">
                             <label asp-for="SerialNumber" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="SerialNumber" type="text" class="form-control" placeholder="Enter the product serial number">
                             <span asp-validation-for="SerialNumber" class="text-danger small"></span>
                         </div>
 
+                        <!-- Image URL field -->
                         <div class="mb-3">
                             <label asp-for="ImageUrl" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="ImageUrl" type="url" class="form-control" placeholder="Enter a URL for the product image">
                             <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         </div>
 
+                        <!-- Price fields -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="Price" class="form-label fw-semibold" style="color: var(--body-text);"></label>
@@ -56,6 +64,7 @@
                             </div>
                         </div>
 
+                        <!-- Stock and discount -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="StockQuantity" class="form-label fw-semibold" style="color: var(--body-text);"></label>
@@ -69,6 +78,7 @@
                             </div>
                         </div>
 
+                        <!-- Form buttons -->
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <a href="@Url.Action("ProductManagement", "Owner")" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">
@@ -82,6 +92,7 @@
     </div>
 </div>
 
+<!-- Form styling -->
 <style>
     .form-control, .form-select {
         border: 1px solid rgba(139, 155, 183, 0.3);

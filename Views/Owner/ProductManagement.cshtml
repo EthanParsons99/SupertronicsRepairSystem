@@ -4,16 +4,18 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page header -->
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
             <h2 class="mb-0" style="color: var(--heading-text); font-weight: 700;">Products Management</h2>
+            <!-- Add product button -->
             <a href="@Url.Action("AddProduct", "Owner")" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-1"></i> New Product
             </a>
         </div>
     </div>
 
-    <!-- Filter Section -->
+    <!-- Filter section -->
     <div class="card mb-4">
         <div class="card-header">
             <i class="bi bi-funnel me-2"></i>Filter Products
@@ -21,23 +23,27 @@
         <div class="card-body">
             <form asp-action="ProductManagement" method="get" class="filter-form">
                 <div class="row g-3 align-items-end">
+                    <!-- Search input -->
                     <div class="col-md-4">
                         <label asp-for="SearchTerm" class="form-label" style="color: var(--body-text); font-weight: 600;">Search</label>
                         <input asp-for="SearchTerm" type="text" class="form-control" placeholder="Enter product name or Serial Number" value="@Model.SearchTerm">
                     </div>
 
+                    <!-- Min price -->
                     <div class="col-md-3">
                         <label asp-for="MinPrice" class="form-label" style="color: var(--body-text); font-weight: 600;">Min Price</label>
                         <input asp-for="MinPrice" type="number" step="0.01" min="0" class="form-control" placeholder="Min Price" value="@(Model.MinPrice > 0 ? Model.MinPrice : "")">
                         <span asp-validation-for="MinPrice" class="text-danger small"></span>
                     </div>
 
+                    <!-- Max price -->
                     <div class="col-md-3">
                         <label asp-for="MaxPrice" class="form-label" style="color: var(--body-text); font-weight: 600;">Max Price</label>
                         <input asp-for="MaxPrice" type="number" step="0.01" min="0.01" class="form-control" placeholder="Max Price" value="@(Model.MaxPrice > 0 ? Model.MaxPrice : "")">
                         <span asp-validation-for="MaxPrice" class="text-danger small"></span>
                     </div>
 
+                    <!-- Filter buttons -->
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100 mb-2">
                             <i class="bi bi-search"></i> Filter
@@ -54,7 +60,7 @@
         </div>
     </div>
 
-    <!-- Products Table -->
+    <!-- Products table -->
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0">All Products (@(Model.Products != null ? Model.Products.Count() : 0) Total)</h5>
@@ -78,17 +84,20 @@
                             @foreach (var product in Model.Products)
                             {
                                 <tr class="product-row">
+                                    <!-- Product name with image -->
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <img src="@product.ImageUrl" alt="@product.Name" class="rounded me-3" style="width: 50px; height:50px; object-fit: cover;">
                                             <div style="font-weight: 600; color: var(--body-text);">@product.Name</div>
                                         </div>
                                     </td>
+                                    <!-- Serial number -->
                                     <td>
                                         <span style="color: var(--secondary-text);">
                                             @(string.IsNullOrEmpty(product.SerialNumber) ? "N/A" : product.SerialNumber)
                                         </span>
                                     </td>
+                                    <!-- Price with discount -->
                                     <td>
                                         <div style="font-weight: 600; color: var(--body-text);">@product.Price.ToString("C")</div>
                                         @if (product.DiscountPercentage > 0)
@@ -96,16 +105,20 @@
                                             <small style="color: var(--danger);">(@product.DiscountPercentage% off)</small>
                                         }
                                     </td>
+                                    <!-- Stock quantity -->
                                     <td>
                                         <span style="font-weight: 600; color: var(--body-text);">@product.StockQuantity</span>
                                     </td>
+                                    <!-- Discount percentage -->
                                     <td>
                                         <span style="color: var(--body-text);">@product.DiscountPercentage%</span>
                                     </td>
+                                    <!-- Action buttons -->
                                     <td>
                                         <a asp-action="EditProduct" asp-route-id="@product.Id" class="btn btn-sm btn-secondary me-2" title="Edit">
                                             <i class="bi bi-pencil"></i> Edit
                                         </a>
+                                        <!-- Delete form -->
                                         <form asp-action="DeleteProduct" method="post" asp-route-id="@product.Id" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the product: @product.Name? This cannot be undone.');">
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                                                 <i class="bi bi-trash"></i> Delete
@@ -121,6 +134,7 @@
         }
         else
         {
+            <!-- Empty state -->
             <div class="card-body text-center py-5">
                 <i class="bi bi-inbox" style="font-size: 3rem; color: var(--secondary-text);"></i>
                 <p class="mb-0 mt-3" style="color: var(--secondary-text);">No products found</p>
@@ -129,8 +143,8 @@
     </div>
 </div>
 
+<!-- Styling -->
 <style>
-    /* Form controls styling */
     .form-control, .form-select {
         border: 1px solid rgba(139, 155, 183, 0.3);
         border-radius: 0.5rem;

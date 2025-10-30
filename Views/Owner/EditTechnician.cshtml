@@ -4,6 +4,7 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page title -->
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="text-primary">Edit Technician</h2>
@@ -17,10 +18,12 @@
                     <h5 class="mb-0">Technician Information</h5>
                 </div>
                 <div class="card-body p-4">
+                    <!-- Edit form -->
                     <form asp-action="EditTechnician" method="post">
+                        <!-- Hidden user ID -->
                         <input type="hidden" asp-for="UserId" />
 
-
+                        <!-- Name fields -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="FirstName" class="form-label"></label>
@@ -35,24 +38,28 @@
                             </div>
                         </div>
 
+                        <!-- Email field -->
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label"></label>
                             <input asp-for="Email" class="form-control">
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
+                        <!-- Phone number field -->
                         <div class="mb-4">
                             <label asp-for="PhoneNumber" class="form-label"></label>
                             <input asp-for="PhoneNumber" class="form-control">
                             <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                         </div>
 
-@*                         <div class="mb-4">
+                        <!-- Password field (commented out) -->
+                        @*                         <div class="mb-4">
                             <label asp-for="Password" class="form-label fw-semibold"></label>
                             <input asp-for="Password" class="form-control" />
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div> *@
 
+                        <!-- Form buttons -->
                         <div class="d-flex gap-2 justify-content-end">
                             <a asp-action="Technicians" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Cancel</a>
                             <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
@@ -64,8 +71,7 @@
     </div>
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
+<!-- Styling -->
 <style>
     .card {
         border-radius: 15px;
@@ -112,6 +118,7 @@
 </style>
 
 <script>
+    // Form validation (Note: references non-existent form ID)
     document.getElementById('addTechnicianForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
