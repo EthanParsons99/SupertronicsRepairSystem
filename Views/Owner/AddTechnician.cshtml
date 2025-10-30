@@ -4,6 +4,7 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page title -->
     <div class="row mb-4">
         <div class="col-12">
             <h2 style="color: var(--heading-text); font-weight: 700;">Add New Technician</h2>
@@ -17,8 +18,11 @@
                     <h5 class="mb-0">Technician Information</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Add technician form -->
                     <form asp-action="AddTechnician" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <!-- Name fields -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="FirstName" class="form-label fw-semibold" style="color: var(--body-text);">Name</label>
@@ -32,24 +36,28 @@
                             </div>
                         </div>
 
+                        <!-- Email field -->
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label fw-semibold" style="color: var(--body-text);">Email Address</label>
                             <input asp-for="Email" type="email" class="form-control" id="techEmail" placeholder="Enter technician email" required>
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
+                        <!-- Phone number field -->
                         <div class="mb-3">
                             <label asp-for="PhoneNumber" class="form-label fw-semibold" style="color: var(--body-text);">Phone Number</label>
                             <input asp-for="PhoneNumber" type="tel" class="form-control" id="techPhone" placeholder="Enter phone number" required>
                             <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                         </div>
 
+                        <!-- Password field -->
                         <div class="mb-4">
                             <label asp-for="Password" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" required>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
+                        <!-- Form buttons -->
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <a href="@Url.Action("TechnicianManagement", "Owner")" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">
@@ -63,6 +71,7 @@
     </div>
 </div>
 
+<!-- Form styling -->
 <style>
     .form-control, .form-select {
         border: 1px solid rgba(139, 155, 183, 0.3);

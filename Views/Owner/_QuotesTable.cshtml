@@ -2,6 +2,7 @@
 
 <div class="table-responsive">
     <table class="table table-hover mb-0">
+        <!-- Table header -->
         <thead class="table-primary">
             <tr>
                 <th>Repair Job ID</th>
@@ -16,18 +17,23 @@
         <tbody>
             @if (Model != null && Model.Any())
             {
+                // Loop through repair jobs
                 foreach (var job in Model)
                 {
+                    // Loop through quotes for each job
                     foreach (var quote in job.Quotes)
                     {
                         <tr>
+                            <!-- Job ID -->
                             <td>
                                 <strong>@job.Id.Substring(0, Math.Min(8, job.Id.Length))</strong>
                             </td>
+                            <!-- Customer info -->
                             <td>
                                 <div>@job.CustomerName</div>
                                 <small class="text-muted">ID: @job.CustomerId.Substring(0, Math.Min(8, job.CustomerId.Length))</small>
                             </td>
+                            <!-- Item details -->
                             <td>
                                 <div>@job.ItemModel</div>
                                 @if (!string.IsNullOrEmpty(job.SerialNumber))
@@ -35,6 +41,7 @@
                                     <small class="text-muted">SN: @job.SerialNumber</small>
                                 }
                             </td>
+                            <!-- Quote pricing -->
                             <td>
                                 <div><strong>Quote #@quote.Id</strong></div>
                                 <small class="text-muted">
@@ -49,6 +56,7 @@
                                     <small class="text-muted">(@quote.QuoteParts.Count parts)</small>
                                 }
                             </td>
+                            <!-- Status badge -->
                             <td>
                                 @{
                                     var badgeClass = job.Status.ToLower() switch
@@ -62,10 +70,12 @@
                                 }
                                 <span class="badge @badgeClass">@job.Status</span>
                             </td>
+                            <!-- Timestamp -->
                             <td>
                                 <div>@job.LastUpdated.ToDateTime().ToLocalTime().ToString("MMM dd, yyyy")</div>
                                 <small class="text-muted">@job.LastUpdated.ToDateTime().ToLocalTime().ToString("HH:mm")</small>
                             </td>
+                            <!-- View button -->
                             <td>
                                 <button class="btn btn-sm btn-outline-primary"
                                         onclick="viewQuoteDetails('@job.Id', '@quote.Id')">
@@ -78,6 +88,7 @@
             }
             else
             {
+                <!-- Empty state -->
                 <tr>
                     <td colspan="7" class="text-center text-muted py-4">
                         <i class="bi bi-inbox" style="font-size: 2rem;"></i>
@@ -90,8 +101,8 @@
 </div>
 
 <script>
+    // Navigate to quote details
     function viewQuoteDetails(repairJobId, quoteId) {
-        // Navigate to quote details page or open modal
         window.location.href = '@Url.Action("RepairJobs", "Owner")' + '?jobId=' + repairJobId;
     }
 </script>
