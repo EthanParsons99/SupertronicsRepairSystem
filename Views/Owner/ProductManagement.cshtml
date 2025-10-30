@@ -6,179 +6,177 @@
 <div class="container-fluid p-4">
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">Products Management</h2>
-            <a href="@Url.Action("AddProduct", "Owner")" class="btn btn-dark">+ New Product</a>
+            <h2 class="mb-0" style="color: var(--heading-text); font-weight: 700;">Products Management</h2>
+            <a href="@Url.Action("AddProduct", "Owner")" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> New Product
+            </a>
         </div>
     </div>
 
     <!-- Filter Section -->
-    <div class="card filter-card mb-3">
-        <form asp-action="ProductManagement" method="get">
-            <div class="card-body">
-                <div class="row g-3">
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-funnel me-2"></i>Filter Products
+        </div>
+        <div class="card-body">
+            <form asp-action="ProductManagement" method="get" class="filter-form">
+                <div class="row g-3 align-items-end">
                     <div class="col-md-4">
-                        <label asp-for="SearchTerm" class="form-label text-white"></label>
-                        <input asp-for="SearchTerm" type="text" class="form-control" placeholder="Enter product name or Sercial Number" value="@Model.SearchTerm">
+                        <label asp-for="SearchTerm" class="form-label" style="color: var(--body-text); font-weight: 600;">Search</label>
+                        <input asp-for="SearchTerm" type="text" class="form-control" placeholder="Enter product name or Serial Number" value="@Model.SearchTerm">
                     </div>
-                
+
                     <div class="col-md-3">
-                        <label asp-for="MinPrice" class="form-label text-white"></label>
+                        <label asp-for="MinPrice" class="form-label" style="color: var(--body-text); font-weight: 600;">Min Price</label>
                         <input asp-for="MinPrice" type="number" step="0.01" min="0" class="form-control" placeholder="Min Price" value="@(Model.MinPrice > 0 ? Model.MinPrice : "")">
                         <span asp-validation-for="MinPrice" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label asp-for="MaxPrice" class="form-label text-white"></label>
+                        <label asp-for="MaxPrice" class="form-label" style="color: var(--body-text); font-weight: 600;">Max Price</label>
                         <input asp-for="MaxPrice" type="number" step="0.01" min="0.01" class="form-control" placeholder="Max Price" value="@(Model.MaxPrice > 0 ? Model.MaxPrice : "")">
                         <span asp-validation-for="MaxPrice" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="submit" class="btn btn-dark w-100">
-                            <i class="bi bi-funnel"></i> Filter
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-search"></i> Filter
                         </button>
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.MinPrice > 0 || Model.MaxPrice.HasValue)
+                        {
+                            <a asp-action="ProductManagement" class="btn btn-secondary w-100">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </a>
+                        }
                     </div>
                 </div>
-
-                @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.MinPrice > 0 || Model.MaxPrice.HasValue)
-                {
-                    <a asp-action="ProductManagement" class="btn btn-outline-light btn-sm mt-3"><i class="bi bi-x-circle me-1"></i> Clear Filters</a>
-                }
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Products Table -->
     <div class="card">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">All Products</h5>
+        <div class="card-header">
+            <h5 class="mb-0">All Products (@(Model.Products != null ? Model.Products.Count() : 0) Total)</h5>
         </div>
         @if (Model.Products.Any())
         {
             <div class="card-body p-0">
                 <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-primary">
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Serial Number</th>
-                            <th>Price</th>
-                            <th>Stock Qauntity</th>
-                            <th>Discount</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var product in Model.Products)
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Serial Number</th>
+                                <th>Price</th>
+                                <th>Stock Quantity</th>
+                                <th>Discount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model.Products)
                             {
-                                <tr>
-                                    <td class="align-middle fw-semibold">
+                                <tr class="product-row">
+                                    <td>
                                         <div class="d-flex align-items-center">
                                             <img src="@product.ImageUrl" alt="@product.Name" class="rounded me-3" style="width: 50px; height:50px; object-fit: cover;">
+                                            <div style="font-weight: 600; color: var(--body-text);">@product.Name</div>
                                         </div>
-                                            <div>
-                                                <div>@product.Name</div>
-                                            </div>
                                     </td>
-                                    <td class="align-middle text-muted small">
-                                        @(string.IsNullOrEmpty(product.SerialNumber) ? "N/A" : $"Serial: {product.SerialNumber}")
+                                    <td>
+                                        <span style="color: var(--secondary-text);">
+                                            @(string.IsNullOrEmpty(product.SerialNumber) ? "N/A" : product.SerialNumber)
+                                        </span>
                                     </td>
-                                    <td class="align-middle">
-                                        <span class="fw-bold">@product.Price.ToString("R")</span>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--body-text);">@product.Price.ToString("C")</div>
                                         @if (product.DiscountPercentage > 0)
                                         {
-                                            <br />
-                                
-                                            <span class="text-danger small">(@product.DiscountPercentage}% off)</span>
+                                            <small style="color: var(--danger);">(@product.DiscountPercentage% off)</small>
                                         }
                                     </td>
-                                    <td class="align-middle" text-center>
-                                        <span class="fw-bold">@product.StockQuantity</span>
+                                    <td>
+                                        <span style="font-weight: 600; color: var(--body-text);">@product.StockQuantity</span>
                                     </td>
-                                    <td class="align-middle text-black-center">@product.DiscountPercentage</td>
-
-                                    <td class="align-middle">
-                                        <a asp-action="EditProduct" asp-route-id="@product.Id" class="btn btn-sm btn-info text-white me-2" title="Edit">
-                                            <i class="bi bi-pencil"></i>Edit
+                                    <td>
+                                        <span style="color: var(--body-text);">@product.DiscountPercentage%</span>
+                                    </td>
+                                    <td>
+                                        <a asp-action="EditProduct" asp-route-id="@product.Id" class="btn btn-sm btn-secondary me-2" title="Edit">
+                                            <i class="bi bi-pencil"></i> Edit
                                         </a>
                                         <form asp-action="DeleteProduct" method="post" asp-route-id="@product.Id" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the product: @product.Name? This cannot be undone.');">
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                                <i class="bi bi-trash"></i>Delete
+                                                <i class="bi bi-trash"></i> Delete
                                             </button>
                                         </form>
                                     </td>
                                 </tr>
                             }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--secondary-text);"></i>
+                <p class="mb-0 mt-3" style="color: var(--secondary-text);">No products found</p>
+            </div>
         }
     </div>
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
 <style>
-    .filter-card {
-        background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
-        border-radius: 15px;
-        border: none;
+    /* Form controls styling */
+    .form-control, .form-select {
+        border: 1px solid rgba(139, 155, 183, 0.3);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: var(--transition-fast);
+        color: var(--body-text);
+        background: var(--card-bg);
     }
 
-        .filter-card .form-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(74, 105, 255, 0.15);
+            outline: none;
         }
 
-    .product-image {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 8px;
+    .form-label {
+        font-weight: 600;
+        color: var(--body-text);
+        margin-bottom: 0.5rem;
     }
 
-    .table-primary {
-        background-color: #5865F2 !important;
-        color: white;
+    .product-row {
+        transition: var(--transition-fast);
     }
 
-        .table-primary th {
-            border: none;
-            padding: 1rem;
+        .product-row:hover {
+            background-color: rgba(74, 105, 255, 0.03);
         }
 
-    .card {
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border: none;
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
     }
 
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
+    .table-responsive {
+        max-height: 600px;
+        overflow-y: auto;
     }
 
-    .bg-dark {
-        background-color: #2C3E50 !important;
+    .btn-danger {
+        background-color: var(--danger);
+        color: var(--inverse-text);
     }
 
-    .btn-dark {
-        background-color: #2C3E50;
-        border-color: #2C3E50;
-    }
-
-        .btn-dark:hover {
-            background-color: #1a252f;
-            border-color: #1a252f;
-        }
-
-    .btn-primary {
-        background-color: #5865F2;
-        border-color: #5865F2;
-    }
-
-        .btn-primary:hover {
-            background-color: #4752C4;
-            border-color: #4752C4;
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
         }
 </style>

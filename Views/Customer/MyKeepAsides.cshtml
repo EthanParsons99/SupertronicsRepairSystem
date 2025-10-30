@@ -1,0 +1,68 @@
+﻿@model List<KeepAsideViewModel>
+@{
+    ViewData["Title"] = "My Keep Asides";
+}
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="~/css/AllKeepAsides.css">
+<body>
+    <div class="container">
+        <div class="hero-header">
+            <h1 class="hero-title">My Keep Asides</h1>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="keep-asides-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device</th>
+                            <th>Customer</th>
+                            <th>Collection Date</th>
+                            <th>Status</th>
+                            <th>Expiry Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var isOverdue = item.CollectionDate < DateTime.Now;
+                            var expiryDate = item.CollectionDate?.AddDays(7);
+                            <tr>
+                                <td data-label="Device">
+                                    <div class="device-name">@item.DeviceSerialNumber</div>
+                                </td>
+                                <td data-label="Customer">
+                                    <div class="customer-name">@item.CustomerName @item.CustomerSurname</div>
+                                    <div class="contact-number">@item.ContactNumber</div>
+                                </td>
+                                <td data-label="Collection Date">
+                                    <span class="date-cell">@item.CollectionDate?.ToString("dd MMM yyyy")</span>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="status-badge @(isOverdue ? "overdue" : "")">
+                                        @(isOverdue ? "Overdue" : "Active")
+                                    </span>
+                                </td>
+                                <td data-label="Expiry Date">
+                                    <span class="date-cell">@expiryDate?.ToString("dd MMM yyyy")</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">📦</div>
+                <h2 class="empty-title">No Keep Asides Yet</h2>
+                <p class="empty-text">You haven't reserved any products. Start browsing to find items you'd like to keep aside.</p>
+                <button class="btn-primary" onclick="location.href='@Url.Action("Index", "Products")'">Browse Products</button>
+            </div>
+        }
+    </div>
+</body>
+</html>
