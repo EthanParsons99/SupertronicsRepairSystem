@@ -4,16 +4,18 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page header -->
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
             <h2 class="mb-0" style="color: var(--heading-text); font-weight: 700;">Technicians Management</h2>
+            <!-- Add new technician button -->
             <a href="@Url.Action("AddTechnician", "Owner")" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> New Technician
             </a>
         </div>
     </div>
 
-    <!-- Filter Section -->
+    <!-- Search filters -->
     <div class="card mb-4">
         <div class="card-header">
             <i class="bi bi-funnel me-2"></i>Search Filters
@@ -21,15 +23,18 @@
         <div class="card-body">
             <form asp-action="TechnicianManagement" method="get" class="filter-form">
                 <div class="row g-3 align-items-end">
+                    <!-- Search input -->
                     <div class="col-md-5">
                         <label asp-for="SearchTerm" class="form-label" style="color: var(--body-text); font-weight: 600;">Search Term</label>
                         <input asp-for="SearchTerm" type="text" class="form-control" placeholder="Search by name or email" value="@Model.SearchTerm">
                     </div>
+                    <!-- Search button -->
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-search"></i> Search
                         </button>
                     </div>
+                    <!-- Clear button -->
                     @if (!string.IsNullOrEmpty(Model.SearchTerm))
                     {
                         <div class="col-md-2">
@@ -43,7 +48,7 @@
         </div>
     </div>
 
-    <!-- Technicians Table -->
+    <!-- Technicians table -->
     @if (Model.Technicians.Any())
     {
         <div class="card">
@@ -71,13 +76,16 @@
                                     <td>@technician.Surname</td>
                                     <td>@technician.Email</td>
                                     <td>@(string.IsNullOrEmpty(technician.PhoneNumber) ? "N/A" : technician.PhoneNumber)</td>
+                                    <!-- Role badge -->
                                     <td>
                                         <span class="badge badge-in-progress">@technician.Role.ToString()</span>
                                     </td>
+                                    <!-- Action buttons -->
                                     <td>
                                         <a asp-action="EditTechnician" asp-route-id="@technician.UserId" class="btn btn-sm btn-secondary" title="Edit Technician">
                                             Edit
                                         </a>
+                                        <!-- Delete form -->
                                         <form asp-action="DeleteTechnician" asp-route-id="@technician.UserId" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this technician?');">
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete Technician">
                                                 Delete
@@ -95,6 +103,7 @@
     }
     else
     {
+        <!-- Empty state -->
         <div class="card" style="border-left: 4px solid var(--info);">
             <div class="card-body text-center py-5">
                 <i class="bi bi-info-circle" style="font-size: 3rem; color: var(--info); margin-bottom: 1rem; display: block;"></i>
@@ -104,8 +113,8 @@
     }
 </div>
 
+<!-- Styling -->
 <style>
-    /* Form controls styling from site.css pattern */
     .form-control, .form-select {
         border: 1px solid rgba(139, 155, 183, 0.3);
         border-radius: 0.5rem;
@@ -127,7 +136,6 @@
         margin-bottom: 0.5rem;
     }
 
-    /* Danger button styling to match site.css patterns */
     .btn-danger {
         background: var(--danger);
         color: var(--inverse-text);
@@ -146,7 +154,6 @@
             box-shadow: var(--shadow-md);
         }
 
-    /* Match btn-sm size with dashboard */
     .btn-sm {
         padding: 0.375rem 0.75rem;
         font-size: 0.875rem;
