@@ -43,26 +43,31 @@ The top navigation menu adapts to your role:
 
 ### Customer
 
-1) Submit a Repair Request
-- Go to `Customer > RequestRepair`.
-- Fill in product details (model, serial, issue description) and contact info.
-- Submit. You'll receive a confirmation and a reference/serial to track.
+1) Browse Products
+- Go to `Customer > All Products` to browse the full catalog of available products.
 
-2) Track a Repair
-- Go to `Customer > TrackRepair`.
-- Enter your repair reference or serial number.
-- View current status, assigned technician (if any), and expected next steps.
+2) View Product Details
+- From the product list or recommendations, click on a product to view detailed information.
+- Add the product to your cart or request to keep it aside.
 
-3) View Repair Details
-- Go to `Customer > RepairDetails` (linked from Track results or Customer Index).
-- Review timeline, notes, and any associated quote.
+3) Manage Shopping Cart
+- Add products to your cart from product detail pages.
+- Go to `Customer > Cart` to view, update quantities, or remove items from your cart.
 
-4) View Product Information
-- Go to `Customer > Product` to view available products or details relevant to your repair.
+4) Request a Quote
+- Go to `Customer > Get Quote`.
+- Provide device details, brand, model, serial number, and problem description.
+- Submit to request a quote for repair or service.
 
-Tips
-- Use the track page to check updates instead of re-submitting a new request.
-- Save your repair reference/serial for faster lookup.
+5) Keep Product Aside
+- From a product page, select "Keep Aside" to reserve a product.
+- Fill in your details and collection date.
+- Submit to create a keep-aside request.
+
+6) View My Keep-Asides
+- Go to `Customer > My Keep-Asides` to view your reserved products and collection details.
+
+
 
 ### Technician
 
@@ -120,13 +125,6 @@ Tips
 5) Manage Repair Jobs
 - To view jobs across technicians: `Owner > Repairs`.
 - To view job details: `Owner > Repairs > View`
-
-## Page Reference 
-
-- Account: `Account/Login`, `Account/Register`, `Account/ForgotPassword`
-- Customer: `Customer/Index`, `Customer/RequestRepair`, `Customer/TrackRepair`, `Customer/RepairDetails`, `Customer/CustomerViewProduct`
-- Technician: `Technician/Dashboard`, `Technician/CreateRepairJob`, `Technician/RepairJobs`, `Technician/UpdateRepairStatus`, `Technician/AddRepairNotes`, `Technician/GenerateProductQuote`, `Technician/GenerateRepairQuote`, `Technician/SelectJobForQuote`, `Technician/TrackSerialNumber`
-- Owner: `Owner/Dashboard`, `Owner/ProductManagement`, `Owner/AddProduct`, `Owner/EditProduct`, `Owner/TechnicianManagement`, `Owner/AddTechnician`, `Owner/QuotesManagement`, `Owner/RepairJobs`
 
 ## Status Indicators and Quotes
 
