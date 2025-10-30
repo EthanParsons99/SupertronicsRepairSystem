@@ -2,11 +2,7 @@
 @{
     Layout = "_ViewProductLayout";
     ViewData["Title"] = "All Products";
-    Layout = "_Layout";
 }
-<style>
-  
-</style>
 <div class="search-bar">
   
     <input type="text" id="productSearch" class="search-input" placeholder="Search products..." />
@@ -153,7 +149,7 @@
 
                         <a class="btn btn-add-cart"
                            asp-controller="CustomerDashboard"
-                           asp-action="CustomerCart"
+                           asp-action="CustomerCart">
                             <i class="bi bi-cart-plus"></i> Add to Cart
                         </a>
                     </div>

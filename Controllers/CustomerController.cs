@@ -308,7 +308,8 @@ namespace SupertronicsRepairSystem.Controllers
                 Console.WriteLine($"SUCCESS: Keep aside created with ID: {docRef.Id}");
 
                 TempData["SuccessMessage"] = "Keep aside created successfully!";
-                return RedirectToAction("MyKeepAsides");
+                return RedirectToAction("MyKeepAsides", "Customer");
+
             }
             catch (Exception ex)
             {
@@ -410,7 +411,7 @@ namespace SupertronicsRepairSystem.Controllers
                 Console.WriteLine($"ERROR loading product: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 TempData["ErrorMessage"] = "Error loading product. Please try again.";
-                return RedirectToAction("AllProducts");
+return RedirectToAction("AllProducts", "Customer");
             }
         }
 

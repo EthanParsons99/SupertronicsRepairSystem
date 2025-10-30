@@ -46,17 +46,17 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="MyKeepAsides">
                                         <i class="bi bi-bookmark me-1"></i>Keeps Asides
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerGetQuote">
                                         <i class="bi bi-file-earmark-text me-1"></i>Get Quote
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerCart">
                                         <i class="bi bi-cart me-1"></i>Cart
                                     </a>
                                 </li>
@@ -227,5 +227,7 @@
     </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+
 </body>
 </html>
