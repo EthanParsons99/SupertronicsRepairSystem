@@ -34,9 +34,9 @@ This manual explains how to navigate the interface and complete key tasks. It al
 ## Navigation
 
 The top navigation menu adapts to your role:
-- Everyone: Home, Account (Login/Register/Logout)
-- Customer: Customer pages (Request Repair, Track Repair, Repair Details)
-- Technician: Technician dashboard and tools (jobs, quotes, notes, serial tracking)
+- Everyone: Home, Account (Login/Register)
+- Customer: Customer pages (Products, Keep Asides, Get Quote, Cart)
+- Technician: Technician dashboard and tools (jobs, quotes, serial tracking)
 - Owner: Owner dashboard and management (products, technicians, quotes, repair jobs)
 
 ## Role-Based Use Cases
