@@ -43,3 +43,6 @@ The system uses role based access to provide each user with functions that only 
 - Click run and the application should launch
 
 Published to https://supertronics.azurewebsites.net/ 
+
+Owner login: owner@gmail.com / owner123!
+Tech login: tech1@gmail.com / tech1!
