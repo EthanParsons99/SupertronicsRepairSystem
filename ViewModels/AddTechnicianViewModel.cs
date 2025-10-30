@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // Add new technician form
     public class AddTechnicianViewModel
     {
         [Required(ErrorMessage = "Technician name is required.")]
@@ -9,7 +11,7 @@ namespace SupertronicsRepairSystem.ViewModels
 
         [Required(ErrorMessage = "Surname is required.")]
         [StringLength(100, ErrorMessage = "Surname cannot exceed 100 characters.")]
-        public string Surname{ get; set; }
+        public string Surname { get; set; }
 
         [Required(ErrorMessage = "Email address is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address format.")]
