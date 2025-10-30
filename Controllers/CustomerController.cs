@@ -220,84 +220,40 @@ namespace SupertronicsRepairSystem.Controllers
         }
         // ===================== Keep Aside Section =====================
 
-        // GET: Customer/KeepAside
-        // Replace your existing KeepAside methods with these fixed versions
-
-        // GET: Customer/KeepAside
-        public async Task<IActionResult> KeepAside(string serialNumber)
-        {
-            // Check if user is logged in
-            var userInfo = await _authService.GetCurrentUserInfoAsync();
-            if (userInfo == null)
-            {
-                TempData["ErrorMessage"] = "You must be logged in to keep aside a product.";
-                return RedirectToAction("SignIn", "Account");
-            }
-
-            if (string.IsNullOrEmpty(serialNumber))
-            {
-                TempData["ErrorMessage"] = "No product selected to keep aside.";
-                return RedirectToAction("AllProducts");
-            }
-
-            try
-            {
-                Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber);
-                QuerySnapshot snapshot = await query.GetSnapshotAsync();
-                var doc = snapshot.Documents.FirstOrDefault();
-
-                if (doc == null)
-                {
-                    TempData["ErrorMessage"] = "Product not found.";
-                    return RedirectToAction("AllProducts");
-                }
-
-                var product = doc.ConvertTo<Product>();
-
-                // Convert to ProductViewModel
-                var productViewModel = new ProductViewModel
-                {
-                    Id = product.Id,
-                    Name = product.Name,
-                    SerialNumber = product.SerialNumber,
-                    ImageUrl = product.ImageUrl,
-                    Price = product.Price
-                };
-
-                var model = new KeepAsideViewModel
-                {
-                    DeviceSerialNumber = product.SerialNumber,
-                    CollectionDate = DateTime.Now.AddDays(2),
-                    CustomerName = userInfo.FirstName ?? "",
-                    CustomerSurname = userInfo.Surname ?? ""
-                };
-
-                ViewBag.Product = productViewModel;
-                return View("KeepAsideForm", model);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading product: {ex.Message}");
-                TempData["ErrorMessage"] = "Error loading product. Please try again.";
-                return RedirectToAction("AllProducts");
-            }
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> KeepAsideCreate(KeepAsideViewModel model)
         {
+            Console.WriteLine("=== KeepAsideCreate POST method called ===");
+            Console.WriteLine($"Customer Name: {model.CustomerName}");
+            Console.WriteLine($"Customer Surname: {model.CustomerSurname}");
+            Console.WriteLine($"Contact Number: {model.ContactNumber}");
+            Console.WriteLine($"ID/Passport: {model.IdPassportNumber}");
+            Console.WriteLine($"Serial Number: {model.DeviceSerialNumber}");
+            Console.WriteLine($"Collection Date: {model.CollectionDate}");
+            Console.WriteLine($"ModelState.IsValid: {ModelState.IsValid}");
+
             // Check if user is logged in
             var userInfo = await _authService.GetCurrentUserInfoAsync();
             if (userInfo == null)
             {
+                Console.WriteLine("ERROR: User is not logged in");
                 TempData["ErrorMessage"] = "You must be logged in to create a keep aside.";
                 return RedirectToAction("SignIn", "Account");
             }
 
+            Console.WriteLine($"User ID: {userInfo.UserId}");
+            Console.WriteLine($"User Email: {userInfo.Email}");
+
             if (!ModelState.IsValid)
             {
-                // If validation fails, reload the product
+                Console.WriteLine("ERROR: Model validation failed");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Validation error: {error.ErrorMessage}");
+                }
+
+                // Reload the product
                 try
                 {
                     Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", model.DeviceSerialNumber);
@@ -345,20 +301,20 @@ namespace SupertronicsRepairSystem.Controllers
             { "CreatedAt", DateTime.UtcNow }
         };
 
-                Console.WriteLine($"Creating keep aside for customer: {userInfo.UserId}");
+                Console.WriteLine($"Creating keep aside document in Firestore...");
 
                 DocumentReference docRef = await _firestoreDb.Collection("KeepAsides").AddAsync(keepAsideData);
 
-                Console.WriteLine($"Keep aside created with ID: {docRef.Id}");
+                Console.WriteLine($"SUCCESS: Keep aside created with ID: {docRef.Id}");
 
                 TempData["SuccessMessage"] = "Keep aside created successfully!";
                 return RedirectToAction("MyKeepAsides");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating keep aside: {ex.Message}");
+                Console.WriteLine($"ERROR creating keep aside: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                ModelState.AddModelError(string.Empty, "An error occurred while creating the keep aside. Please try again.");
+                ModelState.AddModelError(string.Empty, $"An error occurred: {ex.Message}");
 
                 // Reload product on error
                 try
@@ -386,13 +342,88 @@ namespace SupertronicsRepairSystem.Controllers
             }
         }
 
-        // GET: Customer/MyKeepAsides - FIXED to filter by customer
-        public async Task<IActionResult> MyKeepAsides()
+        // GET: Customer/KeepAside
+        public async Task<IActionResult> KeepAside(string serialNumber)
         {
+            Console.WriteLine($"=== KeepAside GET method called with serialNumber: {serialNumber} ===");
+
             // Check if user is logged in
             var userInfo = await _authService.GetCurrentUserInfoAsync();
             if (userInfo == null)
             {
+                Console.WriteLine("ERROR: User is not logged in");
+                TempData["ErrorMessage"] = "You must be logged in to keep aside a product.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
+            Console.WriteLine($"User logged in: {userInfo.Email}");
+
+            if (string.IsNullOrEmpty(serialNumber))
+            {
+                Console.WriteLine("ERROR: Serial number is empty");
+                TempData["ErrorMessage"] = "No product selected to keep aside.";
+                return RedirectToAction("AllProducts");
+            }
+
+            try
+            {
+                Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber);
+                QuerySnapshot snapshot = await query.GetSnapshotAsync();
+                var doc = snapshot.Documents.FirstOrDefault();
+
+                if (doc == null)
+                {
+                    Console.WriteLine($"ERROR: Product with serial {serialNumber} not found");
+                    TempData["ErrorMessage"] = "Product not found.";
+                    return RedirectToAction("AllProducts");
+                }
+
+                var product = doc.ConvertTo<Product>();
+                Console.WriteLine($"Product found: {product.Name}");
+
+                // Convert to ProductViewModel
+                var productViewModel = new ProductViewModel
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    SerialNumber = product.SerialNumber,
+                    ImageUrl = product.ImageUrl,
+                    Price = product.Price
+                };
+
+                var model = new KeepAsideViewModel
+                {
+                    DeviceSerialNumber = product.SerialNumber,
+                    CollectionDate = DateTime.Now.AddDays(2),
+                    CustomerName = userInfo.FirstName ?? "",
+                    CustomerSurname = userInfo.Surname ?? ""
+                };
+
+                Console.WriteLine($"Model created with serial: {model.DeviceSerialNumber}");
+                Console.WriteLine($"Collection date: {model.CollectionDate}");
+
+                ViewBag.Product = productViewModel;
+                return View("KeepAsideForm", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR loading product: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                TempData["ErrorMessage"] = "Error loading product. Please try again.";
+                return RedirectToAction("AllProducts");
+            }
+        }
+
+        // GET: Customer/MyKeepAsides
+        public async Task<IActionResult> MyKeepAsides()
+        {
+            Console.WriteLine("=== MyKeepAsides method called ===");
+
+            // Check if user is logged in
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                Console.WriteLine("ERROR: User is not logged in");
                 TempData["ErrorMessage"] = "You must be logged in to view your keep asides.";
                 return RedirectToAction("SignIn", "Account");
             }
@@ -458,14 +489,15 @@ namespace SupertronicsRepairSystem.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading keep asides: {ex.Message}");
+                Console.WriteLine($"ERROR loading keep asides: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 TempData["Error"] = "Unable to load Keep Asides at this time. Please try again later.";
             }
 
             return View(keepAsides);
         }
-
+        // GET: Customer/MyKeepAsides - FIXED to filter by customer
+     
         // GET: Customer/KeepAsideSuccess
         public IActionResult KeepAsideSuccess()
         {

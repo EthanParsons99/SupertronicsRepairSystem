@@ -14,8 +14,8 @@ namespace SupertronicsRepairSystem.ViewModels
         public string CustomerSurname { get; set; }
 
         [Required(ErrorMessage = "Contact number is required")]
-        [Phone(ErrorMessage = "Invalid phone number")]
         [Display(Name = "Contact Number")]
+        [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Contact number must be 10 digits")]
         public string ContactNumber { get; set; }
 
         [Required(ErrorMessage = "ID/Passport number is required")]
@@ -31,10 +31,7 @@ namespace SupertronicsRepairSystem.ViewModels
         [DataType(DataType.Date)]
         public DateTime? CollectionDate { get; set; }
 
-        // Optional - for display purposes
-        public string ImageUrl { get; set; }
-
-        // Optional - CustomerId (set by controller, not by form)
-        public string CustomerId { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? CustomerId { get; set; }
     }
 }
