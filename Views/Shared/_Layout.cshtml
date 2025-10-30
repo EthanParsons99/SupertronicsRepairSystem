@@ -127,6 +127,14 @@
                     <ul class="navbar-nav">
                         @if (isAuthenticated)
                         {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Help" asp-action="Index">
+                                    <i class="bi bi-question-circle me-1"></i>Help
+                                </a>
+                            </li>
+                        }
+                        @if (isAuthenticated)
+                        {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-person-circle"></i> @displayName
@@ -177,5 +185,13 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F1') {
+                event.preventDefault();
+                window.location.href = '@Url.Action("Index", "Help")';
+            }
+        });
+    </script>
 </body>
 </html>
