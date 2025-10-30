@@ -123,6 +123,24 @@
                                 </li>
                             }
                         }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Customer" asp-action="Index">
+                                    <i class="bi bi-house-door me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
+                                    <i class="bi bi-box-seam me-1"></i>Products
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
+                                    <i class="bi bi-cart me-1"></i>Cart
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav">
