@@ -12,52 +12,67 @@
             <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
         }
 
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <h4>Please fix the following errors:</h4>
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
         <form asp-action="KeepAsideCreate" asp-controller="Customer" method="post">
             @Html.AntiForgeryToken()
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+         
 
             <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="CustomerName">Customer Name</label>
-                    <input asp-for="CustomerName" type="text" class="form-control" placeholder="Enter customer name" required />
+                    <label asp-for="CustomerName">Customer Name *</label>
+                    <input asp-for="CustomerName" type="text" class="form-control" placeholder="Enter customer name" />
                     <span asp-validation-for="CustomerName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="CustomerSurname">Customer Surname</label>
-                    <input asp-for="CustomerSurname" type="text" class="form-control" placeholder="Enter customer surname" required />
+                    <label asp-for="CustomerSurname">Customer Surname *</label>
+                    <input asp-for="CustomerSurname" type="text" class="form-control" placeholder="Enter customer surname" />
                     <span asp-validation-for="CustomerSurname" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="ContactNumber">Customer Contact Number</label>
-                    <input asp-for="ContactNumber" type="tel" class="form-control" placeholder="082 021 2932" required />
+                    <label asp-for="ContactNumber">Customer Contact Number * (10 digits)</label>
+                    <input asp-for="ContactNumber" type="text" class="form-control" placeholder="0820212932" maxlength="10" />
                     <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                    <small class="form-text text-muted">Enter 10 digits without spaces</small>
                 </div>
                 <div class="form-group">
-                    <label asp-for="IdPassportNumber">Customer ID/Passport Number</label>
-                    <input asp-for="IdPassportNumber" type="text" class="form-control" placeholder="Enter ID or Passport number" required />
+                    <label asp-for="IdPassportNumber">Customer ID/Passport Number *</label>
+                    <input asp-for="IdPassportNumber" type="text" class="form-control" placeholder="Enter ID or Passport number" />
                     <span asp-validation-for="IdPassportNumber" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="form-group">
                 <label asp-for="DeviceSerialNumber">Device Serial Number</label>
-                <input asp-for="DeviceSerialNumber" type="text" class="form-control" readonly />
-                <span asp-validation-for="DeviceSerialNumber" class="text-danger"></span>
+                <input asp-for="DeviceSerialNumber" type="text" class="form-control" readonly style="background-color: #f0f0f0;" />
             </div>
 
             <div class="form-group">
-                <label asp-for="CollectionDate">Collection Date</label>
-                <input asp-for="CollectionDate" type="date" class="form-control" required />
+                <label asp-for="CollectionDate">Collection Date *</label>
+                <input asp-for="CollectionDate" type="date" class="form-control"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                       value="@(Model.CollectionDate.HasValue ? Model.CollectionDate.Value.ToString("yyyy-MM-dd") : DateTime.Now.AddDays(2).ToString("yyyy-MM-dd"))" />
                 <span asp-validation-for="CollectionDate" class="text-danger"></span>
             </div>
 
             <div class="button-group">
                 <button type="button" class="btn-cancel" onclick="location.href='@Url.Action("AllProducts","Customer")'">Cancel</button>
-                <button type="submit" class="btn-submit">Create Keep Aside</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Create Keep Aside</button>
             </div>
         </form>
     </div>
@@ -70,12 +85,16 @@
                  class="product-image" />
             <div class="product-name">@ViewBag.Product.Name</div>
             <div class="product-serial">Serial: @ViewBag.Product.SerialNumber</div>
-            <div class="product-price">R @ViewBag.Product.Price.ToString("N2")</div>
+            @if (ViewBag.Product.Price > 0)
+            {
+                <div class="product-price">R @ViewBag.Product.Price.ToString("N2")</div>
+            }
         }
         else
         {
             <img src="https://via.placeholder.com/200x150" alt="Product" class="product-image" />
             <div class="product-name">Product Information</div>
+            <div class="product-serial">Serial: @Model.DeviceSerialNumber</div>
         }
     </div>
 </div>

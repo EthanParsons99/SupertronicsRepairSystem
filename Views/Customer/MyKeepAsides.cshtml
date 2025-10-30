@@ -44,7 +44,7 @@
                         @foreach (var item in Model)
                         {
                             var isOverdue = item.CollectionDate.HasValue && item.CollectionDate.Value < DateTime.Now;
-                            var expiryDate = item.CollectionDate.HasValue ? item.CollectionDate.Value.AddDays(7) : (DateTime?)null;
+                            var expiryDate = item.CollectionDate.HasValue ? item.CollectionDate.Value.AddDays(2) : (DateTime?)null;
                             <tr>
                                 <td data-label="Device">
                                     <div class="device-name">@item.DeviceSerialNumber</div>
