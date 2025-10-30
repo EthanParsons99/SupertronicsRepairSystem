@@ -1,10 +1,10 @@
 ﻿@model SupertronicsRepairSystem.ViewModels.OwnerDashboardViewModel
-
 @{
     ViewData["Title"] = "Owner Dashboard";
 }
 
 <div class="container-fluid p-4">
+    <!-- Page header -->
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="mb-1" style="color: var(--heading-text);">Dashboard</h2>
@@ -12,7 +12,9 @@
         </div>
     </div>
 
+    <!-- Stats cards -->
     <div class="row g-3 mb-4">
+        <!-- Total products -->
         <div class="col-md-3">
             <div class="dashboard-card">
                 <div class="card-body py-4">
@@ -21,6 +23,7 @@
                 </div>
             </div>
         </div>
+        <!-- Completed repairs -->
         <div class="col-md-3">
             <div class="dashboard-card" style="background: var(--dark-navy);">
                 <i class="fas fa-check-circle"></i>
@@ -30,6 +33,7 @@
                 </div>
             </div>
         </div>
+        <!-- Quotes accepted -->
         <div class="col-md-3">
             <div class="dashboard-card">
                 <i class="fas fa-file-invoice-dollar"></i>
@@ -39,6 +43,7 @@
                 </div>
             </div>
         </div>
+        <!-- Quotes assigned -->
         <div class="col-md-3">
             <div class="dashboard-card" style="background: var(--dark-navy);">
                 <i class="fas fa-user-check"></i>
@@ -51,12 +56,14 @@
     </div>
 
     <div class="row g-3">
+        <!-- Warranty checker -->
         <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="mb-0">Warranty Check</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Warranty form -->
                     <form id="warrantyForm" asp-action="CheckWarranty" method="post">
                         <div class="mb-3">
                             <label for="serialNumber" class="form-label">Enter Serial Number</label>
@@ -66,6 +73,7 @@
                         <a asp-action="AddProduct" class="btn btn-primary w-100">Add New Product</a>
                     </form>
 
+                    <!-- Warranty result -->
                     @if (Model.WarrantyCheckResult != null)
                     {
                         <div class="mt-3 alert @(Model.WarrantyCheckResult.IsValid ? "alert-success" : "alert-warning")" role="alert">
@@ -80,6 +88,7 @@
             </div>
         </div>
 
+        <!-- Recent repairs table -->
         <div class="col-md-8">
             <div class="card h-100">
                 <div class="card-header">
@@ -100,6 +109,7 @@
                             <tbody>
                                 @if (Model.RecentRepairs != null && Model.RecentRepairs.Any())
                                 {
+                                    // Display recent repairs
                                     @foreach (var repair in Model.RecentRepairs)
                                     {
                                         <tr>
@@ -121,6 +131,7 @@
                                 }
                                 else
                                 {
+                                    <!-- Empty state -->
                                     <tr>
                                         <td colspan="5" class="text-center" style="color: var(--secondary-text);">
                                             No recent repairs found
@@ -137,22 +148,22 @@
 </div>
 
 @functions {
+    // Status badge helper
     string GetStatusBadgeClass(string status)
     {
-        // Modified to align with the names defined in the CSS, preferring the explicit badge- classes where available.
         return status?.ToLower() switch
         {
-            "completed" => "badge-completed", // Maps to .bg-success
-            "in progress" => "badge-in-progress", // Maps to .bg-info
-            "pending" => "badge-pending", // Maps to .bg-warning
-            "cancelled" => "badge-cancelled", // Maps to .bg-danger
-            _ => "bg-secondary" // Fallback to a secondary style
+            "completed" => "badge-completed",
+            "in progress" => "badge-in-progress",
+            "pending" => "badge-pending",
+            "cancelled" => "badge-cancelled",
+            _ => "bg-secondary"
         };
     }
 }
 
 <script>
-    // Client-side validation for warranty form (Kept for functionality)
+    // Warranty form validation
     document.getElementById('warrantyForm')?.addEventListener('submit', function(e) {
         const serialNumber = document.getElementById('serialNumber').value.trim();
         if (!serialNumber) {
