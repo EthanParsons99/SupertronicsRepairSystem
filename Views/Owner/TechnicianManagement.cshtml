@@ -6,73 +6,81 @@
 <div class="container-fluid p-4">
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">Technicians Management</h2>
-            <a href="@Url.Action("AddTechnician", "Owner")" class="btn btn-dark">+ New Technician</a>
+            <h2 class="mb-0" style="color: var(--heading-text); font-weight: 700;">Technicians Management</h2>
+            <a href="@Url.Action("AddTechnician", "Owner")" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> New Technician
+            </a>
         </div>
     </div>
 
     <!-- Filter Section -->
-    <div class="card filter-card mb-3">
-        <form asp-action="TechnicianManagement" method="get">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label asp-for="SearchTerm" class="form-label text-white"></label>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-funnel me-2"></i>Search Filters
+        </div>
+        <div class="card-body">
+            <form asp-action="TechnicianManagement" method="get" class="filter-form">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label asp-for="SearchTerm" class="form-label" style="color: var(--body-text); font-weight: 600;">Search Term</label>
                         <input asp-for="SearchTerm" type="text" class="form-control" placeholder="Search by name or email" value="@Model.SearchTerm">
                     </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="submit" class="btn btn-dark w-100">
-                            <i class="bi bi-funnel"></i> Search
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Search
                         </button>
                     </div>
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                    {
+                        <div class="col-md-2">
+                            <a asp-action="TechnicianManagement" class="btn btn-secondary w-100">
+                                <i class="bi bi-x-circle me-1"></i> Clear
+                            </a>
+                        </div>
+                    }
                 </div>
-
-                @if (!string.IsNullOrEmpty(Model.SearchTerm))
-                {
-                    <a asp-action="TechnicianManagement" class="btn btn-outline-light btn-sm mt-3"><i class="bi bi-x-circle me-1"></i> Clear Search</a>
-                }
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Technicians Table -->
     @if (Model.Technicians.Any())
     {
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">All Products</h5>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">All Technicians</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Surname</th>
                                 <th>Email</th>
                                 <th>Phone Number</th>
-                                <th class="text-center">Role</th>
-                                <th class="text-center">Actions</th>
+                                <th>Role</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(var technician in Model.Technicians)
+                            @foreach (var technician in Model.Technicians)
                             {
                                 <tr>
-                                    <td class="align-middle fw-semibold">@technician.FirstName</td>
-                                    <td class="align-middle">@technician.Surname</td>
-                                    <td class="align-middle">@technician.Email</td>
-                                    <td class="align-middle">@(string.IsNullOrEmpty(technician.PhoneNumber) ? "N/A" : technician.PhoneNumber)</td>
-                                    <td class="align-middle text-center">
-                                        <span class="badge rounded-pill text-uppercase badge-technician">@technician.Role.ToString()</span>
+                                    <td>@technician.FirstName</td>
+                                    <td>@technician.Surname</td>
+                                    <td>@technician.Email</td>
+                                    <td>@(string.IsNullOrEmpty(technician.PhoneNumber) ? "N/A" : technician.PhoneNumber)</td>
+                                    <td>
+                                        <span class="badge badge-in-progress">@technician.Role.ToString()</span>
                                     </td>
-                                    <td class="text-center">
-                                        <a asp-action="EditTechnician" asp-route-id="@technician.UserId" class="btn btn-sm btn-primary me-1" title="Edit Technician">
-                                            <i class="bi bi-pencil"></i>Edit
+                                    <td>
+                                        <a asp-action="EditTechnician" asp-route-id="@technician.UserId" class="btn btn-sm btn-secondary" title="Edit Technician">
+                                            Edit
                                         </a>
                                         <form asp-action="DeleteTechnician" asp-route-id="@technician.UserId" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this technician?');">
                                             <button type="submit" class="btn btn-sm btn-danger" title="Delete Technician">
-                                                <i class="bi bi-trash"></i>Delete
+                                                Delete
                                             </button>
                                             @Html.AntiForgeryToken()
                                         </form>
@@ -87,67 +95,60 @@
     }
     else
     {
-        <div class="alert alert-info text-center" role="alert">
-            No technicians found matching the criteria.
+        <div class="card" style="border-left: 4px solid var(--info);">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-info-circle" style="font-size: 3rem; color: var(--info); margin-bottom: 1rem; display: block;"></i>
+                <p class="mb-0" style="color: var(--body-text); font-size: 1.1rem;">No technicians found matching the criteria.</p>
+            </div>
         </div>
     }
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
 <style>
-    .filter-card {
-        background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
-        border-radius: 15px;
+    /* Form controls styling from site.css pattern */
+    .form-control, .form-select {
+        border: 1px solid rgba(139, 155, 183, 0.3);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: var(--transition-fast);
+        color: var(--body-text);
+        background: var(--card-bg);
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(74, 105, 255, 0.15);
+            outline: none;
+        }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--body-text);
+        margin-bottom: 0.5rem;
+    }
+
+    /* Danger button styling to match site.css patterns */
+    .btn-danger {
+        background: var(--danger);
+        color: var(--inverse-text);
         border: none;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: var(--transition-fast);
+        box-shadow: var(--shadow-sm);
     }
 
-        .filter-card .form-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
+        .btn-danger:hover {
+            background: #c82333;
+            color: var(--inverse-text);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-    .card {
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border: none;
+    /* Match btn-sm size with dashboard */
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
     }
-
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
-    }
-
-    .table-primary {
-        background-color: #5865F2 !important;
-        color: white;
-    }
-
-        .table-primary th {
-            border: none;
-            padding: 1rem;
-        }
-
-    .bg-dark {
-        background-color: #2C3E50 !important;
-    }
-
-    .btn-dark {
-        background-color: #2C3E50;
-        border-color: #2C3E50;
-    }
-
-        .btn-dark:hover {
-            background-color: #1a252f;
-            border-color: #1a252f;
-        }
-
-    .btn-primary {
-        background-color: #5865F2;
-        border-color: #5865F2;
-    }
-
-        .btn-primary:hover {
-            background-color: #4752C4;
-            border-color: #4752C4;
-        }
 </style>

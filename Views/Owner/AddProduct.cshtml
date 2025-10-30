@@ -6,71 +6,73 @@
 <div class="container-fluid p-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="text-primary">Add New Product</h2>
+            <h2 style="color: var(--heading-text); font-weight: 700;">Add New Product</h2>
         </div>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header">
                     <h5 class="mb-0">Product Information</h5>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body">
                     <form asp-action="AddProduct" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                         <div class="mb-3">
-                            <label asp-for="Name" class="form-label"></label>
+                            <label asp-for="Name" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="Name" type="text" class="form-control" placeholder="Enter the name" required>
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Description" class="form-label"></label>
+                            <label asp-for="Description" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter the description" required></textarea>
-                            <span asp-validation-for="Description" class="text-danger small"></span>   
+                            <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="SerialNumber" class="form-label"></label>
+                            <label asp-for="SerialNumber" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="SerialNumber" type="text" class="form-control" placeholder="Enter the product serial number">
                             <span asp-validation-for="SerialNumber" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ImageUrl" class="form-label"></label>
+                            <label asp-for="ImageUrl" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                             <input asp-for="ImageUrl" type="url" class="form-control" placeholder="Enter a URL for the product image">
                             <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label asp-for="Price" class="form-label"></label>
+                                <label asp-for="Price" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                                 <input asp-for="Price" type="number" step="0.01" class="form-control" placeholder="0.00" required>
                                 <span asp-validation-for="Price" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="WasPrice" class="form-label"></label>
+                                <label asp-for="WasPrice" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                                 <input asp-for="WasPrice" type="number" step="0.01" min="0.00" class="form-control" placeholder="e.g. 249.99 (Optional)">
                                 <span asp-validation-for="WasPrice" class="text-danger small"></span>
                             </div>
+                        </div>
+
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                <label asp-for="StockQuantity" class="form-label"></label>
+                                <label asp-for="StockQuantity" class="form-label fw-semibold" style="color: var(--body-text);"></label>
                                 <input asp-for="StockQuantity" type="number" min="0" class="form-control" placeholder="e.g. 50" required>
                                 <span asp-validation-for="StockQuantity" class="text-danger small"></span>
                             </div>
+                            <div class="col-md-6">
+                                <label asp-for="DiscountPercentage" class="form-label fw-semibold" style="color: var(--body-text);"></label>
+                                <input asp-for="DiscountPercentage" type="number" min="0" max="100" class="form-control" placeholder="e.g. 15 (Optional)">
+                                <span asp-validation-for="DiscountPercentage" class="text-danger small"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="DiscountPercentage" class="form-label"></label>
-                            <input asp-for="DiscountPercentage" type="number" min="0" max="100" class="form-control" placeholder="e.g. 15 (Optional)">
-                            <span asp-validation-for="DiscountPercentage" class="text-danger small"></span>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="@Url.Action("ProductManagement", "Owner")" class="btn btn-outline-secondary">Cancel</a>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="@Url.Action("ProductManagement", "Owner")" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-1"></i> Add Product
+                                <i class="bi bi-plus-circle"></i> Add Product
                             </button>
                         </div>
                     </form>
@@ -80,51 +82,25 @@
     </div>
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
 <style>
-    .card {
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border: none;
+    .form-control, .form-select {
+        border: 1px solid rgba(139, 155, 183, 0.3);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: var(--transition-fast);
+        color: var(--body-text);
+        background: var(--card-bg);
     }
 
-    .card-header {
-        border-radius: 15px 15px 0 0 !important;
-    }
-
-    .bg-dark {
-        background-color: #2C3E50 !important;
-    }
-
-    .text-primary {
-        color: #5865F2 !important;
-    }
-
-    .btn-primary {
-        background-color: #5865F2;
-        border-color: #5865F2;
-    }
-
-        .btn-primary:hover {
-            background-color: #4752C4;
-            border-color: #4752C4;
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(74, 105, 255, 0.15);
+            outline: none;
         }
 
-    .btn-outline-secondary {
-        color: #6c757d;
-        border-color: #6c757d;
-    }
-
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            border-color: #6c757d;
+        .form-control::placeholder {
+            color: var(--secondary-text);
         }
-
-    .form-control:focus {
-        border-color: #5865F2;
-        box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
-    }
 </style>
 
 @section Scripts {

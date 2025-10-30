@@ -6,55 +6,54 @@
 <div class="container-fluid p-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="text-primary">Add New Technician</h2>
+            <h2 style="color: var(--heading-text); font-weight: 700;">Add New Technician</h2>
         </div>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header">
                     <h5 class="mb-0">Technician Information</h5>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body">
                     <form asp-action="AddTechnician" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label asp-for="FirstName" class="form-label">Name</label>
+                                <label asp-for="FirstName" class="form-label fw-semibold" style="color: var(--body-text);">Name</label>
                                 <input asp-for="FirstName" type="text" class="form-control" id="techName" placeholder="Enter technician name" required>
                                 <span asp-validation-for="FirstName" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="Surname" class="form-label">Surname</label>
+                                <label asp-for="Surname" class="form-label fw-semibold" style="color: var(--body-text);">Surname</label>
                                 <input asp-for="Surname" type="text" class="form-control" id="techSurname" placeholder="Enter technician surname" required>
                                 <span asp-validation-for="Surname" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <label asp-for="Email" class="form-label fw-semibold" style="color: var(--body-text);">Email Address</label>
                             <input asp-for="Email" type="email" class="form-control" id="techEmail" placeholder="Enter technician email" required>
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold" style="color: var(--body-text);">Phone Number</label>
                             <input asp-for="PhoneNumber" type="tel" class="form-control" id="techPhone" placeholder="Enter phone number" required>
                             <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="Password" class="form-label fw-semibold"></label>
-                            <input asp-for="Password" class="form-control" />
+                            <label asp-for="Password" class="form-label fw-semibold" style="color: var(--body-text);"></label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" required>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="@Url.Action("TechnicianManagement", "Owner")" class="btn btn-outline-secondary">Cancel</a>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="@Url.Action("TechnicianManagement", "Owner")" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-1"></i> Add Technician
+                                <i class="bi bi-plus-circle"></i> Add Technician
                             </button>
                         </div>
                     </form>
@@ -64,65 +63,29 @@
     </div>
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
 <style>
-    .card {
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border: none;
+    .form-control, .form-select {
+        border: 1px solid rgba(139, 155, 183, 0.3);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: var(--transition-fast);
+        color: var(--body-text);
+        background: var(--card-bg);
     }
 
-    .card-header {
-        border-radius: 15px 15px 0 0 !important;
-    }
-
-    .bg-dark {
-        background-color: #2C3E50 !important;
-    }
-
-    .text-primary {
-        color: #5865F2 !important;
-    }
-
-    .btn-primary {
-        background-color: #5865F2;
-        border-color: #5865F2;
-    }
-
-        .btn-primary:hover {
-            background-color: #4752C4;
-            border-color: #4752C4;
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(74, 105, 255, 0.15);
+            outline: none;
         }
 
-    .btn-outline-secondary {
-        color: #6c757d;
-        border-color: #6c757d;
-    }
-
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            border-color: #6c757d;
+        .form-control::placeholder {
+            color: var(--secondary-text);
         }
-
-    .form-control:focus {
-        border-color: #5865F2;
-        box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
-    }
 </style>
 
-<script>
-    document.getElementById('addTechnicianForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const name = document.getElementById('techName').value;
-        const surname = document.getElementById('techSurname').value;
-        const email = document.getElementById('techEmail').value;
-        const phone = document.getElementById('techPhone').value;
-
-        if (name && surname && email && phone) {
-            alert('Technician added successfully!');
-            window.location.href = '@Url.Action("TechnicianManagement", "Owner")';
-        }
-    });
-</script>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
