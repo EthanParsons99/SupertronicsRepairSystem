@@ -5,6 +5,7 @@ using SupertronicsRepairSystem.ViewModels.Technician;
 
 namespace SupertronicsRepairSystem.Services
 {
+    // Service for managing repair jobs
     public class RepairJobService : IRepairJobService
     {
         private readonly FirestoreDb _firestoreDb;
@@ -14,10 +15,12 @@ namespace SupertronicsRepairSystem.Services
             _firestoreDb = firestoreDb;
         }
 
+        // Create a new repair job
         public async Task<string> CreateRepairJobAsync(CreateRepairJobViewModel model, string customerId, string customerName)
         {
             try
             {
+                // Create a new RepairJob object
                 var repairJob = new RepairJob
                 {
                     ItemModel = model.ItemModel,
@@ -45,10 +48,12 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get a repair job by its ID
         public async Task<RepairJob> GetRepairJobByIdAsync(string repairJobId)
         {
             try
             {
+                // Retrieve the repair job document
                 var docRef = _firestoreDb.Collection("repairJobs").Document(repairJobId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
@@ -65,6 +70,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get all repair jobs for a specific customer
         public async Task<List<RepairJob>> GetRepairJobsByCustomerIdAsync(string customerId)
         {
             try

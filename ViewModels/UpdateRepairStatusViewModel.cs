@@ -5,6 +5,7 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
 {
     public class UpdateRepairStatusViewModel
     {
+        // Repair Job Details
         public string JobId { get; set; }
         public string ItemModel { get; set; }
         public string CustomerName { get; set; }
@@ -14,6 +15,7 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         [Display(Name = "New Status")]
         public string NewStatus { get; set; }
 
+        // Status Options for Dropdown
         public List<SelectListItem> StatusOptions { get; set; } = new List<SelectListItem>
         {
             new SelectListItem { Value = "Pending", Text = "Pending" },
