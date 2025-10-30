@@ -2,6 +2,7 @@
 
 namespace SupertronicsRepairSystem.Models
 {
+    // Represents a product in the Supertronics Repair System
     [FirestoreData]
     public class Product
     {
