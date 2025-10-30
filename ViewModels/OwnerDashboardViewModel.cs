@@ -2,6 +2,7 @@
 
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // Dashboard view model for Owner
     public class OwnerDashboardViewModel
     {
         public string OwnerName { get; set; } = "Owner";
@@ -13,6 +14,7 @@ namespace SupertronicsRepairSystem.ViewModels
         public WarrantyCheckResultViewModel? WarrantyCheckResult { get; set; }
     }
 
+    // Recent repair summary for dashboard
     public class RecentRepairViewModel
     {
         public string Id { get; set; }
@@ -22,6 +24,7 @@ namespace SupertronicsRepairSystem.ViewModels
         public DateTime LastUpdated { get; set; }
     }
 
+    // Warranty check result
     public class WarrantyCheckResultViewModel
     {
         public string SerialNumber { get; set; }

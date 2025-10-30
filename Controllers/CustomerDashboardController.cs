@@ -10,20 +10,19 @@ using System.Collections.Generic;
 namespace SupertronicsRepairSystem.Controllers
 {
     [AuthorizeCustomer]
-    public class CustomerDashboard : Controller
+    public class CustomerDashboardController : Controller
     {
         private readonly FirestoreDb _firestoreDb;
         private readonly CollectionReference _repairJobsCollection;
         private readonly IAuthService _authService;
 
-        public CustomerDashboard(FirestoreDb firestoreDb, IAuthService authService)
+        public CustomerDashboardController(FirestoreDb firestoreDb, IAuthService authService)
         {
             _firestoreDb = firestoreDb;
             _repairJobsCollection = _firestoreDb.Collection("repairJobs");
             _authService = authService;
         }
 
-        // Existing view for product listing (keeps prior behavior)
         public IActionResult CustomerViewProduct()
         {
             return View();

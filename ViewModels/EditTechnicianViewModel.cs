@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // Edit technician details
     public class EditTechnicianViewModel
     {
         public string UserId { get; set; }
@@ -23,7 +24,6 @@ namespace SupertronicsRepairSystem.ViewModels
 
         [Phone]
         [Display(Name = "Phone Number")]
-
         public string PhoneNumber { get; set; }
 
         public UserRole Role { get; set; } = UserRole.Technician;

@@ -32,7 +32,6 @@ namespace SupertronicsRepairSystem.Models
         [FirestoreDocumentId]
         public string Id { get; set; }
 
-        // one of UserId or SessionId will be set
         [FirestoreProperty]
         public string UserId { get; set; }
 
