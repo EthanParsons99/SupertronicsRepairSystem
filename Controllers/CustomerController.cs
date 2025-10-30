@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
+using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.Attributes;
 using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.Services;
@@ -219,106 +220,250 @@ namespace SupertronicsRepairSystem.Controllers
         }
         // ===================== Keep Aside Section =====================
 
-        // GET: Customer/KeepAside?s
+        // GET: Customer/KeepAside
+        // Replace your existing KeepAside methods with these fixed versions
+
+        // GET: Customer/KeepAside
         public async Task<IActionResult> KeepAside(string serialNumber)
         {
+            // Check if user is logged in
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to keep aside a product.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
             if (string.IsNullOrEmpty(serialNumber))
             {
                 TempData["ErrorMessage"] = "No product selected to keep aside.";
                 return RedirectToAction("AllProducts");
             }
 
-            Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber);
-            QuerySnapshot snapshot = await query.GetSnapshotAsync();
-            var doc = snapshot.Documents.FirstOrDefault();
-
-            if (doc == null)
+            try
             {
-                TempData["ErrorMessage"] = "Product not found.";
+                Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber);
+                QuerySnapshot snapshot = await query.GetSnapshotAsync();
+                var doc = snapshot.Documents.FirstOrDefault();
+
+                if (doc == null)
+                {
+                    TempData["ErrorMessage"] = "Product not found.";
+                    return RedirectToAction("AllProducts");
+                }
+
+                var product = doc.ConvertTo<Product>();
+
+                // Convert to ProductViewModel
+                var productViewModel = new ProductViewModel
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    SerialNumber = product.SerialNumber,
+                    ImageUrl = product.ImageUrl,
+                    Price = product.Price
+                };
+
+                var model = new KeepAsideViewModel
+                {
+                    DeviceSerialNumber = product.SerialNumber,
+                    CollectionDate = DateTime.Now.AddDays(2),
+                    CustomerName = userInfo.FirstName ?? "",
+                    CustomerSurname = userInfo.Surname ?? ""
+                };
+
+                ViewBag.Product = productViewModel;
+                return View("KeepAsideForm", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading product: {ex.Message}");
+                TempData["ErrorMessage"] = "Error loading product. Please try again.";
                 return RedirectToAction("AllProducts");
             }
-
-            var product = doc.ConvertTo<ProductViewModel>();
-
-            var model = new KeepAsideViewModel
-            {
-                DeviceSerialNumber = product.SerialNumber,
-                CollectionDate = DateTime.Now.AddDays(2) 
-            };
-
-            ViewBag.Product = product;
-            return View("KeepAsideForm", model); 
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> KeepAsideCreate(KeepAsideViewModel model)
         {
+            // Check if user is logged in
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to create a keep aside.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
             if (!ModelState.IsValid)
             {
-                
-                ViewBag.Product = new ProductViewModel
+                // If validation fails, reload the product
+                try
                 {
-                    SerialNumber = model.DeviceSerialNumber
-                };
-                return View("KeepAsideForm", model); 
+                    Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", model.DeviceSerialNumber);
+                    QuerySnapshot snapshot = await query.GetSnapshotAsync();
+                    var doc = snapshot.Documents.FirstOrDefault();
+
+                    if (doc != null)
+                    {
+                        var product = doc.ConvertTo<Product>();
+                        ViewBag.Product = new ProductViewModel
+                        {
+                            Id = product.Id,
+                            Name = product.Name,
+                            SerialNumber = product.SerialNumber,
+                            ImageUrl = product.ImageUrl,
+                            Price = product.Price
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error reloading product: {ex.Message}");
+                }
+
+                return View("KeepAsideForm", model);
             }
-             var collectionDateUtc = model.CollectionDate.HasValue
-             ? model.CollectionDate.Value.ToUniversalTime()
-             : (DateTime?)null;
 
-            await _firestoreDb.Collection("KeepAsides").Document().SetAsync(new
+            try
             {
-                model.CustomerName,
-                model.CustomerSurname,
-                model.ContactNumber,
-                model.IdPassportNumber,
-                model.DeviceSerialNumber,
-                CollectionDate = collectionDateUtc,
-                CreatedAt = DateTime.UtcNow
-            });
+                var collectionDateUtc = model.CollectionDate.HasValue
+                    ? model.CollectionDate.Value.ToUniversalTime()
+                    : DateTime.UtcNow.AddDays(2);
 
-            TempData["SuccessMessage"] = "Keep aside created successfully!";
-            return RedirectToAction("MyKeepAsides");
+                // Create the keep aside document
+                var keepAsideData = new Dictionary<string, object>
+        {
+            { "CustomerId", userInfo.UserId },
+            { "CustomerEmail", userInfo.Email },
+            { "CustomerName", model.CustomerName ?? "" },
+            { "CustomerSurname", model.CustomerSurname ?? "" },
+            { "ContactNumber", model.ContactNumber ?? "" },
+            { "IdPassportNumber", model.IdPassportNumber ?? "" },
+            { "DeviceSerialNumber", model.DeviceSerialNumber ?? "" },
+            { "CollectionDate", collectionDateUtc },
+            { "CreatedAt", DateTime.UtcNow }
+        };
+
+                Console.WriteLine($"Creating keep aside for customer: {userInfo.UserId}");
+
+                DocumentReference docRef = await _firestoreDb.Collection("KeepAsides").AddAsync(keepAsideData);
+
+                Console.WriteLine($"Keep aside created with ID: {docRef.Id}");
+
+                TempData["SuccessMessage"] = "Keep aside created successfully!";
+                return RedirectToAction("MyKeepAsides");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating keep aside: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                ModelState.AddModelError(string.Empty, "An error occurred while creating the keep aside. Please try again.");
+
+                // Reload product on error
+                try
+                {
+                    Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", model.DeviceSerialNumber);
+                    QuerySnapshot snapshot = await query.GetSnapshotAsync();
+                    var doc = snapshot.Documents.FirstOrDefault();
+
+                    if (doc != null)
+                    {
+                        var product = doc.ConvertTo<Product>();
+                        ViewBag.Product = new ProductViewModel
+                        {
+                            Id = product.Id,
+                            Name = product.Name,
+                            SerialNumber = product.SerialNumber,
+                            ImageUrl = product.ImageUrl,
+                            Price = product.Price
+                        };
+                    }
+                }
+                catch { }
+
+                return View("KeepAsideForm", model);
+            }
         }
 
-
-        // GET: Customer/MyKeepAsides
+        // GET: Customer/MyKeepAsides - FIXED to filter by customer
         public async Task<IActionResult> MyKeepAsides()
         {
+            // Check if user is logged in
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to view your keep asides.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
             var keepAsides = new List<KeepAsideViewModel>();
 
             try
             {
-                var snapshot = await _firestoreDb.Collection("KeepAsides").GetSnapshotAsync();
+                Console.WriteLine($"Loading keep asides for customer: {userInfo.UserId}");
+
+                // FILTER BY CUSTOMER ID
+                Query query = _firestoreDb.Collection("KeepAsides")
+                    .WhereEqualTo("CustomerId", userInfo.UserId);
+
+                QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+                Console.WriteLine($"Found {snapshot.Documents.Count} documents");
+
                 foreach (var doc in snapshot.Documents)
                 {
-                    var data = doc.ToDictionary();
-
-                    // Convert Firestore Timestamp to UTC DateTime if it exists
-                    DateTime? collectionDate = null;
-                    if (data.ContainsKey("CollectionDate") && data["CollectionDate"] is Google.Cloud.Firestore.Timestamp ts)
+                    if (!doc.Exists)
                     {
-                        collectionDate = ts.ToDateTime();
+                        Console.WriteLine($"Document {doc.Id} does not exist");
+                        continue;
                     }
 
-                    keepAsides.Add(new KeepAsideViewModel
+                    try
                     {
-                        CustomerName = data.ContainsKey("CustomerName") ? data["CustomerName"].ToString() : "",
-                        CustomerSurname = data.ContainsKey("CustomerSurname") ? data["CustomerSurname"].ToString() : "",
-                        ContactNumber = data.ContainsKey("ContactNumber") ? data["ContactNumber"].ToString() : "",
-                        DeviceSerialNumber = data.ContainsKey("DeviceSerialNumber") ? data["DeviceSerialNumber"].ToString() : "",
-                        CollectionDate = collectionDate,
-                        ImageUrl = data.ContainsKey("ImageUrl") ? data["ImageUrl"].ToString() : null // optional
-                    });
+                        var data = doc.ToDictionary();
+
+                        Console.WriteLine($"Processing document {doc.Id}");
+
+                        // Convert Firestore Timestamp to UTC DateTime
+                        DateTime? collectionDate = null;
+                        if (data.ContainsKey("CollectionDate"))
+                        {
+                            if (data["CollectionDate"] is Google.Cloud.Firestore.Timestamp ts)
+                            {
+                                collectionDate = ts.ToDateTime();
+                            }
+                        }
+
+                        var keepAside = new KeepAsideViewModel
+                        {
+                            CustomerName = data.ContainsKey("CustomerName") ? data["CustomerName"]?.ToString() ?? "" : "",
+                            CustomerSurname = data.ContainsKey("CustomerSurname") ? data["CustomerSurname"]?.ToString() ?? "" : "",
+                            ContactNumber = data.ContainsKey("ContactNumber") ? data["ContactNumber"]?.ToString() ?? "" : "",
+                            DeviceSerialNumber = data.ContainsKey("DeviceSerialNumber") ? data["DeviceSerialNumber"]?.ToString() ?? "" : "",
+                            CollectionDate = collectionDate,
+                            ImageUrl = data.ContainsKey("ImageUrl") ? data["ImageUrl"]?.ToString() : null
+                        };
+
+                        keepAsides.Add(keepAside);
+                        Console.WriteLine($"Added keep aside for device: {keepAside.DeviceSerialNumber}");
+                    }
+                    catch (Exception docEx)
+                    {
+                        Console.WriteLine($"Error processing document {doc.Id}: {docEx.Message}");
+                    }
                 }
+
+                Console.WriteLine($"Successfully loaded {keepAsides.Count} keep asides for customer {userInfo.UserId}");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Unable to load Keep Asides at this time. " + ex.Message;
+                Console.WriteLine($"Error loading keep asides: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                TempData["Error"] = "Unable to load Keep Asides at this time. Please try again later.";
             }
 
-            return View(keepAsides); // Views/Customer/MyKeepAsides.cshtml
+            return View(keepAsides);
         }
 
         // GET: Customer/KeepAsideSuccess
@@ -326,8 +471,6 @@ namespace SupertronicsRepairSystem.Controllers
         {
             return View();
         }
-
-
         // GET: Customer/RepairDetails/{id}
         public async Task<IActionResult> RepairDetails(string id)
         {

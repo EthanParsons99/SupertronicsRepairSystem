@@ -1,8 +1,7 @@
-﻿using Google.Cloud.Firestore;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SupertronicsRepairSystem.Models
+namespace SupertronicsRepairSystem.ViewModels
 {
     public class KeepAsideViewModel
     {
@@ -16,20 +15,26 @@ namespace SupertronicsRepairSystem.Models
 
         [Required(ErrorMessage = "Contact number is required")]
         [Phone(ErrorMessage = "Invalid phone number")]
-        [Display(Name = "Customer Contact Number")]
+        [Display(Name = "Contact Number")]
         public string ContactNumber { get; set; }
 
-        [Display(Name = "Customer ID/Passport Number")]
+        [Required(ErrorMessage = "ID/Passport number is required")]
+        [Display(Name = "ID/Passport Number")]
         public string IdPassportNumber { get; set; }
 
-        [Required(ErrorMessage = "Device Serial Number is required")]
+        [Required(ErrorMessage = "Device serial number is required")]
         [Display(Name = "Device Serial Number")]
         public string DeviceSerialNumber { get; set; }
 
+        [Required(ErrorMessage = "Collection date is required")]
         [Display(Name = "Collection Date")]
         [DataType(DataType.Date)]
         public DateTime? CollectionDate { get; set; }
 
+        // Optional - for display purposes
         public string ImageUrl { get; set; }
+
+        // Optional - CustomerId (set by controller, not by form)
+        public string CustomerId { get; set; }
     }
 }
