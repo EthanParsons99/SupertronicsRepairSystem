@@ -1,4 +1,6 @@
-namespace SupertronicsRepairSystem.ViewModels.Technician {
+namespace SupertronicsRepairSystem.ViewModels.Technician 
+{
+    // ViewModel representing a quote for technician use
     public class QuoteViewModel {
         public int QuoteId { get; set; }
         public string? ItemName { get; set; }

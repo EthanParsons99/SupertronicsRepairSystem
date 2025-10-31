@@ -1,4 +1,6 @@
-namespace SupertronicsRepairSystem.ViewModels.Technician {
+namespace SupertronicsRepairSystem.ViewModels.Technician 
+{
+    // ViewModel representing the technician's dashboard data
     public class TechnicianDashboardViewModel {
         public int PendingJobs { get; set; }
         public int CompletedJobs { get; set; }
