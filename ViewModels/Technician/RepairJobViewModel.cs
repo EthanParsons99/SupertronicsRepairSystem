@@ -2,6 +2,8 @@ using SupertronicsRepairSystem.Models;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
+    // ViewModel representing a repair job for technician use
+    // Includes basic details and associated quotes
     public class RepairJobViewModel
     {
         public string Id { get; set; }

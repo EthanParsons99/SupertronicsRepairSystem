@@ -3,6 +3,7 @@ using SupertronicsRepairSystem.Models;
 
 namespace SupertronicsRepairSystem.Models
 {
+    // Represents a note provided for a repair job
     [FirestoreData]
     public class Note
     {
@@ -13,6 +14,7 @@ namespace SupertronicsRepairSystem.Models
         public Timestamp Timestamp { get; set; }
     }
 
+    // Represents a repair job in the Supertronics Repair System
     [FirestoreData]
     public class RepairJob
     {

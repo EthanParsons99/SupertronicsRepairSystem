@@ -5,6 +5,7 @@ using SupertronicsRepairSystem.ViewModels.Technician;
 
 namespace SupertronicsRepairSystem.Services
 {
+    // Service for managing repair jobs
     public class RepairJobService : IRepairJobService
     {
         private readonly FirestoreDb _firestoreDb;
@@ -14,10 +15,12 @@ namespace SupertronicsRepairSystem.Services
             _firestoreDb = firestoreDb;
         }
 
+        // Create a new repair job
         public async Task<string> CreateRepairJobAsync(CreateRepairJobViewModel model, string customerId, string customerName)
         {
             try
             {
+                // Create a new RepairJob object
                 var repairJob = new RepairJob
                 {
                     ItemModel = model.ItemModel,
@@ -45,10 +48,12 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get a repair job by its ID
         public async Task<RepairJob> GetRepairJobByIdAsync(string repairJobId)
         {
             try
             {
+                // Retrieve the repair job document
                 var docRef = _firestoreDb.Collection("repairJobs").Document(repairJobId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
@@ -65,6 +70,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get all repair jobs for a specific customer
         public async Task<List<RepairJob>> GetRepairJobsByCustomerIdAsync(string customerId)
         {
             try
@@ -75,7 +81,7 @@ namespace SupertronicsRepairSystem.Services
                 var snapshot = await query.GetSnapshotAsync();
                 var repairJobs = new List<RepairJob>();
 
-                foreach (var doc in snapshot.Documents)
+                foreach (var doc in snapshot.Documents) // Iterate through each document in the snapshot
                 {
                     if (doc.Exists)
                     {
@@ -95,7 +101,7 @@ namespace SupertronicsRepairSystem.Services
         {
             try
             {
-                var snapshot = await _firestoreDb.Collection("repairJobs").GetSnapshotAsync();
+                var snapshot = await _firestoreDb.Collection("repairJobs").GetSnapshotAsync(); // Get all documents in the "repairJobs" collection
                 var repairJobs = new List<RepairJob>();
 
                 foreach (var doc in snapshot.Documents)
@@ -155,7 +161,7 @@ namespace SupertronicsRepairSystem.Services
                 }
 
                 repairJob.Quotes.Add(quote);
-                repairJob.LastUpdated = Timestamp.FromDateTime(DateTime.UtcNow);
+                repairJob.LastUpdated = Timestamp.FromDateTime(DateTime.UtcNow); // Update last updated timestamp
 
                 await docRef.SetAsync(repairJob, SetOptions.Overwrite);
                 return true;
@@ -166,6 +172,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Add a technician note to a repair job
         public async Task<bool> AddNoteToRepairJobAsync(string repairJobId, string noteContent)
         {
             try
@@ -178,7 +185,7 @@ namespace SupertronicsRepairSystem.Services
                     return false;
                 }
 
-                var repairJob = snapshot.ConvertTo<RepairJob>();
+                var repairJob = snapshot.ConvertTo<RepairJob>(); // Convert document to RepairJob object
 
                 var note = new Note
                 {
@@ -187,9 +194,9 @@ namespace SupertronicsRepairSystem.Services
                 };
 
                 repairJob.TechnicianNotes.Add(note);
-                repairJob.LastUpdated = Timestamp.FromDateTime(DateTime.UtcNow);
+                repairJob.LastUpdated = Timestamp.FromDateTime(DateTime.UtcNow); 
 
-                await docRef.SetAsync(repairJob, SetOptions.Overwrite);
+                await docRef.SetAsync(repairJob, SetOptions.Overwrite); // Save the updated repair job back to Firestore
                 return true;
             }
             catch
