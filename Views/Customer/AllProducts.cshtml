@@ -3,29 +3,30 @@
     Layout = "_ViewProductLayout";
     ViewData["Title"] = "All Products";
 }
-<div class="search-bar">
-  
-    <input type="text" id="productSearch" class="search-input" placeholder="Search products..." />
 
+<!-- Search bar -->
+<div class="search-bar">
+    <input type="text" id="productSearch" class="search-input" placeholder="Search products..." />
 </div>
 
-
 <link rel="stylesheet" href="~/css/AllProducts.css">
+
 <style>
+   
     body, html {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        background-color: #ffffff; 
+        background-color: #ffffff;
         height: 100%;
     }
 
+   
     .search-bar {
         display: flex;
         justify-content: center;
         margin: 10px 0 5px 0;
     }
-
 
     .search-input {
         width: 75%;
@@ -37,69 +38,73 @@
         background-color: #f9f9f9;
         box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
+
   
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    padding: 16px;
-}
-.btn-keep-aside {
-    background: var(--btn-blue);
-    color: white;
-    flex: 1;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 0;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        padding: 16px;
+    }
 
-.btn-keep-aside:hover {
-    background: #2f5dd0;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
-}
+    
+    .btn-keep-aside {
+        background: var(--btn-blue);
+        color: white;
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
 
-.btn-keep-aside:active {
-    transform: translateY(0);
-}
+        .btn-keep-aside:hover {
+            background: #2f5dd0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+        }
 
+        .btn-keep-aside:active {
+            transform: translateY(0);
+        }
 
-.btn-add-cart {
-    background: #9575cd;
-    color: white;
-    flex: 1;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 0;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
+   
+    .btn-add-cart {
+        background: #9575cd;
+        color: white;
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
 
-.btn-add-cart:hover {
-    background: #7e57c2;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(149, 117, 205, 0.3);
-}
+        .btn-add-cart:hover {
+            background: #7e57c2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(149, 117, 205, 0.3);
+        }
 
-.btn-add-cart:active {
-    transform: translateY(0);
-}
+        .btn-add-cart:active {
+            transform: translateY(0);
+        }
 </style>
+
 <div class="page-wrapper">
     <div class="content-wrap">
 
-        
+        <!-- Hero title -->
         <div class="hero-section">
             <h1>
                 YOUR TECH <span class="repair">REPAIR</span>
@@ -107,18 +112,19 @@
             </h1>
         </div>
 
-        <!-- Sale Banner -->
+        <!-- Sale banner -->
         <div class="sale-banner">
             <h2>🔥 MASSIVE SALE! UP TO 50% OFF SELECTED ITEMS! 🔥 LIMITED TIME ONLY! 🔥 SHOP NOW!</h2>
         </div>
 
-        <!-- Products Grid -->
+        <!-- Products grid -->
         <div class="product-grid">
             @foreach (var product in Model)
             {
+                <!-- Product card -->
                 <div class="product-card">
                     <a asp-controller="Customer" asp-action="CustomerViewProduct" asp-route-id="@product.Id" class="product-card-link">
-                        <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : Url.Content("~/images/"))"
+                        <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : Url.Content("~/images/acer.png"))"
                              alt="@product.Name" class="product-image" />
                         <div class="product-info">
                             <h3>@product.Name</h3>
@@ -126,6 +132,8 @@
                                 @(string.IsNullOrEmpty(product.Description) ? "Quality product available now"
                                     : (product.Description.Length > 80 ? product.Description.Substring(0, 77) + "..." : product.Description))
                             </p>
+
+                            <!-- Price display -->
                             <div class="price-details">
                                 @if (product.DiscountPercentage > 0)
                                 {
@@ -139,6 +147,8 @@
                             </div>
                         </div>
                     </a>
+
+                    <!-- Buttons -->
                     <div class="action-buttons">
                         <a class="btn btn-keep-aside"
                            asp-controller="Customer"
@@ -153,29 +163,11 @@
                             <i class="bi bi-cart-plus"></i> Add to Cart
                         </a>
                     </div>
-
-
-
-
                 </div>
             }
-            <script>
-                const searchInput = document.getElementById('productSearch');
-                const productCards = document.querySelectorAll('.product-card');
-
-                searchInput.addEventListener('input', function() {
-                    const query = this.value.toLowerCase();
-
-                    productCards.forEach(card => {
-                        const name = card.querySelector('h3').innerText.toLowerCase();
-                        if (name.includes(query)) {
-                            card.style.display = '';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            </script>
         </div>
     </div>
+
+    <!-- JS file -->
+    <script src="~/js/ProductsScript.js"></script>
 </div>

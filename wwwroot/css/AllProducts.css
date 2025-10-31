@@ -123,7 +123,6 @@ html, body {
     }
 }
 
-/* Product Grid */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -133,7 +132,6 @@ html, body {
     margin: 0 auto;
 }
 
-/* Product Card */
 .product-card {
     background-color: var(--card-bg);
     border: 2px solid var(--card-border);
@@ -152,7 +150,7 @@ html, body {
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
 
-/* Product Card Link Styling */
+
 .product-card-link {
     text-decoration: none;
     color: inherit;
@@ -164,8 +162,6 @@ html, body {
     .product-card-link:hover {
         text-decoration: none;
     }
-
-/* Product Image */
 .product-image {
     width: 100%;
     height: 220px;
@@ -174,7 +170,7 @@ html, body {
     padding: 20px;
 }
 
-/* Product Info */
+
 .product-info {
     padding: 20px;
     text-align: center;
@@ -199,7 +195,6 @@ html, body {
         flex: 1;
     }
 
-/* Price Details */
 .price-details {
     display: flex;
     align-items: center;
@@ -230,7 +225,6 @@ html, body {
     text-decoration: line-through;
 }
 
-/* Button Container */
 .button-group {
     padding: 16px;
     display: flex;
@@ -239,7 +233,7 @@ html, body {
     background-color: #f8f9fa;
     border-top: 1px solid #e0e0e0;
 }
-/* Add to Cart Button - Enhanced */
+
 .add-to-cart-btn {
     width: 100%;
     padding: 14px 25px;
@@ -269,7 +263,6 @@ html, body {
         box-shadow: 0 3px 10px rgba(65, 105, 225, 0.25);
     }
 
-/* Keep Aside Button - Enhanced */
 .btn-primary {
     width: 100%;
     padding: 14px 25px;
@@ -299,7 +292,6 @@ html, body {
         box-shadow: 0 3px 10px rgba(65, 105, 225, 0.25);
     }
 
-/* Footer Styling */
 .footer {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: white;

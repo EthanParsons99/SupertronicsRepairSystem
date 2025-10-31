@@ -1,4 +1,5 @@
-﻿using Google.Cloud.Firestore;
+﻿//---------------------Customer DashboardController.cs---------------------
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using SupertronicsRepairSystem.Attributes;
 using SupertronicsRepairSystem.Models;
@@ -9,12 +10,12 @@ using System.Collections.Generic;
 
 namespace SupertronicsRepairSystem.Controllers
 {
-    [AuthorizeCustomer]
+    [AuthorizeCustomer] // Only logged in customers can access
     public class CustomerDashboardController : Controller
     {
-        private readonly FirestoreDb _firestoreDb;
-        private readonly CollectionReference _repairJobsCollection;
-        private readonly IAuthService _authService;
+        private readonly FirestoreDb _firestoreDb; // Firestore database
+        private readonly CollectionReference _repairJobsCollection; // Repair jobs collection
+        private readonly IAuthService _authService; // Auth service
 
         public CustomerDashboardController(FirestoreDb firestoreDb, IAuthService authService)
         {
@@ -25,17 +26,18 @@ namespace SupertronicsRepairSystem.Controllers
 
         public IActionResult CustomerViewProduct()
         {
-            return View();
+            return View(); // Load product view
         }
 
-        // GET: Show the customer quote request form
+        // GET: Load quote form
         [HttpGet]
         public async Task<IActionResult> CustomerGetQuote()
         {
             var model = new CustomerQuoteViewModel();
             {
                 model.DeviceTypes = new List<string> { "Laptop", "Phone", "Console", "Tablet", "TV", "Other" };
-            };
+            }
+            ;
 
             var userInfo = await _authService.GetCurrentUserInfoAsync();
             if (userInfo != null)
@@ -45,10 +47,10 @@ namespace SupertronicsRepairSystem.Controllers
                 model.PhoneNumber = userInfo?.PhoneNumber;
             }
 
-            return View(model);
+            return View(model); // Show form
         }
 
-        // POST: Submit the quote request -> create a RepairJob (status: Pending)
+        // POST: Handle quote submission
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CustomerGetQuote(CustomerQuoteViewModel model)
@@ -57,11 +59,10 @@ namespace SupertronicsRepairSystem.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return View(model); // Return if form invalid
             }
 
             var userId = await _authService.GetCurrentUserIdAsync();
-            var customerName = string.IsNullOrWhiteSpace(model.Name);
 
             var repairJob = new RepairJob
             {
@@ -75,15 +76,15 @@ namespace SupertronicsRepairSystem.Controllers
                 CustomerName = string.IsNullOrEmpty(model.Name) ? model.Email ?? "Guest" : model.Name
             };
 
-            await _repairJobsCollection.AddAsync(repairJob);
+            await _repairJobsCollection.AddAsync(repairJob); // Save to Firestore
 
             TempData["SuccessMessage"] = "Quote request submitted. We will email you when the quote is ready.";
-            return RedirectToAction(nameof(CustomerViewProduct));
+            return RedirectToAction(nameof(CustomerViewProduct)); // Go back to product page
         }
 
         public IActionResult CustomerCart()
         {
-            return View();
+            return View(); // Load cart view
         }
     }
 }
