@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // Represents a keep-aside item in the Supertronics Repair System
     public class KeepAsideViewModel
     {
         [Required(ErrorMessage = "Customer name is required")]

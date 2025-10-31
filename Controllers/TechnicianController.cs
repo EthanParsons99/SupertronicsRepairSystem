@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SupertronicsRepairSystem.Controllers
 {
-    // Technician Controller to manage repair jobs and quotes
+    // Technician Controller to manage repair jobs and quotes assisted by (Gemini, 2025)
     public class TechnicianController : Controller
     {
         private readonly IRepairJobService _repairJobService;
@@ -171,7 +171,7 @@ namespace SupertronicsRepairSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _repairJobService.CreateRepairJobAsync(model, "dummy-customer-id", model.CustomerName);
+                await _repairJobService.CreateRepairJobAsync(model, " ", model.CustomerName);
                 TempData["SuccessMessage"] = $"New repair job for '{model.CustomerName}' created successfully.";
                 return RedirectToAction(nameof(RepairJobs));
             }

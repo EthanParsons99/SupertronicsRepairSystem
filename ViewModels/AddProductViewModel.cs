@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // ViewModel for adding a new product
     public class AddProductViewModel
     {
         [Required]

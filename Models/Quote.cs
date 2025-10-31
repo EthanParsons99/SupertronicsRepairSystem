@@ -2,6 +2,7 @@
 
 namespace SupertronicsRepairSystem.Models
 {
+    // Represents a quote for a repair job
     [FirestoreData]
     public class Quote
     {

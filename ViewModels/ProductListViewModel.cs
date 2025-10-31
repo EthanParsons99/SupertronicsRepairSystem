@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // ViewModel for displaying and filtering a list of products
     public class ProductListViewModel
     {
         [Display(Name = "Search Name/Serial")]

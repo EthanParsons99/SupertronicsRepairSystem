@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // ViewModel for managing technicians
     public class TechnicianManagementViewModel
     {
         [Display(Name = "Search Name/Email")]

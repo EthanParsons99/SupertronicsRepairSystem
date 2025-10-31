@@ -3,6 +3,7 @@ using SupertronicsRepairSystem.Services;
 
 namespace SupertronicsRepairSystem.Models
 {
+    // Represents a technician in the Supertronics Repair System
     [FirestoreData]
     public class TechnicianModel
     {

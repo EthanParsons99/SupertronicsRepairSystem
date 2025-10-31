@@ -25,8 +25,5 @@ namespace SupertronicsRepairSystem.Models
 
         [FirestoreProperty]
         public Timestamp DateCreated { get; set; }
-
-        // [FirestoreProperty]
-        // public string CustomerName { get; set; }
     }
 }

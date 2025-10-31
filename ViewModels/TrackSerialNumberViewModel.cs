@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
+    // ViewModel for tracking repair jobs by serial number
     public class TrackSerialNumberViewModel
     {
         [Display(Name = "Serial Number")]

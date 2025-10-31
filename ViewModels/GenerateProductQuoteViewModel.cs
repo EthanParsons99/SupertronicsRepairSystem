@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
+    // ViewModel for generating a product quote
+    // Includes product ID, quantity, and total price
     public class GenerateProductQuoteViewModel
     {
         [Required(ErrorMessage = "Product ID is required.")]

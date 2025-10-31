@@ -4,6 +4,8 @@ using SupertronicsRepairSystem.ViewModels.Technician;
 
 namespace SupertronicsRepairSystem.Services
 {
+    // Service interface for managing repair jobs
+    /// Defines methods for creating, retrieving, updating, and managing repair jobs
     public interface IRepairJobService
     {
         Task<string> CreateRepairJobAsync(CreateRepairJobViewModel model, string customerId, string customerName);
