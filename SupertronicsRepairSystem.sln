@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36327.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem", "SupertronicsRepairSystem.csproj", "{58298B4E-1A38-46C7-BE94-E37077DCC518}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem.Tests", "..\SupertronicsRepairSystem.Tests\SupertronicsRepairSystem.Tests.csproj", "{EC299BF7-8407-478B-872B-BBD17618731E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem.Tests", "..\SupertronicsRepairSystem.Tests\SupertronicsRepairSystem.Tests.csproj", "{011E9753-5EC8-93FA-76BB-4FD8CAA71250}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EC299BF7-8407-478B-872B-BBD17618731E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EC299BF7-8407-478B-872B-BBD17618731E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EC299BF7-8407-478B-872B-BBD17618731E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EC299BF7-8407-478B-872B-BBD17618731E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
