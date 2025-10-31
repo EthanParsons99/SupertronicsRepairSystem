@@ -26,8 +26,6 @@ The system uses role based access to provide each user with functions that only 
 - Visual Studio 2022
 - .NET 8
 - Ensure service account key is in project root file
-
-Replace both serviceAccountKey.json and google-credentials.json files contents with the following [here](https://docs.google.com/document/d/1XNIH97IC-_zM7qdI51fYcKzO9fq_THKWZZvB6g2fA_8/edit?usp=sharing)
   
 - Ensure appsettings.json has the following
   {
@@ -37,6 +35,9 @@ Replace both serviceAccountKey.json and google-credentials.json files contents w
   },
   "Logging": { /* ... */ }
   }
+
+  ## Very Important
+Replace both serviceAccountKey.json and google-credentials.json files contents with the following [here](https://docs.google.com/document/d/1XNIH97IC-_zM7qdI51fYcKzO9fq_THKWZZvB6g2fA_8/edit?usp=sharing)
 
 ### Build and run
 - Uses the link from the project open visual studio go to clone project and paste the link and click clone
