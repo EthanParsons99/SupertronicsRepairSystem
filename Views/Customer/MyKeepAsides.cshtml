@@ -1,15 +1,31 @@
-﻿@model List<KeepAsideViewModel>
+﻿@model List<SupertronicsRepairSystem.ViewModels.KeepAsideViewModel>
 @{
     ViewData["Title"] = "My Keep Asides";
 }
 <!DOCTYPE html>
 <html>
-<link rel="stylesheet" href="~/css/AllKeepAsides.css">
+<head>
+    <link rel="stylesheet" href="~/css/AllKeepAsides.css">
+</head>
 <body>
     <div class="container">
         <div class="hero-header">
             <h1 class="hero-title">My Keep Asides</h1>
         </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
 
         @if (Model != null && Model.Any())
         {
@@ -17,7 +33,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Device</th>
+                            <th>Device Serial Number</th>
                             <th>Customer</th>
                             <th>Collection Date</th>
                             <th>Status</th>
@@ -27,8 +43,8 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            var isOverdue = item.CollectionDate < DateTime.Now;
-                            var expiryDate = item.CollectionDate?.AddDays(7);
+                            var isOverdue = item.CollectionDate.HasValue && item.CollectionDate.Value < DateTime.Now;
+                            var expiryDate = item.CollectionDate.HasValue ? item.CollectionDate.Value.AddDays(2) : (DateTime?)null;
                             <tr>
                                 <td data-label="Device">
                                     <div class="device-name">@item.DeviceSerialNumber</div>
@@ -38,15 +54,29 @@
                                     <div class="contact-number">@item.ContactNumber</div>
                                 </td>
                                 <td data-label="Collection Date">
-                                    <span class="date-cell">@item.CollectionDate?.ToString("dd MMM yyyy")</span>
+                                    @if (item.CollectionDate.HasValue)
+                                    {
+                                        <span class="date-cell">@item.CollectionDate.Value.ToString("dd MMM yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="date-cell">Not set</span>
+                                    }
                                 </td>
                                 <td data-label="Status">
-                                    <span class="status-badge @(isOverdue ? "overdue" : "")">
+                                    <span class="status-badge @(isOverdue ? "overdue" : "active")">
                                         @(isOverdue ? "Overdue" : "Active")
                                     </span>
                                 </td>
                                 <td data-label="Expiry Date">
-                                    <span class="date-cell">@expiryDate?.ToString("dd MMM yyyy")</span>
+                                    @if (expiryDate.HasValue)
+                                    {
+                                        <span class="date-cell">@expiryDate.Value.ToString("dd MMM yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="date-cell">-</span>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -60,7 +90,7 @@
                 <div class="empty-icon">📦</div>
                 <h2 class="empty-title">No Keep Asides Yet</h2>
                 <p class="empty-text">You haven't reserved any products. Start browsing to find items you'd like to keep aside.</p>
-                <button class="btn-primary" onclick="location.href='@Url.Action("Index", "Products")'">Browse Products</button>
+                <button class="btn-primary" onclick="location.href='@Url.Action("AllProducts", "Customer")'">Browse Products</button>
             </div>
         }
     </div>

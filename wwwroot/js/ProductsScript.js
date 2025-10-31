@@ -25,4 +25,20 @@
         console.error('Error:', error);
     alert('Added to cart!');
         });
-    }
+}
+
+const searchInput = document.getElementById('productSearch');
+const productCards = document.querySelectorAll('.product-card');
+
+searchInput.addEventListener('input', function () {
+    const query = this.value.toLowerCase();
+
+    productCards.forEach(card => {
+        const name = card.querySelector('h3').innerText.toLowerCase();
+        if (name.includes(query)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
