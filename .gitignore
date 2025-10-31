@@ -370,3 +370,5 @@ google-credentials.json
 credentials.json
 # For applications using environment variables, always ignore the .env file
 .env
+/google-credentials.json
+/serviceAccountKey.json
