@@ -82,9 +82,9 @@ namespace SupertronicsRepairSystem.Controllers
             return RedirectToAction(nameof(CustomerViewProduct)); // Go back to product page
         }
 
-        public IActionResult CustomerCart()
-        {
-            return View(); // Load cart view
-        }
+        //public IActionResult CustomerCart()
+        //{
+        //    return View(); // Load cart view
+        //}
     }
 }

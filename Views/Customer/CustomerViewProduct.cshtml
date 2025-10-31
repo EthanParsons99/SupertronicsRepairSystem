@@ -102,9 +102,6 @@
                             <button class="btn btn-keep-aside" onclick="keepAside('@Model.Id')">
                                 <i class="bi bi-bookmark"></i> Keep Aside
                             </button>
-                            <button class="btn btn-add-cart" onclick="addToCartAndViewCart('@Model.Id')">
-                                <i class="bi bi-cart-plus"></i> Add to Cart
-                            </button>
                         </div>
 
                         </div>
@@ -131,9 +128,7 @@
                                             <span class="price-value">R @recProduct.Price.ToString("N0")</span>
                                         </div>
                                     </a>
-                                    <button class="btn btn-buy-now btn-small" onclick="quickAddToCart('@recProduct.Id')">
-                                        <i class="bi bi-cart-plus"></i> Add to Cart
-                                    </button>
+                                
                                 </div>
                             }
                         </div>
@@ -188,19 +183,19 @@
             window.location.href = '/Customer/KeepAside?serialNumber=' + productId;
         }
 
-        // Add to Cart + redirect
-        function addToCartAndViewCart(productId) {
-            if (!productId) return;
-            window.location.href = '/CustomerDashboard/CustomerCart?productId=' + productId;
-        }
+        // // Add to Cart + redirect
+        // function addToCartAndViewCart(productId) {
+        //     if (!productId) return;
+        //     window.location.href = '/CustomerDashboard/CustomerCart?productId=' + productId;
+        // }
 
-        // Quick Add to cart for recommended products
-        function quickAddToCart(productId, evt) {
-            if (evt) { evt.preventDefault(); evt.stopPropagation(); }
-            fetch('/Customer/AddToCart?productId=' + productId)
-                .then(() => showNotification('Added to cart!', 'success'))
-                .catch(() => showNotification('Could not add to cart.', 'error'));
-        }
+        // // Quick Add to cart for recommended products
+        // function quickAddToCart(productId, evt) {
+        //     if (evt) { evt.preventDefault(); evt.stopPropagation(); }
+        //     fetch('/Customer/AddToCart?productId=' + productId)
+        //         .then(() => showNotification('Added to cart!', 'success'))
+        //         .catch(() => showNotification('Could not add to cart.', 'error'));
+        // }
 
         // Notification popup
         function showNotification(message, type) {

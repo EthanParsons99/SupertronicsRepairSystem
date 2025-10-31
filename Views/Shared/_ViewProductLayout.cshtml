@@ -68,11 +68,6 @@
                                         <i class="bi bi-file-earmark-text me-1"></i>Get Quote
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerCart">
-                                        <i class="bi bi-cart me-1"></i>Cart
-                                    </a>
-                                </li>
                             }
                             @* Technician navigation *@
                             else if (role == UserRole.Technician)
@@ -138,9 +133,7 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Customer" asp-action="AllProducts"><i class="bi bi-box-seam me-1"></i>Products</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerCart"><i class="bi bi-cart me-1"></i>Cart</a>
-                            </li>
+
                         }
                     </ul>
 
