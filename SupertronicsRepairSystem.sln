@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36327.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem", "SupertronicsRepairSystem.csproj", "{58298B4E-1A38-46C7-BE94-E37077DCC518}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem", "SupertronicsRepairSystem.csproj", "{BD7DF402-D832-DCD9-E4A5-5E0660D6480E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem.Tests", "..\SupertronicsRepairSystem.Tests\SupertronicsRepairSystem.Tests.csproj", "{011E9753-5EC8-93FA-76BB-4FD8CAA71250}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupertronicsRepairSystem.Tests", "SupertronicsRepairSystem.Tests\SupertronicsRepairSystem.Tests.csproj", "{F424CEAC-1767-72B1-BBC7-A351ACE9F831}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58298B4E-1A38-46C7-BE94-E37077DCC518}.Release|Any CPU.Build.0 = Release|Any CPU
-		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{011E9753-5EC8-93FA-76BB-4FD8CAA71250}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD7DF402-D832-DCD9-E4A5-5E0660D6480E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD7DF402-D832-DCD9-E4A5-5E0660D6480E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD7DF402-D832-DCD9-E4A5-5E0660D6480E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD7DF402-D832-DCD9-E4A5-5E0660D6480E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F424CEAC-1767-72B1-BBC7-A351ACE9F831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F424CEAC-1767-72B1-BBC7-A351ACE9F831}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F424CEAC-1767-72B1-BBC7-A351ACE9F831}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F424CEAC-1767-72B1-BBC7-A351ACE9F831}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

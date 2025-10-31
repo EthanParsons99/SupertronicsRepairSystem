@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SupertronicsRepairSystem\SupertronicsRepairSystem.csproj" />
+    <ProjectReference Include="..\SupertronicsRepairSystem.csproj" />
   </ItemGroup>
 
 </Project>
