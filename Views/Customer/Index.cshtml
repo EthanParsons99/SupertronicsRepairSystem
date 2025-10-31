@@ -1,12 +1,17 @@
 ﻿@model List<SupertronicsRepairSystem.Models.Product>
+@inject SupertronicsRepairSystem.Services.IAuthService AuthService
 
 @{
     ViewData["Title"] = "Customer Dashboard";
-    Layout = "_Layout";
+    Layout = "_ViewProductLayout";
+    var userInfo = await AuthService.GetCurrentUserInfoAsync();
+    var isAuthenticated = userInfo != null;
 }
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="~/css/CustomerDashboard.css">
+<link rel="stylesheet" href="~/css/AllProducts.css">
+
 <style>
     /* Product Card */
     .product-card {
@@ -26,10 +31,9 @@
         .product-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            border-color: #4169e1; /* highlight border */
+            border-color: #4169e1;
         }
 
-    /* Make the link inside take full space */
     .product-card-link {
         text-decoration: none;
         color: inherit;
@@ -39,7 +43,6 @@
         padding: 0;
     }
 
-    /* Prevent hover effect when hovering buttons */
     .action-buttons {
         display: flex;
         gap: 10px;
@@ -56,9 +59,9 @@
             align-items: center;
             gap: 8px;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
 
-    /* Keep Aside Button */
     .btn-keep-aside {
         background: var(--btn-blue);
         color: white;
@@ -69,9 +72,9 @@
             background: #2f5dd0;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(65,105,225,0.3);
+            color: white;
         }
 
-    /* Add to Cart Button */
     .btn-add-cart {
         background: #9575cd;
         color: white;
@@ -82,67 +85,7 @@
             background: #7e57c2;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(149,117,205,0.3);
-        }
-
-    /* Action Buttons Container */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        padding: 16px;
-    }
-
-    /* Keep Aside Button */
-    .btn-keep-aside {
-        background: var(--btn-blue);
-        color: white;
-        flex: 1;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 0;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-    }
-
-        .btn-keep-aside:hover {
-            background: #2f5dd0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
-        }
-
-        .btn-keep-aside:active {
-            transform: translateY(0);
-        }
-
-    /* Add to Cart Button */
-    .btn-add-cart {
-        background: #9575cd; /* your purple shade */
-        color: white;
-        flex: 1;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 0;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-    }
-
-        .btn-add-cart:hover {
-            background: #7e57c2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(149, 117, 205, 0.3);
-        }
-
-        .btn-add-cart:active {
-            transform: translateY(0);
+            color: white;
         }
 </style>
 
@@ -162,7 +105,6 @@
     @foreach (var product in Model.Where(p => p.DiscountPercentage > 0))
     {
         <div class="product-card">
-           
             <a asp-controller="Customer" asp-action="CustomerViewProduct" asp-route-id="@product.Id" class="product-card-link">
                 <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : Url.Content("~/images/acer.png"))"
                      alt="@product.Name" class="product-image" />
@@ -186,19 +128,44 @@
             </a>
 
             <div class="action-buttons">
-                <a class="btn btn-keep-aside"
-                   asp-controller="Customer"
-                   asp-action="KeepAside"
-                   asp-route-serialNumber="@product.SerialNumber">
-                    <i class="bi bi-bookmark"></i> Keep Aside
-                </a>
+                @if (isAuthenticated)
+                {
+                    <a class="btn btn-keep-aside"
+                       asp-controller="Customer"
+                       asp-action="KeepAside"
+                       asp-route-serialNumber="@product.SerialNumber">
+                        <i class="bi bi-bookmark"></i> Keep Aside
+                    </a>
 
-                <a class="btn btn-add-cart"
-                   asp-controller="CustomerDashboard"
-                   asp-action="CustomerCart">
-                    <i class="bi bi-cart-plus"></i> Add to Cart
-                </a>
+                    <a class="btn btn-add-cart"
+                       asp-controller="CustomerDashboard"
+                       asp-action="CustomerCart">
+                        <i class="bi bi-cart-plus"></i> Add to Cart
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-keep-aside" href="#" onclick="requireLogin(event)">
+                        <i class="bi bi-bookmark"></i> Keep Aside
+                    </a>
+
+                    <a class="btn btn-add-cart" href="#" onclick="requireLogin(event)">
+                        <i class="bi bi-cart-plus"></i> Add to Cart
+                    </a>
+                }
             </div>
         </div>
     }
 </div>
+
+@if (!isAuthenticated)
+{
+    <script>
+        function requireLogin(event) {
+            event.preventDefault();
+            if (confirm('Please log in to continue. Would you like to go to the login page?')) {
+                window.location.href = '@Url.Action("Login", "Account")';
+            }
+        }
+    </script>
+}
