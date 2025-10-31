@@ -13,6 +13,7 @@ namespace SupertronicsRepairSystem.Controllers
             _authService = authService;
         }
 
+        // Show login page
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
@@ -25,6 +26,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View();
         }
 
+        // Handle login form submission
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password, bool rememberMe, string returnUrl = null)
@@ -74,19 +76,22 @@ namespace SupertronicsRepairSystem.Controllers
             return View();
         }
 
+        // Handle registration form submission
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(string email, string password, string confirmPassword, string firstName, string surname, string phoneNumber)
         {
+            // Check if user is already authenticated
             if (await _authService.IsAuthenticatedAsync())
             {
                 return RedirectToAction("Index", "Home");
             }
 
+            // Validate input
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 TempData["Error"] = "Email and password are required";
-                return View();
+                return View(); 
             }
 
             if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(surname))
@@ -120,6 +125,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View();
         }
 
+        // Handle logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout([FromServices] IAuthService authService)
@@ -128,6 +134,7 @@ namespace SupertronicsRepairSystem.Controllers
             return RedirectToAction("CustomerViewProduct", "Customer");
         }
 
+        // Show forgot password page
         [HttpGet]
         public async Task<IActionResult> ForgotPassword()
         {
@@ -139,6 +146,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View();
         }
 
+        // Handle forgot password form submission
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string email)

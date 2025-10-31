@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
+    // ViewModel for selecting a job to create a quote for  repairs
+    // Contains a list of open repair jobs and the selected job ID
     public class SelectJobForQuoteViewModel
     {
         [Required(ErrorMessage = "You must select a repair job.")]

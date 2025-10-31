@@ -4,6 +4,7 @@ using System;
 
 namespace SupertronicsRepairSystem.ViewModels.Technician
 {
+    // ViewModel for generating a repair quote
     public class GenerateRepairQuoteViewModel
     {
         public string JobId { get; set; }
@@ -35,7 +36,7 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         [Display(Name = "Diagnosis Notes")]
         public string? DiagnosisNotes { get; set; }
 
-        public List<QuotePartItem> Parts { get; set; } = new List<QuotePartItem>();
+        public List<QuotePartItem> Parts { get; set; } = new List<QuotePartItem>(); // Parts to be included in the quote
 
         [Display(Name = "Labor Hours")]
         public decimal LaborHours { get; set; } = 1.0m;
@@ -51,11 +52,12 @@ namespace SupertronicsRepairSystem.ViewModels.Technician
         public decimal PartsTotal => Parts?.Sum(p => p.TotalPrice) ?? 0;
         public decimal LaborTotal => LaborHours * LaborRate;
         public decimal SubTotal => PartsTotal + LaborTotal;
-        public decimal TaxRate { get; set; } = 0.15m;
+        public decimal TaxRate { get; set; } = 0.15m; // 15% VAT rate
         public decimal TaxAmount => SubTotal * TaxRate;
         public decimal Total => SubTotal + TaxAmount;
     }
 
+    // Represents a part item in the quote
     public class QuotePartItem
     {
         [Display(Name = "Part Name")]

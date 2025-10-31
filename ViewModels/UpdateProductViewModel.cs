@@ -3,6 +3,7 @@ using SupertronicsRepairSystem.Models;
 
 namespace SupertronicsRepairSystem.ViewModels
 {
+    // ViewModel for updating an existing product
     public class UpdateProductViewModel
     {
         [Required]

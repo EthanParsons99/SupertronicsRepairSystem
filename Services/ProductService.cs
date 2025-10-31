@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace SupertronicsRepairSystem.Services
 {
+    // Service for managing products in Firestore
     public class ProductService : IProductService
     {
         private readonly FirestoreDb _firestoreDb;
@@ -12,6 +13,7 @@ namespace SupertronicsRepairSystem.Services
         {
             _firestoreDb = firestoreDb;
         }
+        // Add a new product to Firestore
         public async Task<bool> AddProductAsync(AddProductViewModel model)
         {
             try
@@ -38,6 +40,7 @@ namespace SupertronicsRepairSystem.Services
 
         }
 
+        // Retrieve all products from Firestore
         public async Task<List<Product>> GetAllProductsAsync()
         {
             var products = new List<Product>();
@@ -60,6 +63,7 @@ namespace SupertronicsRepairSystem.Services
             return products;
         }
 
+        // Retrieve a product by its ID from Firestore
         public async Task<Product?> GetProductByIdAsync(string id)
         {
             try
@@ -82,6 +86,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Update an existing product in Firestore
         public async Task<bool> UpdateProductAsync(UpdateProductViewModel model)
         {
             try
@@ -107,6 +112,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Delete a product from Firestore by its ID
         public async Task<bool> DeleteProductAsync(string id)
         {
             try
