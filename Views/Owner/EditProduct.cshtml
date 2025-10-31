@@ -4,6 +4,7 @@
 }
 
 <div class="container-fluid p-4">
+    <!-- Page title -->
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="text-primary">Edit Product</h2>
@@ -17,33 +18,41 @@
                     <h5 class="mb-0">Update Product Information</h5>
                 </div>
                 <div class="card-body p-4">
+                    <!-- Edit form -->
                     <form asp-action="EditProduct" method="post">
+                        <!-- Hidden product ID -->
                         <input type="hidden" asp-for="Id" />
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <!-- Product name -->
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label"></label>
                             <input asp-for="Name" type="text" class="form-control" placeholder="Enter the name" required>
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
 
+                        <!-- Description -->
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label"></label>
                             <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter the description" required></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
+                        <!-- Serial number -->
                         <div class="mb-3">
                             <label asp-for="SerialNumber" class="form-label"></label>
                             <input asp-for="SerialNumber" type="text" class="form-control" placeholder="Enter the product serial number">
                             <span asp-validation-for="SerialNumber" class="text-danger small"></span>
                         </div>
 
+                        <!-- Image URL -->
                         <div class="mb-3">
                             <label asp-for="ImageUrl" class="form-label"></label>
                             <input asp-for="ImageUrl" type="url" class="form-control" placeholder="Enter a URL for the product image">
                             <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                         </div>
 
+                        <!-- Price fields -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="Price" class="form-label"></label>
@@ -55,6 +64,7 @@
                                 <input asp-for="WasPrice" type="number" step="0.01" min="0.00" class="form-control" placeholder="e.g. 249.99 (Optional)">
                                 <span asp-validation-for="WasPrice" class="text-danger small"></span>
                             </div>
+                            <!-- Stock quantity -->
                             <div class="col-md-6">
                                 <label asp-for="StockQuantity" class="form-label"></label>
                                 <input asp-for="StockQuantity" type="number" min="0" class="form-control" placeholder="e.g. 50" required>
@@ -62,12 +72,14 @@
                             </div>
                         </div>
 
+                        <!-- Discount percentage -->
                         <div class="mb-4">
                             <label asp-for="DiscountPercentage" class="form-label"></label>
                             <input asp-for="DiscountPercentage" type="number" min="0" max="100" class="form-control" placeholder="e.g. 15 (Optional)">
                             <span asp-validation-for="DiscountPercentage" class="text-danger small"></span>
                         </div>
 
+                        <!-- Form buttons -->
                         <div class="d-flex justify-content-end gap-2">
                             <a href="@Url.Action("ProductManagement", "Owner")" class="btn btn-outline-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">
@@ -81,8 +93,7 @@
     </div>
 </div>
 
-@*------------------------------------------------------------------------------------------------ Styling ------------------------------------------------------------------------------------------------*@
-
+<!-- Styling -->
 <style>
     .card {
         border-radius: 15px;

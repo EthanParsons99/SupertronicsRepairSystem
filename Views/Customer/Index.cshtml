@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Customer Dashboard";
+    Layout = "_Layout";
 }
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
@@ -144,9 +145,6 @@
             transform: translateY(0);
         }
 </style>
-<div class="search-bar">
-    <input type="text" class="search-input" placeholder="Search " />
-</div>
 
 <div class="hero-section">
     <h1>
@@ -196,9 +194,8 @@
                 </a>
 
                 <a class="btn btn-add-cart"
-                   asp-controller="Customer"
-                   asp-action="AddToCart"
-                   asp-route-serialNumber="@product.SerialNumber">
+                   asp-controller="CustomerDashboard"
+                   asp-action="CustomerCart">
                     <i class="bi bi-cart-plus"></i> Add to Cart
                 </a>
             </div>

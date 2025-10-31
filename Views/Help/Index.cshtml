@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "User Manual";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Supertronics Repair System — User Manual</h1>
+    <div class="manual-content">
+        @Html.Raw(ViewBag.ManualHtml)
+    </div>
+</div>
+
+<style>
+    .manual-content h1 { font-size: 2rem; }
+    .manual-content h2 { font-size: 1.5rem; margin-top: 1.5rem; }
+    .manual-content h3 { font-size: 1.25rem; }
+    .manual-content ul { margin-left: 1rem; }
+    .manual-content code { background-color: #f8f9fa; padding: 0.2rem 0.4rem; border-radius: 0.25rem; }
+</style>

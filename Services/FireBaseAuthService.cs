@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace SupertronicsRepairSystem.Services
 {
+    // Firebase authentication service implementation
     public class FirebaseAuthService : IAuthService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -37,6 +38,7 @@ namespace SupertronicsRepairSystem.Services
             _firebaseAuth = firebaseAuth;
         }
 
+        // Sign in user with Firebase Auth
         public async Task<AuthResult> SignInAsync(string email, string password, bool rememberMe)
         {
             try
@@ -47,6 +49,7 @@ namespace SupertronicsRepairSystem.Services
                     return new AuthResult { Success = false, Message = "No HTTP context available" };
                 }
 
+                // Call Firebase Auth API
                 var requestUri = $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={_apiKey}";
                 var payload = new { email, password, returnSecureToken = true };
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
@@ -54,6 +57,7 @@ namespace SupertronicsRepairSystem.Services
                 using var resp = await _httpClient.PostAsync(requestUri, content);
                 var respContent = await resp.Content.ReadAsStringAsync();
 
+                // Handles API errors
                 if (!resp.IsSuccessStatusCode)
                 {
                     try
@@ -70,6 +74,7 @@ namespace SupertronicsRepairSystem.Services
                     return new AuthResult { Success = false, Message = "Invalid credentials" };
                 }
 
+                // Parse response tokens
                 using var json = JsonDocument.Parse(respContent);
                 var root = json.RootElement;
                 var idToken = root.GetProperty("idToken").GetString();
@@ -81,12 +86,14 @@ namespace SupertronicsRepairSystem.Services
                     return new AuthResult { Success = false, Message = "Invalid credentials" };
                 }
 
+                // Get user role from Firestore
                 var role = await GetUserRoleFromFirestore(localId);
                 if (role == null)
                 {
                     return new AuthResult { Success = false, Message = "User account not properly configured" };
                 }
 
+                // Set auth cookies (need this to make sure it works properly)
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
@@ -114,10 +121,12 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Register new user
         public async Task<AuthResult> SignUpAsync(string email, string password, string firstName, string surname, string phoneNumber, UserRole role)
         {
             try
             {
+                // Call Firebase Auth signup API
                 var requestUri = $"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={_apiKey}";
                 var payload = new { email, password, returnSecureToken = true };
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
@@ -125,6 +134,7 @@ namespace SupertronicsRepairSystem.Services
                 using var resp = await _httpClient.PostAsync(requestUri, content);
                 var respContent = await resp.Content.ReadAsStringAsync();
 
+                // Handle API errors
                 if (!resp.IsSuccessStatusCode)
                 {
                     try
@@ -141,6 +151,7 @@ namespace SupertronicsRepairSystem.Services
                     return new AuthResult { Success = false, Message = "Failed to create account" };
                 }
 
+                // Parse response
                 using var json = JsonDocument.Parse(respContent);
                 var root = json.RootElement;
                 var idToken = root.GetProperty("idToken").GetString();
@@ -152,6 +163,7 @@ namespace SupertronicsRepairSystem.Services
                     return new AuthResult { Success = false, Message = "Failed to create account" };
                 }
 
+                // Creates user document in Firestore
                 await CreateUserDocumentInFirestore(localId, userEmail ?? email, firstName, surname, phoneNumber, role);
 
                 return new AuthResult
@@ -170,6 +182,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Signs out and clear cookies
         public async Task SignOutAsync()
         {
             var http = _httpContextAccessor.HttpContext;
@@ -186,6 +199,7 @@ namespace SupertronicsRepairSystem.Services
             await Task.CompletedTask;
         }
 
+        // Get current user ID from token
         public async Task<string> GetCurrentUserIdAsync()
         {
             var http = _httpContextAccessor.HttpContext;
@@ -205,6 +219,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get current user full info
         public async Task<UserInfo> GetCurrentUserInfoAsync()
         {
             var http = _httpContextAccessor.HttpContext;
@@ -223,7 +238,7 @@ namespace SupertronicsRepairSystem.Services
 
                 var (localId, email, displayName) = lookup.Value;
 
-                // Get additional user info from Firestore
+                // Get user details from Firestore
                 var userDoc = await GetUserDocumentFromFirestore(localId, role);
 
                 return new UserInfo
@@ -243,12 +258,14 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Checks if user is authenticated
         public async Task<bool> IsAuthenticatedAsync()
         {
             var id = await GetCurrentUserIdAsync();
             return !string.IsNullOrEmpty(id);
         }
 
+        // Get ID token from cookie
         public async Task<string> GetIdTokenAsync()
         {
             var http = _httpContextAccessor.HttpContext;
@@ -258,6 +275,7 @@ namespace SupertronicsRepairSystem.Services
             return token ?? string.Empty;
         }
 
+        // Sends password reset email
         public async Task<AuthResult> ResetPasswordAsync(string email)
         {
             try
@@ -293,6 +311,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Gets user role from Firestore collections
         private async Task<UserRole?> GetUserRoleFromFirestore(string userId)
         {
             try
@@ -314,10 +333,12 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get user document from Firestore by role
         private async Task<(string FirstName, string Surname, string PhoneNumber)?> GetUserDocumentFromFirestore(string userId, UserRole role)
         {
             try
             {
+                // Determine collection based on role
                 string collection = role switch
                 {
                     UserRole.Technician => "technicians",
@@ -342,6 +363,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Creates user document in Firestore
         private async Task CreateUserDocumentInFirestore(string userId, string email, string firstName, string surname, string phoneNumber, UserRole role)
         {
             var userData = new Dictionary<string, object>
@@ -353,6 +375,7 @@ namespace SupertronicsRepairSystem.Services
                 { "createdAt", FieldValue.ServerTimestamp }
             };
 
+            // Determine collection based on role
             string collection = role switch
             {
                 UserRole.Technician => "technicians",
@@ -364,6 +387,7 @@ namespace SupertronicsRepairSystem.Services
             await _firestoreDb.Collection(collection).Document(userId).SetAsync(userData);
         }
 
+        // Lookup user by ID token via Firebase API
         private async Task<(string LocalId, string Email, string DisplayName)?> LookupUserByIdTokenAsync(string idToken)
         {
             try
@@ -396,6 +420,7 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Get all technicians from DB
         public async Task<List<UserInfo>> GetAllTechniciansAsync()
         {
             var users = new List<UserInfo>();
@@ -426,6 +451,7 @@ namespace SupertronicsRepairSystem.Services
             return users;
         }
 
+        // Get technician by ID from DB
         public async Task<UserInfo> GetTechnicianByIdAsync(string userId)
         {
             try
@@ -455,11 +481,13 @@ namespace SupertronicsRepairSystem.Services
             }
         }
 
+        // Updates technician in DB and Firebase Auth
         public async Task<bool> UpdateTechnicianAsync(string userId, EditTechnicianViewModel model)
         {
             bool firestoreSuccess = false;
             try
             {
+                // Updates Firestore document
                 var updates = new Dictionary<string, object>
                 {
                     { "firstName", model.FirstName },
@@ -475,11 +503,12 @@ namespace SupertronicsRepairSystem.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"*** ERROR (Firestore) ***: Failed to update Firestore for {userId}. Message: {ex.Message}");
-                return false; // Stop if Firestore fails
+                return false;
             }
 
             try
             {
+                // Update Firebase Auth user
                 var updateParameters = new UserRecordArgs()
                 {
                     Uid = userId,
@@ -498,12 +527,14 @@ namespace SupertronicsRepairSystem.Services
             return true;
         }
 
+        // Delete technician from DB and Firebase Auth
         public async Task<bool> DeleteTechnicianAsync(string userId)
         {
             bool firestoreDeleted = false;
 
             try
             {
+                // Delete from Firestore
                 var techRef = _firestoreDb.Collection("technicians").Document(userId);
                 await techRef.DeleteAsync();
                 firestoreDeleted = true;
@@ -516,7 +547,8 @@ namespace SupertronicsRepairSystem.Services
 
             try
             {
-                await _firebaseAuth.DeleteUserAsync(userId); 
+                // Delete from Firebase Auth
+                await _firebaseAuth.DeleteUserAsync(userId);
                 Console.WriteLine($"SUCCESS: Deleted user {userId} from Firebase Authentication.");
             }
             catch (Exception ex)
