@@ -10,9 +10,9 @@
 }
 
     .hero-header .hero-title {
-        font-size: 4rem; /* large title */
+        font-size: 4rem; 
         font-weight: 800;
-        color: #222222; /* dark but not pure black */
+        color: #222222;
         margin: 0;
         line-height: 1.2;
     }

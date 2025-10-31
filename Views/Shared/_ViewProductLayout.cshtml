@@ -1,40 +1,53 @@
 ﻿@inject SupertronicsRepairSystem.Services.IAuthService AuthService
 @{
+    // Get current user info and authentication status
     var userInfo = await AuthService.GetCurrentUserInfoAsync();
     var isAuthenticated = userInfo != null;
+
+    // Determine display name: first name, email prefix, or "Guest"
     var displayName = userInfo?.FirstName ?? userInfo?.Email?.Split('@')[0] ?? "Guest";
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SupertronicsRepairSystem</title>
+
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <!-- Site & Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SupertronicsRepairSystem.styles.css" asp-append-version="true" />
 </head>
 
 <body class="d-flex flex-column min-vh-100">
+    <!-- Header & Navigation -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-controller="Customer" asp-action="Dashboard">
-                    Supertronics
-                </a>
+                <a class="navbar-brand fw-bold" asp-controller="Customer" asp-action="Index">Supertronics</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
+                <!-- Navigation Links -->
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        @* Show links based on authentication and user role *@
                         @if (isAuthenticated)
                         {
                             var role = userInfo.Role;
-                            @if (role == UserRole.Customer)
-                            {
 
+                            @* Customer navigation *@
+                            if (role == UserRole.Customer)
+                            {
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Customer" asp-action="Index">
                                         <i class="bi bi-house-door me-1"></i>Dashboard
@@ -46,50 +59,51 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="KeepsAsides">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="MyKeepAsides">
                                         <i class="bi bi-bookmark me-1"></i>Keeps Asides
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="GetQuote">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerGetQuote">
                                         <i class="bi bi-file-earmark-text me-1"></i>Get Quote
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
+                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerCart">
                                         <i class="bi bi-cart me-1"></i>Cart
                                     </a>
                                 </li>
-
                             }
+                            @* Technician navigation *@
                             else if (role == UserRole.Technician)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="Dashboard">Dashboard</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="Dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs">Repair Jobs</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs"><i class="bi bi-wrench me-1"></i>Repair Jobs</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="CreateRepairJob">New Jobs</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="CreateRepairJob"><i class="bi bi-plus-circle me-1"></i>New Job</a>
                                 </li>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="quotesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Quotes
+                                        <i class="bi bi-file-text me-1"></i>Quotes
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="quotesDropdown">
                                         <li>
                                             <a class="dropdown-item" asp-controller="Technician" asp-action="GenerateProductQuote">Generate Product Quote</a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Technician" asp-action="GenerateRepairQuote">Generate Repair Quote</a>
+                                            <a class="dropdown-item" asp-controller="Technician" asp-action="SelectJobForQuote">Generate Repair Quote</a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Technician" asp-action="TrackSerialNumber">Serial Lookup</a>
+                                    <a class="nav-link" asp-controller="Technician" asp-action="TrackSerialNumber"><i class="bi bi-search me-1"></i>Serial Lookup</a>
                                 </li>
                             }
+                            @* Owner navigation *@
                             else if (role == UserRole.Owner)
                             {
                                 <li class="nav-item">
@@ -115,11 +129,31 @@
                                 </li>
                             }
                         }
+                        else
+                        {
+                            @* Links for unauthenticated users *@
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Customer" asp-action="Index"><i class="bi bi-house-door me-1"></i>Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Customer" asp-action="AllProducts"><i class="bi bi-box-seam me-1"></i>Products</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="CustomerDashboard" asp-action="CustomerCart"><i class="bi bi-cart me-1"></i>Cart</a>
+                            </li>
+                        }
                     </ul>
 
+                    @* User profile / authentication menu *@
                     <ul class="navbar-nav">
                         @if (isAuthenticated)
                         {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Help" asp-action="Index">
+                                    <i class="bi bi-question-circle me-1"></i>Help
+                                </a>
+                            </li>
+
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-person-circle"></i> @displayName
@@ -143,11 +177,8 @@
                         }
                         else
                         {
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    <i class="bi bi-person"></i> Guest
-                                </span>
-                            </li>
+                            @* Guest view *@
+                            <li class="nav-item"><span class="nav-link"><i class="bi bi-person"></i> Guest</span></li>
                             <li class="nav-item">
                                 <a class="btn btn-outline-light ms-2" asp-controller="Account" asp-action="Login">Login / Register</a>
                             </li>
@@ -158,6 +189,7 @@
         </nav>
     </header>
 
+    <!-- Main content -->
     <main class="flex-grow-1">
         @RenderBody()
     </main>
@@ -203,29 +235,22 @@
                         <span class="time-value">Closed</span>
                     </div>
                 </div>
-               
             </div>
 
             <div class="footer-section">
                 <h3>Find Us</h3>
                 <div class="map-container">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3309.5!2d18.5919!3d-33.9052!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1dcc5a5c1bcdcde3%3A0xb69e14ab2bc7388e!2s269B%20Voortrekker%20Rd%2C%20Fairfield%20Estate%2C%20Cape%20Town%2C%207500!5e0!3m2!1sen!2sza!4v1234567890" width="100%"
-                            height="200"
-                            style="border:0; border-radius: 8px;"
-                            allowfullscreen=""
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3309.5!2d18.5919!3d-33.9052!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1dcc5a5c1bcdcde3%3A0xb69e14ab2bc7388e!2s269B%20Voortrekker%20Rd%2C%20Fairfield%20Estate%2C%20Cape%20Town%2C%207500!5e0!3m2!1sen!2sza!4v1234567890"
+                            width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
                     </iframe>
                 </div>
-                <p class="map-credit">
-                    <i class="bi bi-geo-alt"></i>  269B Voortrekker Rd, Fairfield Estate, Cape Town, 7500
-                </p>
+                <p class="map-credit"><i class="bi bi-geo-alt"></i>  269B Voortrekker Rd, Fairfield Estate, Cape Town, 7500</p>
             </div>
         </div>
-
-   
     </footer>
 
+    <!-- Scripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

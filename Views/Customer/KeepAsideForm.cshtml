@@ -1,61 +1,112 @@
-﻿@model KeepAsideViewModel
+﻿@model SupertronicsRepairSystem.ViewModels.KeepAsideViewModel 
 @{
-    ViewData["Title"] = "Customer Keep Aside";
+    ViewData["Title"] = "Keep Aside Product"; 
 }
-
-<link rel="stylesheet" href="~/css/keepaside.css" />
+<link rel="stylesheet" href="~/css/keepaside.css" /> <
 
 <div class="keep-aside-container">
+    <!-- Main container -->
     <div class="keep-aside-form-section">
+        <!-- Form section -->
         <h3 class="form-title">Keep Aside Form</h3>
 
-        <form asp-action="KeepAsideCreate" method="post">
-            @Html.AntiForgeryToken()
+        @if (TempData["ErrorMessage"] != null) // Error message
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        @if (!ViewData.ModelState.IsValid) // Validation errors
+        {
+            <div class="alert alert-danger">
+                <h4>Please fix the following errors:</h4>
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="KeepAsideCreate" asp-controller="Customer" method="post">
+            <!-- Form start -->
+            @Html.AntiForgeryToken() <!-- Security -->
 
             <div class="form-row">
+                <!-- Name fields -->
                 <div class="form-group">
-                    <label asp-for="CustomerName">Customer Name</label>
-                    <input asp-for="CustomerName" type="text" placeholder="Enter customer name" />
+                    <label asp-for="CustomerName">Customer Name *</label>
+                    <input asp-for="CustomerName" type="text" class="form-control" placeholder="Enter customer name" />
+                    <span asp-validation-for="CustomerName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="CustomerSurname">Customer Surname</label>
-                    <input asp-for="CustomerSurname" type="text" placeholder="Enter customer surname" />
+                    <label asp-for="CustomerSurname">Customer Surname *</label>
+                    <input asp-for="CustomerSurname" type="text" class="form-control" placeholder="Enter customer surname" />
+                    <span asp-validation-for="CustomerSurname" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="form-row">
+                <!-- Contact & ID -->
                 <div class="form-group">
-                    <label asp-for="ContactNumber">Customer Contact Number</label>
-                    <input asp-for="ContactNumber" type="tel" placeholder="082 021 2932" />
+                    <label asp-for="ContactNumber">Customer Contact Number * (10 digits)</label>
+                    <input asp-for="ContactNumber" type="text" class="form-control" placeholder="0820212932" maxlength="10" />
+                    <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                    <small class="form-text text-muted">Enter 10 digits without spaces</small>
                 </div>
                 <div class="form-group">
-                    <label asp-for="IdPassportNumber">Customer ID/Passport Number</label>
-                    <input asp-for="IdPassportNumber" type="text" placeholder="Enter ID or Passport number" />
+                    <label asp-for="IdPassportNumber">Customer ID/Passport Number *</label>
+                    <input asp-for="IdPassportNumber" type="text" class="form-control" placeholder="Enter ID or Passport number" />
+                    <span asp-validation-for="IdPassportNumber" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="form-group">
+                <!-- Serial -->
                 <label asp-for="DeviceSerialNumber">Device Serial Number</label>
-                <input asp-for="DeviceSerialNumber" type="text" readonly value="@ViewBag.Product?.SerialNumber" />
+                <input asp-for="DeviceSerialNumber" type="text" class="form-control" readonly style="background-color: #f0f0f0;" />
             </div>
 
             <div class="form-group">
-                <label asp-for="CollectionDate">Collection Date</label>
-                <input asp-for="CollectionDate" type="date" />
+                <!-- Date -->
+                <label asp-for="CollectionDate">Collection Date *</label>
+                <input asp-for="CollectionDate" type="date" class="form-control"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                       value="@(Model.CollectionDate.HasValue ? Model.CollectionDate.Value.ToString("yyyy-MM-dd") : DateTime.Now.AddDays(2).ToString("yyyy-MM-dd"))" />
+                <span asp-validation-for="CollectionDate" class="text-danger"></span>
             </div>
 
             <div class="button-group">
+                <!-- Buttons -->
                 <button type="button" class="btn-cancel" onclick="location.href='@Url.Action("AllProducts","Customer")'">Cancel</button>
-                <button type="submit" class="btn-submit">Create Keep Aside</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Create Keep Aside</button>
             </div>
         </form>
     </div>
 
     <div class="keep-aside-product-card">
-        <img src="@ViewBag.Product?.ImageUrl ?? " https: //via.placeholder.com/200x150""
-             alt="@ViewBag.Product?.Name"
-             class="product-image" />
-        <div class="product-name">@ViewBag.Product?.Name</div>
-        <div class="product-serial">Serial: @ViewBag.Product?.SerialNumber</div>
+        <!-- Product preview -->
+        @if (ViewBag.Product != null)
+        {
+            <img src="@(ViewBag.Product.ImageUrl ?? "https://via.placeholder.com/200x150")"
+                 alt="@ViewBag.Product.Name"
+                 class="product-image" />
+            <div class="product-name">@ViewBag.Product.Name</div>
+            <div class="product-serial">Serial: @ViewBag.Product.SerialNumber</div>
+            @if (ViewBag.Product.Price > 0)
+            {
+                <div class="product-price">R @ViewBag.Product.Price.ToString("N2")</div>
+            }
+        }
+        else
+        {
+            <img src="https://via.placeholder.com/200x150" alt="Product" class="product-image" />
+            <div class="product-name">Product Information</div>
+            <div class="product-serial">Serial: @Model.DeviceSerialNumber</div>
+        }
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" /> <!-- Validation JS -->
+}

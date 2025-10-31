@@ -1,5 +1,7 @@
-﻿using Google.Cloud.Firestore;
+﻿//-----------------------CustomerController --------------------------
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
+using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.Attributes;
 using SupertronicsRepairSystem.Models;
 using SupertronicsRepairSystem.Services;
@@ -12,21 +14,24 @@ namespace SupertronicsRepairSystem.Controllers
         private readonly IAuthService _authService;
         private readonly IRepairJobService _repairJobService;
         private readonly FirestoreDb _firestoreDb;
+
         public CustomerController(IAuthService authService, IRepairJobService repairJobService)
         {
             _authService = authService;
             _repairJobService = repairJobService;
+
             string path = "path/to/serviceAccountKey.json";
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", path);
 
             _firestoreDb = FirestoreDb.Create("supertronics-dc0f9");
         }
 
-
+        // ==========================
+        // GENERAL / DASHBOARD SECTION
+        // ==========================
         public async Task<IActionResult> Index()
         {
             var products = new List<Product>();
-
             CollectionReference productsRef = _firestoreDb.Collection("products");
             QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
 
@@ -34,8 +39,7 @@ namespace SupertronicsRepairSystem.Controllers
             {
                 if (doc.Exists)
                 {
-                    Product product = doc.ConvertTo<Product>();
-                    products.Add(product);
+                    products.Add(doc.ConvertTo<Product>());
                 }
             }
 
@@ -59,50 +63,40 @@ namespace SupertronicsRepairSystem.Controllers
         public async Task<IActionResult> TrackRepair()
         {
             var userInfo = await _authService.GetCurrentUserInfoAsync();
-
             if (userInfo != null)
             {
                 var repairJobs = await _repairJobService.GetRepairJobsByCustomerIdAsync(userInfo.UserId);
                 return View(repairJobs);
             }
 
-            return View(new List<SupertronicsRepairSystem.Models.RepairJob>());
+            return View(new List<RepairJob>());
         }
 
-        // Controller Method - Fixed to show single product
+        // ==========================
+        // PRODUCT SECTION
+        // ==========================
         public async Task<IActionResult> CustomerViewProduct(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                return RedirectToAction("Index"); // Redirect if no ID provided
-            }
+            if (string.IsNullOrEmpty(id)) return RedirectToAction("Index");
 
             try
             {
-                // Get single product by ID
                 DocumentReference docRef = _firestoreDb.Collection("products").Document(id);
                 DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
-                if (snapshot.Exists)
-                {
-                    Product product = snapshot.ConvertTo<Product>();
-                    Console.WriteLine($"Loaded product: {product.Name}");
-
-                    // Get recommended products (3 random products, excluding current one)
-                    var recommendedProducts = await GetRecommendedProducts(id, 3);
-                    ViewBag.RecommendedProducts = recommendedProducts;
-
-                    return View(product); 
-                }
-                else
+                if (!snapshot.Exists)
                 {
                     TempData["Error"] = "Product not found.";
                     return RedirectToAction("Index");
                 }
+
+                var product = snapshot.ConvertTo<Product>();
+                ViewBag.RecommendedProducts = await GetRecommendedProducts(id, 3);
+
+                return View(product);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Firestore error: {ex.Message}");
                 TempData["Error"] = "Error loading product.";
                 return RedirectToAction("Index");
             }
@@ -113,81 +107,53 @@ namespace SupertronicsRepairSystem.Controllers
             var recommendedProducts = new List<Product>();
             try
             {
-                CollectionReference productsRef = _firestoreDb.Collection("products");
-                QuerySnapshot snapshot = await productsRef.Limit(count + 5).GetSnapshotAsync();
+                var snapshot = await _firestoreDb.Collection("products").Limit(count + 5).GetSnapshotAsync();
 
-                foreach (DocumentSnapshot doc in snapshot.Documents)
+                foreach (var doc in snapshot.Documents)
                 {
                     if (doc.Exists && doc.Id != excludeId)
                     {
-                        Product product = doc.ConvertTo<Product>();
-                        recommendedProducts.Add(product);
-
-                        if (recommendedProducts.Count >= count)
-                            break;
+                        recommendedProducts.Add(doc.ConvertTo<Product>());
+                        if (recommendedProducts.Count >= count) break;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading recommendations: {ex.Message}");
-            }
+            catch { }
 
             return recommendedProducts;
         }
 
-
-        // GET: Products/All
-        // GET: Customer/AllProducts
         public async Task<IActionResult> AllProducts()
         {
             var products = new List<Product>();
-
             try
             {
-                CollectionReference productsRef = _firestoreDb.Collection("products");
-                QuerySnapshot snapshot = await productsRef.GetSnapshotAsync();
-
-                foreach (DocumentSnapshot doc in snapshot.Documents)
+                var snapshot = await _firestoreDb.Collection("products").GetSnapshotAsync();
+                foreach (var doc in snapshot.Documents)
                 {
-                    if (doc.Exists)
-                    {
-                        var product = doc.ConvertTo<Product>();
-                        products.Add(product);
-                    }
+                    if (doc.Exists) products.Add(doc.ConvertTo<Product>());
                 }
-
-                Console.WriteLine($"Loaded {products.Count} products from Firestore.");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading products from Firestore: {ex.Message}");
-                TempData["Error"] = "Unable to load products at this time. Please try again later.";
-            }
+            catch { TempData["Error"] = "Unable to load products at this time."; }
 
-            return View("AllProducts", products); 
+            return View("AllProducts", products);
         }
 
-
-
-        // GET: Customer/RequestRepair
+        // ==========================
+        // REPAIR SECTION
+        // ==========================
         public IActionResult RequestRepair()
         {
             return View(new CreateRepairJobViewModel());
         }
 
-        // POST: Customer/RequestRepair
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RequestRepair(CreateRepairJobViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             var userInfo = await _authService.GetCurrentUserInfoAsync();
-
             if (userInfo == null)
             {
                 TempData["Error"] = "You must be logged in to request a repair.";
@@ -197,160 +163,165 @@ namespace SupertronicsRepairSystem.Controllers
             try
             {
                 var customerName = $"{userInfo.FirstName} {userInfo.Surname}".Trim();
-                if (string.IsNullOrEmpty(customerName))
-                {
-                    customerName = userInfo.Email;
-                }
+                if (string.IsNullOrEmpty(customerName)) customerName = userInfo.Email;
 
-                var repairJobId = await _repairJobService.CreateRepairJobAsync(
-                    model,
-                    userInfo.UserId,
-                    customerName
-                );
-
-                TempData["Success"] = $"Repair request submitted successfully! Your job ID is: {repairJobId.Substring(0, Math.Min(10, repairJobId.Length))}...";
+                var repairJobId = await _repairJobService.CreateRepairJobAsync(model, userInfo.UserId, customerName);
+                TempData["Success"] = $"Repair request submitted! Job ID: {repairJobId[..10]}...";
                 return RedirectToAction("TrackRepair");
             }
-            catch (Exception ex)
+            catch
             {
-                ModelState.AddModelError(string.Empty, "An error occurred while submitting your repair request. Please try again.");
+                ModelState.AddModelError("", "An error occurred while submitting your repair request.");
                 return View(model);
             }
         }
-        // ===================== Keep Aside Section =====================
 
-        // GET: Customer/KeepAside?s
-        public async Task<IActionResult> KeepAside(string serialNumber)
+        public async Task<IActionResult> RepairDetails(string id)
         {
-            if (string.IsNullOrEmpty(serialNumber))
-            {
-                TempData["ErrorMessage"] = "No product selected to keep aside.";
-                return RedirectToAction("AllProducts");
-            }
+            if (string.IsNullOrEmpty(id)) return NotFound();
 
-            Query query = _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber);
-            QuerySnapshot snapshot = await query.GetSnapshotAsync();
-            var doc = snapshot.Documents.FirstOrDefault();
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            var repairJob = await _repairJobService.GetRepairJobByIdAsync(id);
+            if (repairJob == null) return NotFound();
 
-            if (doc == null)
-            {
-                TempData["ErrorMessage"] = "Product not found.";
-                return RedirectToAction("AllProducts");
-            }
+            if (userInfo != null && repairJob.CustomerId != userInfo.UserId) return Forbid();
 
-            var product = doc.ConvertTo<ProductViewModel>();
-
-            var model = new KeepAsideViewModel
-            {
-                DeviceSerialNumber = product.SerialNumber,
-                CollectionDate = DateTime.Now.AddDays(2) 
-            };
-
-            ViewBag.Product = product;
-            return View("KeepAsideForm", model); 
+            return View(repairJob);
         }
 
+        // ==========================
+        // KEEP ASIDE SECTION
+        // ==========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> KeepAsideCreate(KeepAsideViewModel model)
         {
+            // Check login
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "Login required.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
+            // Validate model
             if (!ModelState.IsValid)
             {
-                
-                ViewBag.Product = new ProductViewModel
-                {
-                    SerialNumber = model.DeviceSerialNumber
-                };
-                return View("KeepAsideForm", model); 
+                await LoadProductForKeepAside(model.DeviceSerialNumber);
+                return View("KeepAsideForm", model);
             }
-             var collectionDateUtc = model.CollectionDate.HasValue
-             ? model.CollectionDate.Value.ToUniversalTime()
-             : (DateTime?)null;
-
-            await _firestoreDb.Collection("KeepAsides").Document().SetAsync(new
-            {
-                model.CustomerName,
-                model.CustomerSurname,
-                model.ContactNumber,
-                model.IdPassportNumber,
-                model.DeviceSerialNumber,
-                CollectionDate = collectionDateUtc,
-                CreatedAt = DateTime.UtcNow
-            });
-
-            TempData["SuccessMessage"] = "Keep aside created successfully!";
-            return RedirectToAction("MyKeepAsides");
-        }
-
-
-        // GET: Customer/MyKeepAsides
-        public async Task<IActionResult> MyKeepAsides()
-        {
-            var keepAsides = new List<KeepAsideViewModel>();
 
             try
             {
-                var snapshot = await _firestoreDb.Collection("KeepAsides").GetSnapshotAsync();
+                var keepAsideData = new Dictionary<string, object>
+                {
+                    { "CustomerId", userInfo.UserId },
+                    { "CustomerEmail", userInfo.Email },
+                    { "CustomerName", model.CustomerName ?? "" },
+                    { "CustomerSurname", model.CustomerSurname ?? "" },
+                    { "ContactNumber", model.ContactNumber ?? "" },
+                    { "IdPassportNumber", model.IdPassportNumber ?? "" },
+                    { "DeviceSerialNumber", model.DeviceSerialNumber ?? "" },
+                    { "CollectionDate", model.CollectionDate?.ToUniversalTime() ?? DateTime.UtcNow.AddDays(2) },
+                    { "CreatedAt", DateTime.UtcNow }
+                };
+
+                await _firestoreDb.Collection("KeepAsides").AddAsync(keepAsideData);
+                TempData["SuccessMessage"] = "Keep aside created!";
+                return RedirectToAction("MyKeepAsides");
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Error creating keep aside.");
+                await LoadProductForKeepAside(model.DeviceSerialNumber);
+                return View("KeepAsideForm", model);
+            }
+        }
+
+        public async Task<IActionResult> KeepAside(string serialNumber)
+        {
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "Login required.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
+            if (string.IsNullOrEmpty(serialNumber))
+            {
+                TempData["ErrorMessage"] = "No product selected.";
+                return RedirectToAction("AllProducts");
+            }
+
+            var model = new KeepAsideViewModel { DeviceSerialNumber = serialNumber, CollectionDate = DateTime.Now.AddDays(2) };
+            await LoadProductForKeepAside(serialNumber);
+            return View("KeepAsideForm", model);
+        }
+
+        public async Task<IActionResult> MyKeepAsides()
+        {
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "Login required.";
+                return RedirectToAction("SignIn", "Account");
+            }
+
+            var keepAsides = new List<KeepAsideViewModel>();
+            try
+            {
+                var snapshot = await _firestoreDb.Collection("KeepAsides").WhereEqualTo("CustomerId", userInfo.UserId).GetSnapshotAsync();
                 foreach (var doc in snapshot.Documents)
                 {
-                    var data = doc.ToDictionary();
+                    if (!doc.Exists) continue;
 
-                    // Convert Firestore Timestamp to UTC DateTime if it exists
+                    var data = doc.ToDictionary();
                     DateTime? collectionDate = null;
                     if (data.ContainsKey("CollectionDate") && data["CollectionDate"] is Google.Cloud.Firestore.Timestamp ts)
-                    {
                         collectionDate = ts.ToDateTime();
-                    }
 
                     keepAsides.Add(new KeepAsideViewModel
                     {
-                        CustomerName = data.ContainsKey("CustomerName") ? data["CustomerName"].ToString() : "",
-                        CustomerSurname = data.ContainsKey("CustomerSurname") ? data["CustomerSurname"].ToString() : "",
-                        ContactNumber = data.ContainsKey("ContactNumber") ? data["ContactNumber"].ToString() : "",
-                        DeviceSerialNumber = data.ContainsKey("DeviceSerialNumber") ? data["DeviceSerialNumber"].ToString() : "",
+                        CustomerName = data.GetValueOrDefault("CustomerName")?.ToString(),
+                        CustomerSurname = data.GetValueOrDefault("CustomerSurname")?.ToString(),
+                        ContactNumber = data.GetValueOrDefault("ContactNumber")?.ToString(),
+                        DeviceSerialNumber = data.GetValueOrDefault("DeviceSerialNumber")?.ToString(),
                         CollectionDate = collectionDate,
-                        ImageUrl = data.ContainsKey("ImageUrl") ? data["ImageUrl"].ToString() : null // optional
+                        ImageUrl = data.GetValueOrDefault("ImageUrl")?.ToString()
                     });
                 }
             }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Unable to load Keep Asides at this time. " + ex.Message;
-            }
+            catch { TempData["Error"] = "Unable to load Keep Asides at this time."; }
 
-            return View(keepAsides); // Views/Customer/MyKeepAsides.cshtml
+            return View(keepAsides);
         }
 
-        // GET: Customer/KeepAsideSuccess
-        public IActionResult KeepAsideSuccess()
+        public IActionResult KeepAsideSuccess() => View();
+
+        // ==========================
+        // HELPER METHODS
+        // ==========================
+        private async Task LoadProductForKeepAside(string serialNumber)
         {
-            return View();
-        }
+            if (string.IsNullOrEmpty(serialNumber)) return;
 
-
-        // GET: Customer/RepairDetails/{id}
-        public async Task<IActionResult> RepairDetails(string id)
-        {
-            if (string.IsNullOrEmpty(id))
+            try
             {
-                return NotFound();
+                var snapshot = await _firestoreDb.Collection("products").WhereEqualTo("SerialNumber", serialNumber).GetSnapshotAsync();
+                var doc = snapshot.Documents.FirstOrDefault();
+                if (doc == null) return;
+
+                var product = doc.ConvertTo<Product>();
+                ViewBag.Product = new ProductViewModel
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    SerialNumber = product.SerialNumber,
+                    ImageUrl = product.ImageUrl,
+                    Price = product.Price
+                };
             }
-
-            var userInfo = await _authService.GetCurrentUserInfoAsync();
-            var repairJob = await _repairJobService.GetRepairJobByIdAsync(id);
-
-            if (repairJob == null)
-            {
-                return NotFound();
-            }
-
-            // Ensure customer can only view their own repair jobs
-            if (userInfo != null && repairJob.CustomerId != userInfo.UserId)
-            {
-                return Forbid();
-            }
-
-            return View(repairJob);
+            catch { }
         }
     }
 }

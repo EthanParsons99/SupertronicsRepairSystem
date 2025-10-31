@@ -1,8 +1,7 @@
-﻿using Google.Cloud.Firestore;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SupertronicsRepairSystem.Models
+namespace SupertronicsRepairSystem.ViewModels
 {
     // Represents a keep-aside item in the Supertronics Repair System
     public class KeepAsideViewModel
@@ -16,21 +15,24 @@ namespace SupertronicsRepairSystem.Models
         public string CustomerSurname { get; set; }
 
         [Required(ErrorMessage = "Contact number is required")]
-        [Phone(ErrorMessage = "Invalid phone number")]
-        [Display(Name = "Customer Contact Number")]
+        [Display(Name = "Contact Number")]
+        [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Contact number must be 10 digits")]
         public string ContactNumber { get; set; }
 
-        [Display(Name = "Customer ID/Passport Number")]
+        [Required(ErrorMessage = "ID/Passport number is required")]
+        [Display(Name = "ID/Passport Number")]
         public string IdPassportNumber { get; set; }
 
-        [Required(ErrorMessage = "Device Serial Number is required")]
+        [Required(ErrorMessage = "Device serial number is required")]
         [Display(Name = "Device Serial Number")]
         public string DeviceSerialNumber { get; set; }
 
+        [Required(ErrorMessage = "Collection date is required")]
         [Display(Name = "Collection Date")]
         [DataType(DataType.Date)]
         public DateTime? CollectionDate { get; set; }
 
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; } 
+        public string? CustomerId { get; set; }
     }
 }

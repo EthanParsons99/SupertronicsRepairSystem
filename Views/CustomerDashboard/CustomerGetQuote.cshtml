@@ -1,4 +1,4 @@
-﻿Views\CustomerDashboard\CustomerGetQuote.cshtml
+﻿
 @model SupertronicsRepairSystem.ViewModels.CustomerQuoteViewModel
 @{
     ViewData["Title"] = "Get a Quote";
@@ -10,6 +10,7 @@
         <div class="col-md-8">
             <h2>Get a quote</h2>
 
+            <link rel="stylesheet" href="~/css/AllProducts.css">
             <form asp-action="CustomerGetQuote" method="post" novalidate>
                 <div class="card mb-3">
                     <div class="card-header">Your details</div>
