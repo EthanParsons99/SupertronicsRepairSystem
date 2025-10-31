@@ -31,7 +31,7 @@ namespace SupertronicsRepairSystem.ViewModels
         [DataType(DataType.Date)]
         public DateTime? CollectionDate { get; set; }
 
-        public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; } 
         public string? CustomerId { get; set; }
     }
 }

@@ -2,7 +2,6 @@
     background-color: #F5F7FB !important;
 }
 
-/* Main container layout */
 .keep-aside-container {
     max-width: 1300px;
     margin: 40px auto;
@@ -11,7 +10,6 @@
     gap: 50px;
 }
 
-/* Form styling */
 .keep-aside-form-section {
     background-color: #ffffff;
     border-radius: 12px;
@@ -29,7 +27,6 @@
     margin-bottom: 25px;
 }
 
-/* Inputs */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -60,7 +57,6 @@ input:focus {
     box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
 }
 
-/* Buttons */
 .button-group {
     display: flex;
     justify-content: flex-end;
@@ -97,7 +93,6 @@ input:focus {
         background-color: #4338CA;
     }
 
-/* Product section */
 .keep-aside-product-card {
     background-color: #ffffff;
     padding: 25px;
