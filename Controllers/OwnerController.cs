@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace SupertronicsRepairSystem.Controllers
 {
+    // Owner dashboard and management controller
     [AuthorizeRole(UserRole.Owner)]
     public class OwnerController : Controller
     {
@@ -27,14 +28,14 @@ namespace SupertronicsRepairSystem.Controllers
             _repairJobService = repairJobService;
         }
 
-        // GET: Owner/Dashboard
+        // Owner dashboard with stats
         public async Task<IActionResult> Dashboard()
         {
             var model = new OwnerDashboardViewModel();
 
             try
             {
-                // Get current user info
+                // Get owner name
                 var userInfo = await _authService.GetCurrentUserInfoAsync();
                 if (userInfo != null)
                 {
@@ -43,11 +44,11 @@ namespace SupertronicsRepairSystem.Controllers
                         : userInfo.Email.Split('@')[0];
                 }
 
-                // Get all products count
+                // Get total products count
                 var products = await _productService.GetAllProductsAsync();
                 model.TotalProducts = products?.Count ?? 0;
 
-                // Get all repair jobs
+                // Get all repair jobs for stats
                 var allRepairJobs = await _repairJobService.GetAllRepairJobsAsync();
 
                 if (allRepairJobs != null && allRepairJobs.Any())
@@ -56,17 +57,17 @@ namespace SupertronicsRepairSystem.Controllers
                     model.CompletedRepairs = allRepairJobs.Count(r =>
                         r.Status?.Equals("Completed", StringComparison.OrdinalIgnoreCase) ?? false);
 
-                    // Count quotes accepted (jobs with at least one quote)
+                    // Count repairs with quotes
                     model.QuotesAccepted = allRepairJobs.Count(r =>
                         r.Quotes != null && r.Quotes.Any());
 
-                    // Count quotes assigned (jobs in progress with quotes)
+                    // Count assigned repairs
                     model.QuotesAssigned = allRepairJobs.Count(r =>
                         r.Quotes != null &&
                         r.Quotes.Any() &&
                         (r.Status?.Equals("In Progress", StringComparison.OrdinalIgnoreCase) ?? false));
 
-                    // Get recent repairs (last 10, ordered by LastUpdated)
+                    // Get recent repairs list
                     model.RecentRepairs = allRepairJobs
                         .OrderByDescending(r => r.LastUpdated.ToDateTime())
                         .Take(10)
@@ -84,13 +85,12 @@ namespace SupertronicsRepairSystem.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading dashboard: {ex.Message}");
-                // Return empty model on error
             }
 
             return View(model);
         }
 
-        // POST: Owner/CheckWarranty
+        // Check warranty by serial number
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckWarranty(string serialNumber)
@@ -99,7 +99,7 @@ namespace SupertronicsRepairSystem.Controllers
 
             try
             {
-                // Populate all dashboard data
+                // Load dashboard data
                 var userInfo = await _authService.GetCurrentUserInfoAsync();
                 if (userInfo != null)
                 {
@@ -138,7 +138,7 @@ namespace SupertronicsRepairSystem.Controllers
                         .ToList();
                 }
 
-                // Check warranty by serial number
+                // Check warranty
                 if (!string.IsNullOrWhiteSpace(serialNumber))
                 {
                     var product = products?.FirstOrDefault(p =>
@@ -173,11 +173,9 @@ namespace SupertronicsRepairSystem.Controllers
             return View("Dashboard", model);
         }
 
-        // Helper method to get technician name from repair job
+        // Get technician assignment status
         private string GetTechnicianNameFromJob(Models.RepairJob repairJob)
         {
-            // Since Quote doesn't have TechnicianName, we'll check if quotes exist
-            // You can enhance this later when you add technician assignment
             if (repairJob.Quotes != null && repairJob.Quotes.Any())
             {
                 return "Assigned";
@@ -185,13 +183,13 @@ namespace SupertronicsRepairSystem.Controllers
             return "Unassigned";
         }
 
-        // GET: Owner/Index (alternative route)
+        // Redirect to dashboard
         public IActionResult Index()
         {
             return RedirectToAction("Dashboard");
         }
 
-        // GET: Owner/RepairJobDetails/id
+        // View repair job details
         public async Task<IActionResult> RepairJobDetails(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -210,12 +208,13 @@ namespace SupertronicsRepairSystem.Controllers
             return View(repairJob);
         }
 
-        // GET: Owner/ProductManagement
+        // Product management page with filters
         public async Task<IActionResult> ProductManagement(ProductListViewModel filterModel)
         {
             var products = await _productService.GetAllProductsAsync();
             var filteredProducts = products.AsEnumerable();
 
+            // Search filter
             if (!string.IsNullOrWhiteSpace(filterModel.SearchTerm))
             {
                 var term = filterModel.SearchTerm.ToLower();
@@ -225,6 +224,7 @@ namespace SupertronicsRepairSystem.Controllers
                 );
             }
 
+            // Price filters
             if (filterModel.MinPrice.HasValue)
             {
                 filteredProducts = filteredProducts.Where(p => p.Price >= filterModel.MinPrice.Value);
@@ -242,6 +242,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(filterModel);
         }
 
+        // Edit product form
         public async Task<IActionResult> EditProduct(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -271,6 +272,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Update product in DB
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProduct(UpdateProductViewModel model)
@@ -291,6 +293,7 @@ namespace SupertronicsRepairSystem.Controllers
             }
         }
 
+        // Delete product from DB
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteProduct(string id)
@@ -316,12 +319,13 @@ namespace SupertronicsRepairSystem.Controllers
             }
         }
 
-        // GET: Owner/AddProduct
+        // Add product form
         public IActionResult AddProduct()
         {
             return View(new AddProductViewModel());
         }
 
+        // Save new product to DB
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddProduct(AddProductViewModel model)
@@ -344,14 +348,14 @@ namespace SupertronicsRepairSystem.Controllers
             }
         }
 
-        // GET: Owner/QuotesManagement
+        // View all quotes
         public async Task<IActionResult> QuotesManagement()
         {
             var repairJobsWithQuotes = await _quoteService.GetAllRepairJobsWithQuotesAsync();
             return View(repairJobsWithQuotes);
         }
 
-        // POST: Owner/FilterQuotes
+        // Filter quotes by criteria
         [HttpPost]
         public async Task<IActionResult> FilterQuotes(string status, string customerId, DateTime? startDate, DateTime? endDate)
         {
@@ -359,19 +363,20 @@ namespace SupertronicsRepairSystem.Controllers
             return PartialView("_QuotesTable", filteredJobs);
         }
 
-        // GET: Owner/RepairJobs
+        // View all repair jobs
         public async Task<IActionResult> RepairJobs()
         {
             var repairJobs = await _repairJobService.GetAllRepairJobsAsync();
             return View(repairJobs);
         }
 
-        // GET: Owner/TechnicianManagement
+        // Technician management page with search
         public async Task<IActionResult> TechnicianManagement(TechnicianManagementViewModel filterModel)
         {
             var allTechnicians = await _authService.GetAllTechniciansAsync();
             var filteredTechnicians = allTechnicians.AsEnumerable();
 
+            // Search filter
             if (!string.IsNullOrWhiteSpace(filterModel.SearchTerm))
             {
                 var term = filterModel.SearchTerm.Trim().ToLower();
@@ -388,12 +393,13 @@ namespace SupertronicsRepairSystem.Controllers
             return View(filterModel);
         }
 
-        // GET: Owner/AddTechnician
+        //Navigate to add technician form
         public IActionResult AddTechnician()
         {
             return View(new AddTechnicianViewModel());
         }
 
+        // Register new technician
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTechnician(AddTechnicianViewModel model)
@@ -424,6 +430,7 @@ namespace SupertronicsRepairSystem.Controllers
             }
         }
 
+        // Edit technician form
         public async Task<IActionResult> EditTechnician(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -451,6 +458,7 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+        // Update technician in DB
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditTechnician(EditTechnicianViewModel model)
@@ -475,6 +483,7 @@ namespace SupertronicsRepairSystem.Controllers
             }
         }
 
+        // Delete technician from DB
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteTechnician(string id)

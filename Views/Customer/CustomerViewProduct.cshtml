@@ -618,7 +618,7 @@
                             <button class="btn btn-keep-aside" onclick="keepAside('@Model.Id')">
                                 <i class="bi bi-bookmark"></i> Keep Aside
                             </button>
-                            <button class="btn btn-add-cart" onclick="addToCart('@Model.Id')">
+                            <button class="btn btn-add-cart" onclick="addToCartAndViewCart('@Model.Id')">
                                 <i class="bi bi-cart-plus"></i> Add to Cart
                             </button>
                         </div>
@@ -735,7 +735,7 @@
             });
         }
 
-        function addToCart(productId) {
+        function addToCartAndViewCart(productId) {
             const quantity = document.getElementById('quantity').value;
 
             fetch('/Cart/Add', {
@@ -745,19 +745,29 @@
                 },
                 body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to add to cart');
+                }
+                return response.json();
+            })
             .then(data => {
-                showNotification('Added to cart successfully!', 'success');
+                showNotification('Added to cart. Redirecting to cart...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/Cart';
+                }, 800);
             })
             .catch(error => {
                 console.error('Error:', error);
-                showNotification('Added to cart!', 'success');
+                showNotification('Could not add to cart. Please try again.', 'error');
             });
         }
 
-        function quickAddToCart(productId) {
-            event.preventDefault();
-            event.stopPropagation();
+        function quickAddToCart(productId, evt) {
+            if (evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+            }
 
             fetch('/Cart/Add', {
                 method: 'POST',
@@ -766,7 +776,12 @@
                 },
                 body: JSON.stringify({ productId: productId, quantity: 1 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to add quick to cart');
+                }
+                return response.json();
+            })
             .then(data => {
                 showNotification('Added to cart!', 'success');
             })
