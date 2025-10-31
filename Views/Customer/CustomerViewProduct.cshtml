@@ -106,8 +106,9 @@
                                 <i class="bi bi-cart-plus"></i> Add to Cart
                             </button>
                         </div>
+
+                        </div>
                     </div>
-                </div>
 
                 <!-- Recommended products -->
                 @if (recommendedProducts.Any())
@@ -181,59 +182,39 @@
             if (newIndex >= 0 && newIndex < thumbnails.length) setMainImage(thumbnails[newIndex]);
         }
 
-        // Keep aside
+        // Keep Aside - redirect to KeepAside page
         function keepAside(productId) {
-            const quantity = document.getElementById('quantity').value;
-            fetch('/CustomerDashboard/KeepAside', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: parseInt(quantity) })
-            })
-            .then(r => r.json())
-            .then(() => showNotification('Product kept aside!', 'success'))
-            .catch(() => showNotification('Added to keep aside!', 'success'));
+            if (!productId) return;
+            window.location.href = '/Customer/KeepAside?serialNumber=' + productId;
         }
 
-        // Add to cart + redirect
+        // Add to Cart + redirect
         function addToCartAndViewCart(productId) {
-            const quantity = document.getElementById('quantity').value;
-            fetch('/Cart/Add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: parseInt(quantity) })
-            })
-            .then(r => {
-                if (!r.ok) throw new Error();
-                return r.json();
-            })
-            .then(() => {
-                showNotification('Added to cart. Redirecting...', 'success');
-                setTimeout(() => window.location.href = '/Cart', 800);
-            })
-            .catch(() => showNotification('Could not add to cart.', 'error'));
+            if (!productId) return;
+            window.location.href = '/CustomerDashboard/CustomerCart?productId=' + productId;
         }
 
-        // Quick add
+        // Quick Add to cart for recommended products
         function quickAddToCart(productId, evt) {
             if (evt) { evt.preventDefault(); evt.stopPropagation(); }
-            fetch('/Cart/Add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: 1 })
-            })
-            .then(() => showNotification('Added to cart!', 'success'))
-            .catch(() => showNotification('Added to cart!', 'success'));
+            fetch('/Customer/AddToCart?productId=' + productId)
+                .then(() => showNotification('Added to cart!', 'success'))
+                .catch(() => showNotification('Could not add to cart.', 'error'));
         }
 
-        // Pop-up message
+        // Notification popup
         function showNotification(message, type) {
             const note = document.createElement('div');
             note.className = `notification notification-${type}`;
             note.innerHTML = `<i class="bi bi-check-circle"></i><span>${message}</span>`;
             document.body.appendChild(note);
             setTimeout(() => note.classList.add('show'), 100);
-            setTimeout(() => { note.classList.remove('show'); setTimeout(() => note.remove(), 300); }, 3000);
+            setTimeout(() => {
+                note.classList.remove('show');
+                setTimeout(() => note.remove(), 300);
+            }, 3000);
         }
     </script>
+
 </body>
 </html>
