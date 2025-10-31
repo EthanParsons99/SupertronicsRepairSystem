@@ -362,13 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# --- Security / Credentials ---
-# Firebase/Google Service Account Keys (Private Keys)
-serviceAccountKey.json
-google-credentials.json
-# A generic pattern for other credentials, if you use them
-credentials.json
-# For applications using environment variables, always ignore the .env file
-.env
-/google-credentials.json
-/serviceAccountKey.json
+
