@@ -1,5 +1,4 @@
-﻿//-----------------------CustomerController --------------------------
-using Google.Cloud.Firestore;
+﻿using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using SupertronicsRepairSystem.ViewModels;
 using SupertronicsRepairSystem.Attributes;
@@ -229,35 +228,8 @@ namespace SupertronicsRepairSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CustomerGetQuote(CustomerQuoteViewModel vm)
         {
-            // Debug: Check if method is being called
-            System.Diagnostics.Debug.WriteLine("CustomerGetQuote POST method called");
-
-            // Debug: Log all form values
-            System.Diagnostics.Debug.WriteLine("=== FORM VALUES ===");
-            foreach (var key in Request.Form.Keys)
-            {
-                System.Diagnostics.Debug.WriteLine($"{key}: {Request.Form[key]}");
-            }
-            System.Diagnostics.Debug.WriteLine("=== END FORM VALUES ===");
-
-            // Debug: Log model values
-            System.Diagnostics.Debug.WriteLine("=== MODEL VALUES ===");
-            System.Diagnostics.Debug.WriteLine($"Name: {vm.Name}");
-            System.Diagnostics.Debug.WriteLine($"Surname: {vm.Surname}");
-            System.Diagnostics.Debug.WriteLine($"Email: {vm.Email}");
-            System.Diagnostics.Debug.WriteLine($"PhoneNumber: {vm.PhoneNumber}");
-            System.Diagnostics.Debug.WriteLine($"DeviceType: {vm.DeviceType}");
-            System.Diagnostics.Debug.WriteLine($"ProblemDescription: {vm.ProblemDescription}");
-            System.Diagnostics.Debug.WriteLine("=== END MODEL VALUES ===");
-
             if (!ModelState.IsValid)
             {
-                System.Diagnostics.Debug.WriteLine("Model state is invalid");
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Validation error: {error.ErrorMessage}");
-                }
-
                 // Reload device types if validation fails
                 vm.DeviceTypes = new List<string>
                 {
@@ -267,19 +239,16 @@ namespace SupertronicsRepairSystem.Controllers
                 return View(vm);
             }
 
-            System.Diagnostics.Debug.WriteLine("Model state is valid, attempting to save...");
-
             try
             {
                 var userInfo = await _authService.GetCurrentUserInfoAsync();
-                System.Diagnostics.Debug.WriteLine($"User info retrieved: {userInfo?.Email ?? "No user"}");
 
                 // Create quote request data
                 var quoteRequestData = new Dictionary<string, object>
                 {
                     { "Name", vm.Name ?? "" },
                     { "Surname", vm.Surname ?? "" },
-                    { "Email", vm.Email ?? "" },
+                    { "CustomerEmail", vm.Email ?? "" },
                     { "PhoneNumber", vm.PhoneNumber ?? "" },
                     { "DeviceType", vm.DeviceType ?? "" },
                     { "Brand", vm.Brand ?? "" },
@@ -288,23 +257,20 @@ namespace SupertronicsRepairSystem.Controllers
                     { "ProblemDescription", vm.ProblemDescription ?? "" },
                     { "Status", "Pending" },
                     { "CreatedAt", Timestamp.FromDateTime(DateTime.UtcNow) },
+                    { "LastUpdated", Timestamp.FromDateTime(DateTime.UtcNow) },
                     { "CustomerId", userInfo?.UserId ?? "" },
                     { "CustomerName", $"{vm.Name} {vm.Surname}".Trim() }
                 };
 
-                System.Diagnostics.Debug.WriteLine("Attempting to save to Firestore...");
-
-                // Save to Firestore as top-level collection
+                // Save to Firestore
                 var docRef = await _firestoreDb.Collection("quoteRequests").AddAsync(quoteRequestData);
-
-                System.Diagnostics.Debug.WriteLine($"Successfully saved with ID: {docRef.Id}");
 
                 TempData["SuccessMessage"] = $"Quote request submitted successfully! Reference: {docRef.Id.Substring(0, 8)}";
 
                 // Redirect based on user authentication
                 if (userInfo != null)
                 {
-                    return RedirectToAction("Dashboard");
+                    return RedirectToAction("MyQuotes");
                 }
                 else
                 {
@@ -313,9 +279,6 @@ namespace SupertronicsRepairSystem.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error occurred: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-
                 TempData["ErrorMessage"] = $"Error: {ex.Message}";
                 ModelState.AddModelError("", "An error occurred while submitting your quote request. Please try again.");
                 vm.DeviceTypes = new List<string>
@@ -325,6 +288,42 @@ namespace SupertronicsRepairSystem.Controllers
                 };
                 return View(vm);
             }
+        }
+
+        // GET: View customer's quote requests
+        public async Task<IActionResult> MyQuotes()
+        {
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo == null)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to view your quote requests.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var quotes = new List<Dictionary<string, object>>();
+
+            try
+            {
+                var snapshot = await _firestoreDb
+                    .Collection("quoteRequests")
+                    .WhereEqualTo("CustomerId", userInfo.UserId)
+                    .OrderByDescending("CreatedAt")
+                    .GetSnapshotAsync();
+
+                foreach (var doc in snapshot.Documents)
+                {
+                    if (!doc.Exists) continue;
+                    var data = doc.ToDictionary();
+                    data["Id"] = doc.Id;
+                    quotes.Add(data);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Unable to load your quote requests at this time.";
+            }
+
+            return View(quotes);
         }
 
         // ==========================

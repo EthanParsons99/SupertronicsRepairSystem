@@ -1,12 +1,12 @@
-﻿@model List<SupertronicsRepairSystem.Models.QuoteRequest>
+﻿@model List<Dictionary<string, object>>
 @{
     ViewData["Title"] = "My Quote Requests";
 }
 
-<div class="container py-5">
+<div class="container py-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="display-6 fw-bold mb-2" style="color: var(--primary-blue);">
+            <h1 class="display-6 fw-bold mb-2 text-primary">
                 <i class="bi bi-file-text me-2"></i>My Quote Requests
             </h1>
             <p class="text-muted">Track the status of your quote requests</p>
@@ -22,23 +22,23 @@
         </div>
     }
 
-    @if (TempData["Error"] != null)
+    @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            @TempData["Error"]
+            @TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     @if (Model == null || !Model.Any())
     {
-        <div class="card shadow-sm">
+        <div class="card shadow-md">
             <div class="card-body text-center py-5">
                 <i class="bi bi-inbox display-1 text-muted mb-3"></i>
                 <h3 class="text-muted">No Quote Requests Yet</h3>
                 <p class="text-muted mb-4">You haven't submitted any quote requests. Request a quote to get started!</p>
-                <a asp-controller="CustomerDashboard" asp-action="CustomerGetQuote" class="btn btn-primary">
+                <a asp-controller="Customer" asp-action="CustomerGetQuote" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Request a Quote
                 </a>
             </div>
@@ -49,108 +49,155 @@
         <div class="row g-4">
             @foreach (var quote in Model)
             {
+                var quoteId = quote.GetValueOrDefault("Id")?.ToString() ?? "";
+                var deviceType = quote.GetValueOrDefault("DeviceType")?.ToString() ?? "";
+                var brand = quote.GetValueOrDefault("Brand")?.ToString() ?? "";
+                var model = quote.GetValueOrDefault("Model")?.ToString() ?? "";
+                var serialNumber = quote.GetValueOrDefault("SerialNumber")?.ToString() ?? "";
+                var problemDesc = quote.GetValueOrDefault("ProblemDescription")?.ToString() ?? "";
+                var status = quote.GetValueOrDefault("Status")?.ToString() ?? "Pending";
+                var repairJobId = quote.GetValueOrDefault("RepairJobId")?.ToString() ?? "";
+
+                DateTime? createdAt = null;
+                if (quote.ContainsKey("CreatedAt") && quote["CreatedAt"] is Google.Cloud.Firestore.Timestamp timestamp)
+                {
+                    createdAt = timestamp.ToDateTime();
+                }
+
+                DateTime? updatedAt = null;
+                if (quote.ContainsKey("LastUpdated") && quote["LastUpdated"] is Google.Cloud.Firestore.Timestamp updateTimestamp)
+                {
+                    updatedAt = updateTimestamp.ToDateTime();
+                }
+
+                var statusClass = status.ToLower() switch
+                {
+                    "pending" => "warning", // Uses .bg-warning from your CSS
+                    "approved" => "success", // Uses .bg-success from your CSS
+                    "rejected" => "danger", // Uses .bg-danger from your CSS
+                    _ => "secondary"
+                };
+
+                var statusIcon = status.ToLower() switch
+                {
+                    "pending" => "clock-history",
+                    "approved" => "check-circle",
+                    "rejected" => "x-circle",
+                    _ => "question-circle"
+                };
+
+                var deviceInfo = !string.IsNullOrEmpty(brand) && !string.IsNullOrEmpty(model)
+                    ? $"{brand} {model}"
+                    : deviceType;
+
                 <div class="col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                @quote.DeviceType
-                                @if (!string.IsNullOrEmpty(quote.Brand))
-                                {
-                                    <span> - @quote.Brand</span>
-                                }
-                            </h5>
-                            @if (quote.Status == "Pending")
-                            {
-                                <span class="badge bg-warning text-dark">
-                                    <i class="bi bi-clock-history me-1"></i>Pending
+                    <div class="card shadow-md h-100">
+                        <div class="card-header"> 
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-device-hdd me-1"></i>@deviceInfo
+                                </h5>
+                                <span class="badge bg-@statusClass">
+                                    <i class="bi bi-@statusIcon me-1"></i>@status
                                 </span>
-                            }
-                            else if (quote.Status == "Quoted")
-                            {
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle me-1"></i>Quoted
-                                </span>
-                            }
-                            else if (quote.Status == "Rejected")
-                            {
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-x-circle me-1"></i>Rejected
-                                </span>
-                            }
-                            else if (quote.Status == "Processing")
-                            {
-                                <span class="badge bg-info">
-                                    <i class="bi bi-gear me-1"></i>Processing
-                                </span>
-                            }
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <strong>Model:</strong> @(quote.Model ?? "N/A")
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-info-circle me-1"></i>Device Details
+                                </h6>
+                                @if (!string.IsNullOrEmpty(model))
+                                {
+                                    <p class="mb-1"><strong>Model:</strong> </p>
+                                }
+                                @if (!string.IsNullOrEmpty(serialNumber))
+                                {
+                                    <p class="mb-1"><strong>Serial Number:</strong> @serialNumber</p>
+                                }
                             </div>
-                            @if (!string.IsNullOrEmpty(quote.SerialNumber))
+
+                            <div class="mb-3">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-exclamation-circle me-1"></i>Problem Description
+                                </h6>
+                                <p class="mb-0 text-muted small">
+                                    @(problemDesc.Length > 150 ? problemDesc.Substring(0, 150) + "..." : problemDesc)
+                                </p>
+                            </div>
+
+                            @if (status == "Approved" && quote.ContainsKey("QuotePrice"))
                             {
+                                var quotePrice = quote.GetValueOrDefault("QuotePrice");
                                 <div class="mb-3">
-                                    <strong>Serial Number:</strong> @quote.SerialNumber
+                                    <div class="alert alert-success mb-0">
+                                        <h6 class="alert-heading mb-2">
+                                            <i class="bi bi-currency-dollar me-1"></i>Quoted Price
+                                        </h6>
+                                        <h4 class="mb-0">R @string.Format("{0:N2}", quotePrice)</h4>
+                                        @if (quote.ContainsKey("EstimatedDays"))
+                                        {
+                                            <small class="text-muted">
+                                                Estimated completion: @quote["EstimatedDays"] days
+                                            </small>
+                                        }
+                                    </div>
                                 </div>
                             }
-                            <div class="mb-3">
-                                <strong>Problem:</strong>
-                                <p class="mb-0 text-muted">@quote.ProblemDescription</p>
-                            </div>
+
                             <div class="row text-muted small">
                                 <div class="col-6">
                                     <i class="bi bi-calendar3 me-1"></i>
-                                    Submitted: @quote.DateCreated.ToDateTime().ToString("dd MMM yyyy")
+                                    Submitted: @(createdAt?.ToString("dd MMM yyyy") ?? "N/A")
                                 </div>
-                                <div class="col-6 text-end">
-                                    <i class="bi bi-clock me-1"></i>
-                                    Updated: @quote.LastUpdated.ToDateTime().ToString("dd MMM yyyy")
-                                </div>
+                                @if (updatedAt.HasValue)
+                                {
+                                    <div class="col-6 text-end">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Updated: @updatedAt.Value.ToString("dd MMM yyyy")
+                                    </div>
+                                }
                             </div>
                         </div>
-                        @if (quote.Status == "Quoted" && !string.IsNullOrEmpty(quote.RepairJobId))
-                        {
-                            <div class="card-footer">
-                                <a asp-controller="Customer" asp-action="RepairDetails" asp-route-id="@quote.RepairJobId"
+                        <div class="card-footer bg-light">
+                            @if (status == "Approved" && !string.IsNullOrEmpty(repairJobId))
+                            {
+                                <a asp-controller="Customer" 
+                                   asp-action="RepairDetails" 
+                                   asp-route-id="@repairJobId"
                                    class="btn btn-primary btn-sm w-100">
-                                    <i class="bi bi-eye me-1"></i>View Quote Details
+                                    <i class="bi bi-eye me-1"></i>View Repair Job Details
                                 </a>
+                            }
+                            else if (status == "Pending")
+                            {
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-hourglass-split me-1"></i>
+                                    Waiting for technician response
+                                </div>
+                            }
+                            else if (status == "Rejected")
+                            {
+                                <div class="text-center text-danger">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    This quote request was declined
+                                </div>
+                            }
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-hash"></i>Ref: @quoteId.Substring(0, Math.Min(8, quoteId.Length)).ToUpper()
+                                </small>
                             </div>
-                        }
+                        </div>
                     </div>
                 </div>
             }
         </div>
 
         <div class="text-center mt-4">
-            <a asp-controller="CustomerDashboard" asp-action="CustomerGetQuote" class="btn btn-primary">
+            <a asp-controller="Customer" asp-action="CustomerGetQuote" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-2"></i>Request Another Quote
             </a>
         </div>
     }
 </div>
-
-<style>
-    .card {
-        border: none;
-        border-radius: 10px;
-        transition: transform 0.2s;
-    }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-    .card-header {
-        background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
-        color: white;
-        border-radius: 10px 10px 0 0 !important;
-        padding: 1rem;
-    }
-
-    .badge {
-        font-size: 0.875rem;
-        padding: 0.5rem 0.75rem;
-    }
-</style>

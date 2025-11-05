@@ -7,7 +7,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header">
                     <h3 class="mb-0">
                         <i class="bi bi-tools me-2"></i>Request Repair Service
                     </h3>
@@ -87,7 +87,7 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
-                            <a asp-action="Dashboard" class="btn btn-outline-secondary btn-lg">
+                            <a asp-action="Dashboard" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-arrow-left me-2"></i>Cancel
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg px-5">
@@ -106,37 +106,31 @@
 }
 
 <style>
+    /* Scoped styling for functional and minor presentation elements */
+
+    /* Ensure card borders/headers are correct if Bootstrap defaults or external CSS isn't fully comprehensive */
     .card {
-        border: none;
-        border-radius: 15px;
+        /* Ensuring card border-radius is applied, though likely covered by external CSS */
+        border-radius: 1rem;
     }
 
     .card-header {
-        border-radius: 15px 15px 0 0 !important;
+        /* Ensuring card header border-radius is only at the top, consistent with card-header styles */
+        border-radius: 1rem 1rem 0 0 !important;
+        /* Padding is likely already covered by external CSS, but kept for strict matching */
         padding: 1.5rem;
     }
 
-    .form-control:focus, .form-control-lg:focus {
-        border-color: #5865F2;
-        box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
-    }
-
-    .btn-primary {
-        background-color: #5865F2;
-        border-color: #5865F2;
-    }
-
-        .btn-primary:hover {
-            background-color: #4752C4;
-            border-color: #4752C4;
-        }
-
-    .bg-primary {
-        background-color: #5865F2 !important;
-    }
-
+    /* Functional style for the textarea */
     textarea.form-control {
         resize: vertical;
         min-height: 150px;
+    }
+
+    /* Custom form control focus color (If not handled by external CSS/Bootstrap override) */
+    .form-control:focus, .form-control-lg:focus {
+        /* Using a blue similar to --primary-blue: #4A69FF */
+        border-color: #4A69FF;
+        box-shadow: 0 0 0 0.2rem rgba(74, 105, 255, 0.25);
     }
 </style>

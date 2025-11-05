@@ -42,7 +42,6 @@
                             var role = userInfo.Role;
                             @if (role == UserRole.Customer)
                             {
-
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Customer" asp-action="Index">
                                         <i class="bi bi-house-door me-1"></i>Dashboard
@@ -55,7 +54,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Customer" asp-action="MyKeepAsides">
-                                        <i class="bi bi-bookmark me-1"></i>Keeps Asides
+                                        <i class="bi bi-bookmark me-1"></i>Keep Asides
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -63,13 +62,16 @@
                                         <i class="bi bi-file-earmark-text me-1"></i>Get Quote
                                     </a>
                                 </li>
-                                <!--
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CustomerDashboard" asp-action="Cart">
-                                        <i class="bi bi-cart me-1"></i>Cart
+                                    <a class="nav-link" asp-controller="Customer" asp-action="MyQuotes">
+                                        <i class="bi bi-file-text me-1"></i>My Quotes
                                     </a>
                                 </li>
-                                -->
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Customer" asp-action="TrackRepair">
+                                        <i class="bi bi-tools me-1"></i>Track Repair
+                                    </a>
+                                </li>
                             }
                             else if (role == UserRole.Technician)
                             {
@@ -78,6 +80,9 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Technician" asp-action="RepairJobs"><i class="bi bi-wrench me-1"></i>Repair Jobs</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Technician" asp-action="QuoteRequests"><i class="bi bi-inbox me-1"></i>Quote Requests</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Technician" asp-action="CreateRepairJob"><i class="bi bi-plus-circle me-1"></i>New Job</a>
@@ -134,6 +139,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Customer" asp-action="AllProducts">
                                     <i class="bi bi-box-seam me-1"></i>Products
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Customer" asp-action="CustomerGetQuote">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Get Quote
                                 </a>
                             </li>
                         }
