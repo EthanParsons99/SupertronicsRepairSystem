@@ -1,0 +1,252 @@
+﻿@model List<SupertronicsRepairSystem.Models.QuoteRequest>
+@{
+    ViewData["Title"] = "Quote Requests";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold mb-1" style="color: var(--primary-blue);">
+                        <i class="bi bi-inbox me-2"></i>Quote Requests
+                    </h1>
+                    <p class="text-muted mb-0">Review and respond to customer quote requests</p>
+                </div>
+                <div>
+                    <a asp-action="Dashboard" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                <h3 class="text-muted">No Quote Requests</h3>
+                <p class="text-muted">There are currently no quote requests to process.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Device</th>
+                                <th>Problem</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var request in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">
+                                            @request.DateCreated.ToDateTime().ToString("dd MMM yyyy")<br />
+                                            @request.DateCreated.ToDateTime().ToString("HH:mm")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong>@request.CustomerName @request.CustomerSurname</strong>
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            <i class="bi bi-envelope me-1"></i>@request.CustomerEmail<br />
+                                            @if (!string.IsNullOrEmpty(request.PhoneNumber))
+                                            {
+                                                <i class="bi bi-telephone me-1"></i>
+                                                @request.PhoneNumber
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>@request.DeviceType</strong><br />
+                                        <small class="text-muted">
+                                            @if (!string.IsNullOrEmpty(request.Brand))
+                                            {
+                                                @request.Brand
+                                            }
+                                            @if (!string.IsNullOrEmpty(request.Model))
+                                            {
+                                                <text> @request.Model</text>
+                                            }
+                                        </small>
+                                        @if (!string.IsNullOrEmpty(request.SerialNumber))
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                <i class="bi bi-upc me-1"></i>@request.SerialNumber
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div style="max-width: 300px;">
+                                            <small>@request.ProblemDescription</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (request.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-clock-history me-1"></i>Pending
+                                            </span>
+                                        }
+                                        else if (request.Status == "Quoted")
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Quoted
+                                            </span>
+                                        }
+                                        else if (request.Status == "Rejected")
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Rejected
+                                            </span>
+                                        }
+                                        else if (request.Status == "Processing")
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-gear me-1"></i>Processing
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (request.Status == "Pending")
+                                        {
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="GenerateQuoteFromRequest"
+                                                   asp-route-id="@request.Id"
+                                                   class="btn btn-sm btn-success"
+                                                   title="Generate Quote">
+                                                    <i class="bi bi-file-earmark-text"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#rejectModal"
+                                                        data-id="@request.Id"
+                                                        data-customer="@request.CustomerName"
+                                                        title="Reject Request">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (request.Status == "Quoted" && !string.IsNullOrEmpty(request.RepairJobId))
+                                        {
+                                            <a asp-action="RepairJobs" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View Job
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">No actions</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3 text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Showing @Model.Count request(s)
+        </div>
+    }
+</div>
+
+<!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Reject Quote Request
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reject the quote request from <strong id="rejectCustomerName"></strong>?</p>
+                <p class="text-muted small mb-0">This action cannot be undone. The customer will be notified that their request was rejected.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="RejectQuoteRequest" method="post" id="rejectForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="rejectRequestId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Reject Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#rejectModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var requestId = button.data('id');
+                var customerName = button.data('customer');
+
+                $('#rejectRequestId').val(requestId);
+                $('#rejectCustomerName').text(customerName);
+            });
+        });
+    </script>
+}
+
+<style>
+    .table th {
+        font-weight: 600;
+        color: #4752C4;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>

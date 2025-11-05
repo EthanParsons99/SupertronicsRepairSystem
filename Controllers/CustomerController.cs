@@ -190,6 +190,144 @@ namespace SupertronicsRepairSystem.Controllers
         }
 
         // ==========================
+        // QUOTE REQUEST SECTION
+        // ==========================
+
+        // GET: Display the quote request form
+        public async Task<IActionResult> CustomerGetQuote()
+        {
+            var model = new CustomerQuoteViewModel
+            {
+                DeviceTypes = new List<string>
+                {
+                    "Laptop",
+                    "Desktop",
+                    "Tablet",
+                    "Smartphone",
+                    "Printer",
+                    "Monitor",
+                    "Gaming Console",
+                    "Smart TV",
+                    "Other"
+                }
+            };
+
+            // Pre-fill user details if logged in
+            var userInfo = await _authService.GetCurrentUserInfoAsync();
+            if (userInfo != null)
+            {
+                model.Name = userInfo.FirstName;
+                model.Surname = userInfo.Surname;
+                model.Email = userInfo.Email;
+            }
+
+            return View("~/Views/Customer/CustomerGetQuote.cshtml", model);
+        }
+
+        // POST: Handle quote request submission
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CustomerGetQuote(CustomerQuoteViewModel vm)
+        {
+            // Debug: Check if method is being called
+            System.Diagnostics.Debug.WriteLine("CustomerGetQuote POST method called");
+
+            // Debug: Log all form values
+            System.Diagnostics.Debug.WriteLine("=== FORM VALUES ===");
+            foreach (var key in Request.Form.Keys)
+            {
+                System.Diagnostics.Debug.WriteLine($"{key}: {Request.Form[key]}");
+            }
+            System.Diagnostics.Debug.WriteLine("=== END FORM VALUES ===");
+
+            // Debug: Log model values
+            System.Diagnostics.Debug.WriteLine("=== MODEL VALUES ===");
+            System.Diagnostics.Debug.WriteLine($"Name: {vm.Name}");
+            System.Diagnostics.Debug.WriteLine($"Surname: {vm.Surname}");
+            System.Diagnostics.Debug.WriteLine($"Email: {vm.Email}");
+            System.Diagnostics.Debug.WriteLine($"PhoneNumber: {vm.PhoneNumber}");
+            System.Diagnostics.Debug.WriteLine($"DeviceType: {vm.DeviceType}");
+            System.Diagnostics.Debug.WriteLine($"ProblemDescription: {vm.ProblemDescription}");
+            System.Diagnostics.Debug.WriteLine("=== END MODEL VALUES ===");
+
+            if (!ModelState.IsValid)
+            {
+                System.Diagnostics.Debug.WriteLine("Model state is invalid");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Validation error: {error.ErrorMessage}");
+                }
+
+                // Reload device types if validation fails
+                vm.DeviceTypes = new List<string>
+                {
+                    "Laptop", "Desktop", "Tablet", "Smartphone",
+                    "Printer", "Monitor", "Gaming Console", "Smart TV", "Other"
+                };
+                return View(vm);
+            }
+
+            System.Diagnostics.Debug.WriteLine("Model state is valid, attempting to save...");
+
+            try
+            {
+                var userInfo = await _authService.GetCurrentUserInfoAsync();
+                System.Diagnostics.Debug.WriteLine($"User info retrieved: {userInfo?.Email ?? "No user"}");
+
+                // Create quote request data
+                var quoteRequestData = new Dictionary<string, object>
+                {
+                    { "Name", vm.Name ?? "" },
+                    { "Surname", vm.Surname ?? "" },
+                    { "Email", vm.Email ?? "" },
+                    { "PhoneNumber", vm.PhoneNumber ?? "" },
+                    { "DeviceType", vm.DeviceType ?? "" },
+                    { "Brand", vm.Brand ?? "" },
+                    { "Model", vm.Model ?? "" },
+                    { "SerialNumber", vm.SerialNumber ?? "" },
+                    { "ProblemDescription", vm.ProblemDescription ?? "" },
+                    { "Status", "Pending" },
+                    { "CreatedAt", Timestamp.FromDateTime(DateTime.UtcNow) },
+                    { "CustomerId", userInfo?.UserId ?? "" },
+                    { "CustomerName", $"{vm.Name} {vm.Surname}".Trim() }
+                };
+
+                System.Diagnostics.Debug.WriteLine("Attempting to save to Firestore...");
+
+                // Save to Firestore as top-level collection
+                var docRef = await _firestoreDb.Collection("quoteRequests").AddAsync(quoteRequestData);
+
+                System.Diagnostics.Debug.WriteLine($"Successfully saved with ID: {docRef.Id}");
+
+                TempData["SuccessMessage"] = $"Quote request submitted successfully! Reference: {docRef.Id.Substring(0, 8)}";
+
+                // Redirect based on user authentication
+                if (userInfo != null)
+                {
+                    return RedirectToAction("Dashboard");
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error occurred: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                TempData["ErrorMessage"] = $"Error: {ex.Message}";
+                ModelState.AddModelError("", "An error occurred while submitting your quote request. Please try again.");
+                vm.DeviceTypes = new List<string>
+                {
+                    "Laptop", "Desktop", "Tablet", "Smartphone",
+                    "Printer", "Monitor", "Gaming Console", "Smart TV", "Other"
+                };
+                return View(vm);
+            }
+        }
+
+        // ==========================
         // KEEP ASIDE SECTION
         // ==========================
         [HttpPost]

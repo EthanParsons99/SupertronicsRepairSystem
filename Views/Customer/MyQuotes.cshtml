@@ -1,0 +1,156 @@
+﻿@model List<SupertronicsRepairSystem.Models.QuoteRequest>
+@{
+    ViewData["Title"] = "My Quote Requests";
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold mb-2" style="color: var(--primary-blue);">
+                <i class="bi bi-file-text me-2"></i>My Quote Requests
+            </h1>
+            <p class="text-muted">Track the status of your quote requests</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                <h3 class="text-muted">No Quote Requests Yet</h3>
+                <p class="text-muted mb-4">You haven't submitted any quote requests. Request a quote to get started!</p>
+                <a asp-controller="CustomerDashboard" asp-action="CustomerGetQuote" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Request a Quote
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var quote in Model)
+            {
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                @quote.DeviceType
+                                @if (!string.IsNullOrEmpty(quote.Brand))
+                                {
+                                    <span> - @quote.Brand</span>
+                                }
+                            </h5>
+                            @if (quote.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock-history me-1"></i>Pending
+                                </span>
+                            }
+                            else if (quote.Status == "Quoted")
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Quoted
+                                </span>
+                            }
+                            else if (quote.Status == "Rejected")
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Rejected
+                                </span>
+                            }
+                            else if (quote.Status == "Processing")
+                            {
+                                <span class="badge bg-info">
+                                    <i class="bi bi-gear me-1"></i>Processing
+                                </span>
+                            }
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Model:</strong> @(quote.Model ?? "N/A")
+                            </div>
+                            @if (!string.IsNullOrEmpty(quote.SerialNumber))
+                            {
+                                <div class="mb-3">
+                                    <strong>Serial Number:</strong> @quote.SerialNumber
+                                </div>
+                            }
+                            <div class="mb-3">
+                                <strong>Problem:</strong>
+                                <p class="mb-0 text-muted">@quote.ProblemDescription</p>
+                            </div>
+                            <div class="row text-muted small">
+                                <div class="col-6">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    Submitted: @quote.DateCreated.ToDateTime().ToString("dd MMM yyyy")
+                                </div>
+                                <div class="col-6 text-end">
+                                    <i class="bi bi-clock me-1"></i>
+                                    Updated: @quote.LastUpdated.ToDateTime().ToString("dd MMM yyyy")
+                                </div>
+                            </div>
+                        </div>
+                        @if (quote.Status == "Quoted" && !string.IsNullOrEmpty(quote.RepairJobId))
+                        {
+                            <div class="card-footer">
+                                <a asp-controller="Customer" asp-action="RepairDetails" asp-route-id="@quote.RepairJobId"
+                                   class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-eye me-1"></i>View Quote Details
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-controller="CustomerDashboard" asp-action="CustomerGetQuote" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Request Another Quote
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+        padding: 1rem;
+    }
+
+    .badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>
