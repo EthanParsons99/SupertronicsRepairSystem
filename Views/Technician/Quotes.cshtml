@@ -1,0 +1,353 @@
+﻿@model IEnumerable<SupertronicsRepairSystem.Models.QuoteRequest>
+@{
+    ViewData["Title"] = "Quote Requests";
+    var statusList = new SelectList(new[] { "Pending", "Quoted", "Rejected" });
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4 slide-in-left">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold mb-1" style="color: var(--primary-blue);">
+                        Quote Requests
+                    </h1>
+                    <p style="color: var(--secondary-text);">Manage customer quote requests</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-primary" asp-action="GenerateProductQuote">
+                        <i class="bi bi-box-seam me-1"></i>Product Quote
+                    </a>
+                    <a class="btn btn-primary" asp-action="SelectJobForQuote">
+                        <i class="bi bi-wrench me-1"></i>Repair Quote
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="row mb-4 fade-in" style="animation-delay: 0.1s;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Filter Quote Requests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3 filter-form">
+                        <div class="col-lg-2 col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" asp-items="statusList" asp-for="@ViewData["SelectedStatus"]">
+                                <option value="">All Statuses</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <label class="form-label">Date From</label>
+                            <input type="date" class="form-control" name="dateFrom" value="@ViewData["SelectedDateFrom"]" />
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <label class="form-label">Date To</label>
+                            <input type="date" class="form-control" name="dateTo" value="@ViewData["SelectedDateTo"]" />
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label">Customer</label>
+                            <input type="text" class="form-control" name="customer" placeholder="Search customer..." value="@ViewData["SelectedCustomer"]" />
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="bi bi-search me-1"></i>Filter
+                                </button>
+                                <a asp-action="Quotes" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quote Requests Table -->
+    <div class="row slide-in-right" style="animation-delay: 0.2s;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        Quote Requests
+                        <span class="badge ms-2" style="background: var(--primary-blue-gradient); color: white;">
+                            @(Model?.Count() ?? 0)
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-primary">
+                                    <tr>
+                                        <th class="ps-4">Quote ID</th>
+                                        <th>Customer</th>
+                                        <th>Contact</th>
+                                        <th>Device</th>
+                                        <th>Problem Description</th>
+                                        <th>Status</th>
+                                        <th>Date Submitted</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var quote in Model)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-semibold">#@(quote.Id?.Substring(0, 8).ToUpper() ?? "N/A")</td>
+                                            <td>
+                                                <div style="color: var(--body-text); font-weight: 600;">
+                                                    @quote.CustomerName @(quote.CustomerSurname ?? "")
+                                                </div>
+                                                <small style="color: var(--secondary-text);">@quote.CustomerEmail</small>
+                                            </td>
+                                            <td>
+                                                <div style="color: var(--body-text);">
+                                                    @if (!string.IsNullOrEmpty(quote.PhoneNumber))
+                                                    {
+                                                        <i class="bi bi-telephone me-1"></i>
+                                                        @quote.PhoneNumber
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color: var(--secondary-text);">No phone</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div style="color: var(--body-text); font-weight: 600;">@quote.DeviceType</div>
+                                                @if (!string.IsNullOrEmpty(quote.Brand) || !string.IsNullOrEmpty(quote.Model))
+                                                {
+                                                    <small style="color: var(--secondary-text);">
+                                                        @(quote.Brand ?? "") @(quote.Model ?? "")
+                                                    </small>
+                                                }
+                                                @if (!string.IsNullOrEmpty(quote.SerialNumber))
+                                                {
+                                                    <br />
+                                                    <small style="color: var(--secondary-text);">
+                                                        SN: @quote.SerialNumber
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td style="max-width: 250px;">
+                                                <div style="color: var(--body-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@quote.ProblemDescription">
+                                                    @quote.ProblemDescription
+                                                </div>
+                                            </td>
+                                            <td>@await Html.PartialAsync("_StatusBadge", quote.Status)</td>
+                                            <td>
+                                                <div style="color: var(--body-text);">
+                                                    @quote.DateCreated.ToDateTime().ToString("MMM dd, yyyy")
+                                                </div>
+                                                <small style="color: var(--secondary-text);">
+                                                    @quote.DateCreated.ToDateTime().ToString("HH:mm")
+                                                </small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    @if (quote.Status == "Pending")
+                                                    {
+                                                        <button type="button" class="btn btn-primary"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#respondModal"
+                                                                data-quote-id="@quote.Id"
+                                                                data-customer-name="@quote.CustomerName"
+                                                                data-device="@quote.DeviceType"
+                                                                title="Respond to Quote">
+                                                            <i class="bi bi-reply-fill"></i>
+                                                        </button>
+                                                    }
+                                                    <button type="button" class="btn btn-primary view-details-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#detailsModal"
+                                                            data-quote='@System.Text.Json.JsonSerializer.Serialize(quote)'
+                                                            title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    @if (!string.IsNullOrEmpty(quote.RepairJobId))
+                                                    {
+                                                        <a class="btn btn-primary"
+                                                           asp-action="RepairJobs"
+                                                           asp-route-id="@quote.RepairJobId"
+                                                           title="View Linked Job">
+                                                            <i class="bi bi-link-45deg"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 fade-in">
+                            <i class="bi bi-inbox display-1" style="color: var(--secondary-text);"></i>
+                            <h4 class="mt-3" style="color: var(--heading-text);">No quote requests found</h4>
+                            <p style="color: var(--body-text);">No quote requests match your current filters.</p>
+                            <a class="btn btn-primary mt-2" asp-action="Quotes">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Clear Filters
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quote Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom text-white">
+                <h5 class="modal-title" id="detailsModalLabel">Quote Request Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">Customer Information</h6>
+                        <p class="mb-1"><strong>Name:</strong> <span id="detail-customer-name"></span></p>
+                        <p class="mb-1"><strong>Email:</strong> <span id="detail-customer-email"></span></p>
+                        <p class="mb-1"><strong>Phone:</strong> <span id="detail-customer-phone"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">Device Information</h6>
+                        <p class="mb-1"><strong>Type:</strong> <span id="detail-device-type"></span></p>
+                        <p class="mb-1"><strong>Brand:</strong> <span id="detail-brand"></span></p>
+                        <p class="mb-1"><strong>Model:</strong> <span id="detail-model"></span></p>
+                        <p class="mb-1"><strong>Serial:</strong> <span id="detail-serial"></span></p>
+                    </div>
+                    <div class="col-12">
+                        <h6 class="text-muted mb-2">Problem Description</h6>
+                        <div class="p-3 bg-light rounded" id="detail-problem"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Status:</strong> <span id="detail-status"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Date Submitted:</strong> <span id="detail-date"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Respond to Quote Modal -->
+<div class="modal fade" id="respondModal" tabindex="-1" aria-labelledby="respondModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background: var(--dark-navy);">
+                <h5 class="modal-title" id="respondModalLabel">Respond to Quote Request</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-action="RespondToQuote">
+                <div class="modal-body">
+                    <input type="hidden" name="quoteId" id="respond-quote-id" />
+                    <div class="alert alert-info">
+                        <strong>Customer:</strong> <span id="respond-customer-name"></span><br />
+                        <strong>Device:</strong> <span id="respond-device"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Action</label>
+                        <select class="form-select" name="action" required>
+                            <option value="">Choose action...</option>
+                            <option value="create-job">Create Repair Job</option>
+                            <option value="generate-quote">Generate Quote</option>
+                            <option value="reject">Reject Request</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" name="notes" rows="3" placeholder="Add any notes or reasons..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Response</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // View Details Modal
+            $('.view-details-btn').on('click', function () {
+                var quoteData = JSON.parse($(this).attr('data-quote'));
+
+                $('#detail-customer-name').text(quoteData.CustomerName + ' ' + (quoteData.CustomerSurname || ''));
+                $('#detail-customer-email').text(quoteData.CustomerEmail);
+                $('#detail-customer-phone').text(quoteData.PhoneNumber || 'Not provided');
+                $('#detail-device-type').text(quoteData.DeviceType);
+                $('#detail-brand').text(quoteData.Brand || 'Not specified');
+                $('#detail-model').text(quoteData.Model || 'Not specified');
+                $('#detail-serial').text(quoteData.SerialNumber || 'Not provided');
+                $('#detail-problem').text(quoteData.ProblemDescription);
+                $('#detail-status').html('<span class="badge badge-' + quoteData.Status.toLowerCase() + '">' + quoteData.Status + '</span>');
+
+                // Fix date handling for Firestore Timestamp
+                var date;
+                if (quoteData.DateCreated && quoteData.DateCreated.seconds) {
+                    date = new Date(quoteData.DateCreated.seconds * 1000);
+                } else if (quoteData.DateCreated) {
+                    date = new Date(quoteData.DateCreated);
+                } else {
+                    date = new Date();
+                }
+                $('#detail-date').text(date.toLocaleString());
+            });
+
+            // Respond Modal
+            $('#respondModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var quoteId = button.data('quote-id');
+                var customerName = button.data('customer-name');
+                var device = button.data('device');
+
+                $('#respond-quote-id').val(quoteId);
+                $('#respond-customer-name').text(customerName);
+                $('#respond-device').text(device);
+            });
+        });
+    </script>
+}

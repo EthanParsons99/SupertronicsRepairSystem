@@ -96,28 +96,34 @@ namespace SupertronicsRepairSystem.Controllers
         // This functiion handles the creation of a product quote
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GenerateProductQuote(GenerateProductQuoteViewModel model)
+        public async Task<IActionResult> GenerateRepairQuote(string id, string selectedJobId)
         {
-            if (ModelState.IsValid)
+            // Accept either 'id' (direct link) or 'selectedJobId' (from form)
+            var jobId = id ?? selectedJobId;
+
+            if (string.IsNullOrEmpty(jobId))
             {
-                var simulatedProductName = $"Product ({model.ProductId})";
-                var simulatedUnitPrice = 150.00;
-                var totalPrice = simulatedUnitPrice * model.Quantity;
-                var productQuote = new ProductQuote
-                {
-                    ProductId = model.ProductId,
-                    ProductName = simulatedProductName,
-                    Quantity = model.Quantity,
-                    UnitPrice = simulatedUnitPrice,
-                    TotalPrice = totalPrice,
-                    DateCreated = Timestamp.FromDateTime(DateTime.UtcNow)
-                };
-
-                await _firestoreDb.Collection("productQuotes").AddAsync(productQuote);
-
-                TempData["SuccessMessage"] = $"Product quote for '{productQuote.ProductName}' created successfully!";
-                return RedirectToAction(nameof(Dashboard));
+                TempData["ErrorMessage"] = "Please select a repair job first.";
+                return RedirectToAction(nameof(SelectJobForQuote));
             }
+
+            var repairJob = await _repairJobService.GetRepairJobByIdAsync(jobId);
+
+            if (repairJob == null)
+            {
+                TempData["ErrorMessage"] = "Repair job not found.";
+                return RedirectToAction(nameof(SelectJobForQuote));
+            }
+
+            var model = new GenerateRepairQuoteViewModel
+            {
+                JobId = repairJob.Id,
+                CustomerName = repairJob.CustomerName,
+                DeviceName = repairJob.ItemModel,
+                SerialNumber = repairJob.SerialNumber,
+                ProblemDescription = repairJob.ProblemDescription
+            };
+
             return View(model);
         }
 
@@ -262,6 +268,67 @@ namespace SupertronicsRepairSystem.Controllers
             return View(model);
         }
 
+
+        public async Task<IActionResult> Quotes(string status, string customer, DateTime? dateFrom, DateTime? dateTo)
+        {
+            try
+            {
+                // Fetch all quote requests
+                var quoteRequestsQuery = _firestoreDb.Collection("quoteRequests");
+                var snapshot = await quoteRequestsQuery.GetSnapshotAsync();
+                var quoteRequests = snapshot.Documents.Select(doc => doc.ConvertTo<QuoteRequest>()).ToList();
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(status))
+                {
+                    quoteRequests = quoteRequests
+                        .Where(q => q.Status.Equals(status, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                if (!string.IsNullOrEmpty(customer))
+                {
+                    quoteRequests = quoteRequests
+                        .Where(q => q.CustomerName.Contains(customer, StringComparison.OrdinalIgnoreCase) ||
+                                   (q.CustomerEmail?.Contains(customer, StringComparison.OrdinalIgnoreCase) ?? false))
+                        .ToList();
+                }
+
+                if (dateFrom.HasValue)
+                {
+                    quoteRequests = quoteRequests
+                        .Where(q => q.DateCreated.ToDateTime().Date >= dateFrom.Value.Date)
+                        .ToList();
+                }
+
+                if (dateTo.HasValue)
+                {
+                    quoteRequests = quoteRequests
+                        .Where(q => q.DateCreated.ToDateTime().Date <= dateTo.Value.Date)
+                        .ToList();
+                }
+
+                // Sort by most recent first
+                quoteRequests = quoteRequests
+                    .OrderByDescending(q => q.DateCreated.ToDateTime())
+                    .ToList();
+
+                // Pass filter values to view
+                ViewData["SelectedStatus"] = status;
+                ViewData["SelectedCustomer"] = customer;
+                ViewData["SelectedDateFrom"] = dateFrom?.ToString("yyyy-MM-dd");
+                ViewData["SelectedDateTo"] = dateTo?.ToString("yyyy-MM-dd");
+
+                return View(quoteRequests);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching quote requests");
+                TempData["ErrorMessage"] = "Error loading quote requests. Please try again.";
+                return View(new List<QuoteRequest>());
+            }
+        }
+
         // Add repair notes to a job
         public async Task<IActionResult> AddRepairNotes(string id)
         {
@@ -305,6 +372,107 @@ namespace SupertronicsRepairSystem.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RespondToQuote(string quoteId, string action, string notes)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(quoteId))
+                {
+                    TempData["ErrorMessage"] = "Invalid quote request.";
+                    return RedirectToAction(nameof(Quotes));
+                }
+
+                var quoteRef = _firestoreDb.Collection("quoteRequests").Document(quoteId);
+                var quoteSnapshot = await quoteRef.GetSnapshotAsync();
+
+                if (!quoteSnapshot.Exists)
+                {
+                    TempData["ErrorMessage"] = "Quote request not found.";
+                    return RedirectToAction(nameof(Quotes));
+                }
+
+                var quoteRequest = quoteSnapshot.ConvertTo<QuoteRequest>();
+
+                switch (action)
+                {
+                    case "create-job":
+                        // Create repair job from quote request - using customer's actual ID
+                        var createJobModel = new CreateRepairJobViewModel
+                        {
+                            CustomerName = quoteRequest.CustomerName,
+                            ItemModel = !string.IsNullOrEmpty(quoteRequest.Brand) && !string.IsNullOrEmpty(quoteRequest.Model)
+                                ? $"{quoteRequest.Brand} {quoteRequest.Model}".Trim()
+                                : quoteRequest.DeviceType,
+                            SerialNumber = quoteRequest.SerialNumber,
+                            ProblemDescription = quoteRequest.ProblemDescription
+                        };
+
+                        // Pass the actual customer ID so the job is linked to them
+                        await _repairJobService.CreateRepairJobAsync(createJobModel, quoteRequest.CustomerId, quoteRequest.CustomerName);
+
+                        // Update quote request status
+                        await quoteRef.UpdateAsync(new Dictionary<string, object>
+                {
+                    { "Status", "In Progress" },
+                    { "LastUpdated", Timestamp.FromDateTime(DateTime.UtcNow) }
+                });
+
+                        TempData["SuccessMessage"] = $"Repair job created for {quoteRequest.CustomerName}. You can now generate a quote for this job.";
+                        return RedirectToAction(nameof(RepairJobs));
+
+                    case "generate-quote":
+                        // Create the repair job first
+                        var jobModel = new CreateRepairJobViewModel
+                        {
+                            CustomerName = quoteRequest.CustomerName,
+                            ItemModel = !string.IsNullOrEmpty(quoteRequest.Brand) && !string.IsNullOrEmpty(quoteRequest.Model)
+                                ? $"{quoteRequest.Brand} {quoteRequest.Model}".Trim()
+                                : quoteRequest.DeviceType,
+                            SerialNumber = quoteRequest.SerialNumber,
+                            ProblemDescription = quoteRequest.ProblemDescription
+                        };
+
+                        // Create job with customer's actual ID
+                        await _repairJobService.CreateRepairJobAsync(jobModel, quoteRequest.CustomerId, quoteRequest.CustomerName);
+
+                        // Update quote request
+                        await quoteRef.UpdateAsync(new Dictionary<string, object>
+                {
+                    { "Status", "In Progress" },
+                    { "LastUpdated", Timestamp.FromDateTime(DateTime.UtcNow) }
+                });
+
+                        TempData["SuccessMessage"] = $"Repair job created for {quoteRequest.CustomerName}. Please select the job to generate a quote.";
+                        return RedirectToAction(nameof(SelectJobForQuote));
+
+                    case "reject":
+                        // Update quote request status to rejected
+                        await quoteRef.UpdateAsync(new Dictionary<string, object>
+                {
+                    { "Status", "Rejected" },
+                    { "LastUpdated", Timestamp.FromDateTime(DateTime.UtcNow) }
+                });
+
+                        TempData["SuccessMessage"] = $"Quote request from {quoteRequest.CustomerName} has been rejected.";
+                        break;
+
+                    default:
+                        TempData["ErrorMessage"] = "Invalid action selected.";
+                        break;
+                }
+
+                return RedirectToAction(nameof(Quotes));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error responding to quote request");
+                TempData["ErrorMessage"] = "Error processing response. Please try again.";
+                return RedirectToAction(nameof(Quotes));
+            }
         }
 
         // Track serial number across repair jobs

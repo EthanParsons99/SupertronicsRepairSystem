@@ -426,6 +426,44 @@ body {
   margin-bottom: 1.5rem;
 }
 
+
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+.dropdown-menu {
+    transition: var(--transition-fast);
+    border: none;
+    box-shadow: var(--shadow-md);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    padding: 0.75rem 1.25rem;
+    transition: var(--transition-fast);
+    color: var(--body-text);
+    font-weight: 500;
+}
+
+    .dropdown-item:hover {
+        background: linear-gradient(135deg, rgba(74, 105, 255, 0.1), rgba(45, 76, 255, 0.05));
+        color: var(--primary-blue);
+        transform: translateX(3px);
+    }
+
+    .dropdown-item i {
+        color: var(--primary-blue);
+        transition: var(--transition-fast);
+    }
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    opacity: 0.2;
+}
+
+
 .form-group.full-width { grid-column: 1 / -1; }
 
 .password-requirements { font-size: 0.75rem; color: #666; margin-top: 0.25rem; }

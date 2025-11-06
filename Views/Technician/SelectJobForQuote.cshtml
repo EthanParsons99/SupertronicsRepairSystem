@@ -4,34 +4,63 @@
 }
 
 <div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-6">
-            <div class="mb-4">
-                <h1 class="display-6 fw-bold mb-2" style="color: var(--primary-blue);">Generate a Repair Quote</h1>
-                <p class="text-muted" style="color: var(--secondary-text);">First, select an open repair job to generate a quote for.</p>
-            </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold mb-1" style="color: var(--primary-blue);">
+                Select Repair Job
+            </h1>
+            <p style="color: var(--secondary-text);">Choose a repair job to generate a quote</p>
+        </div>
+    </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header"><h5 class="mb-0">Select Job</h5></div>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Generate Repair Quote</h5>
+                </div>
                 <div class="card-body">
                     <form asp-action="GenerateRepairQuote" method="get">
-                        <div class="mb-3">
-                            <label asp-for="SelectedJobId" class="form-label fw-semibold"></label>
-                            <select asp-for="SelectedJobId" asp-items="Model.OpenJobs" class="form-select form-select-lg">
-                                <option value="">-- Choose a repair job --</option>
+                        <div class="mb-4">
+                            <label asp-for="SelectedJobId" class="form-label"></label>
+                            <select asp-for="SelectedJobId"
+                                    asp-items="Model.OpenJobs"
+                                    class="form-select form-select-lg">
+                                <option value="">-- Select a repair job --</option>
                             </select>
-                            <span asp-validation-for="SelectedJobId" class="text-danger small"></span>
+                            <span asp-validation-for="SelectedJobId" class="text-danger"></span>
                         </div>
 
-                        <hr class="my-4">
-
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a asp-action="Dashboard" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Cancel</a>
-                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-arrow-right-circle me-1"></i>Continue to Quote</button>
-                        </div>
+                        @if (Model.OpenJobs == null || !Model.OpenJobs.Any())
+                        {
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                No open repair jobs available. Please create a repair job first.
+                            </div>
+                            <a asp-action="CreateRepairJob" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Create Repair Job
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Continue to Quote
+                                </button>
+                                <a asp-action="RepairJobs" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </a>
+                            </div>
+                        }
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
